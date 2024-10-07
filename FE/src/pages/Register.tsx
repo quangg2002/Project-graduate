@@ -4,7 +4,6 @@ import GlobalStyles from '@mui/joy/GlobalStyles';
 import CssBaseline from '@mui/joy/CssBaseline';
 import Box from '@mui/joy/Box';
 import Button from '@mui/joy/Button';
-import Checkbox from '@mui/joy/Checkbox';
 import FormControl from '@mui/joy/FormControl';
 import FormLabel from '@mui/joy/FormLabel';
 import IconButton, { IconButtonProps } from '@mui/joy/IconButton';
@@ -15,15 +14,12 @@ import Stack from '@mui/joy/Stack';
 import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded';
 import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
 import BadgeRoundedIcon from '@mui/icons-material/BadgeRounded';
+import { Formik, Form, Field } from "formik";
+import * as Yup from "yup";
+import { useEffect, useState } from 'react';
+import EyeOutlined from '@ant-design/icons/EyeOutlined';
+import EyeInvisibleOutlined from '@ant-design/icons/EyeInvisibleOutlined';
 
-interface FormElements extends HTMLFormControlsCollection {
-  email: HTMLInputElement;
-  password: HTMLInputElement;
-  persistent: HTMLInputElement;
-}
-interface SignInFormElement extends HTMLFormElement {
-  readonly elements: FormElements;
-}
 
 function ColorSchemeToggle(props: IconButtonProps) {
   const { onClick, ...other } = props;
@@ -51,7 +47,31 @@ function ColorSchemeToggle(props: IconButtonProps) {
 
 const customTheme = extendTheme();
 
+const SignUpSchema = Yup.object().shape({
+  fullname: Yup.string()
+    .max(255, 'Họ và tên không được quá 255 ký tự')
+    .required('Họ và tên là bắt buộc'),
+  email: Yup.string()
+    .email('Email không hợp lệ')
+    .required('Email là bắt buộc'),
+  password: Yup.string()
+    .min(6, 'Mật khẩu phải có ít nhất 6 ký tự')
+    .max(25, 'Mật khẩu không được vượt quá 25 ký tự')
+    .matches(/[a-z]/, 'Mật khẩu phải bao gồm chữ thường')
+    .matches(/[A-Z]/, 'Mật khẩu phải bao gồm chữ hoa')
+    .matches(/\d/, 'Mật khẩu phải bao gồm ký tự số')
+    .matches(/[!#@$%^&*)(+=._-]/, 'Mật khẩu phải bao gồm ít nhất một ký tự đặc biệt')
+    .required('Mật khẩu là bắt buộc'),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref('password')], 'Mật khẩu không khớp')
+    .required('Nhập lại mật khẩu là bắt buộc'),
+});
+
 export default function Register() {
+
+  const [showPassword, setShowPassword] = useState(false);
+  const togglePasswordVisibility = () => setShowPassword(!showPassword);
+
   return (
     <CssVarsProvider theme={customTheme} disableTransitionOnChange>
       <CssBaseline />
@@ -126,64 +146,93 @@ export default function Register() {
             <Stack sx={{ gap: 4, mb: 2 }}>
               <Stack sx={{ gap: 1 }}>
                 <Typography component="h1" level="h3">
-                  Sign in
+                  Sign up
                 </Typography>
                 <Typography level="body-sm">
-                  New to member?{' '}
-                  <Link href="#replace-with-a-link" level="title-sm">
-                    Sign up!
+                  Have a account?{' '}
+                  <Link href="/login" level="title-sm">
+                    Sign in!
                   </Link>
                 </Typography>
               </Stack>
             </Stack>
-            {/* <Divider
-              sx={(theme) => ({
-                [theme.getColorSchemeSelector('light')]: {
-                  color: { xs: '#FFF', md: 'text.tertiary' },
-                },
-              })}
-            >
-              or
-            </Divider> */}
-            <Stack sx={{ gap: 4, mt: 2 }}>
-              <form
-                onSubmit={(event: React.FormEvent<SignInFormElement>) => {
-                  event.preventDefault();
-                  const formElements = event.currentTarget.elements;
-                  const data = {
-                    email: formElements.email.value,
-                    password: formElements.password.value,
-                    persistent: formElements.persistent.checked,
-                  };
-                  alert(JSON.stringify(data, null, 2));
+            <Stack sx={{ gap: 1, mt: 2 }}>
+              <Formik
+                initialValues={{
+                  fullname: '',
+                  email: '',
+                  password: '',
+                  confirmPassword: '',
+                }}
+                validationSchema={SignUpSchema}
+                onSubmit={(values, { setSubmitting }) => {
+                  alert(JSON.stringify(values, null, 2));
+                  setSubmitting(false);
                 }}
               >
-                <FormControl required>
-                  <FormLabel>Email</FormLabel>
-                  <Input type="email" name="email" />
-                </FormControl>
-                <FormControl required>
-                  <FormLabel>Password</FormLabel>
-                  <Input type="password" name="password" />
-                </FormControl>
-                <Stack sx={{ gap: 4, mt: 2 }}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <Checkbox size="sm" label="Remember me" name="persistent" />
-                    <Link level="title-sm" href="#replace-with-a-link">
-                      Forgot your password?
-                    </Link>
-                  </Box>
-                  <Button type="submit" fullWidth>
-                    Sign in
-                  </Button>
-                </Stack>
-              </form>
+                {({ isSubmitting, errors, touched }) => (
+                  <Form>
+                    <Stack sx={{ gap: 2 }}>
+                      <FormControl required>
+                        <FormLabel>Họ và tên</FormLabel>
+                        <Field name="fullname" as={Input} />
+                          <Typography color="danger" sx={{ fontSize: '12px' }}>
+                            {errors.fullname}
+                          </Typography>
+                      </FormControl>
+
+                      <FormControl required>
+                        <FormLabel>Email</FormLabel>
+                        <Field name="email" as={Input} type="email" />
+                        <Typography color="danger" sx={{ fontSize: '12px' }}>
+                          {errors.email}
+                        </Typography>
+                      </FormControl>
+
+                      <FormControl required>
+                        <FormLabel>Mật khẩu</FormLabel>
+                        <Field
+                          name="password"
+                          as={Input}
+                          type={showPassword ? 'text' : 'password'}
+                          endDecorator={
+                            <IconButton onClick={togglePasswordVisibility} sx={{ marginLeft: 1 }}>
+                              {showPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+                            </IconButton>
+                          }
+                        />
+                        <Typography color="danger" sx={{ fontSize: '12px' }}>
+                          {errors.password}
+                        </Typography>
+                      </FormControl>
+
+                      <FormControl required>
+                        <FormLabel>Nhập lại mật khẩu</FormLabel>
+                        <Field
+                          name="confirmPassword"
+                          as={Input}
+                          type={showPassword ? 'text' : 'password'}
+                          endDecorator={
+                            <IconButton onClick={togglePasswordVisibility} sx={{ marginLeft: 1 }}>
+                              {showPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+                            </IconButton>
+                          }
+                        />
+                        <Typography color="danger" sx={{ fontSize: '12px' }}>
+                          {errors.confirmPassword}
+                        </Typography>
+                      </FormControl>
+
+                      {/* Submit Button */}
+                      <Stack sx={{ gap: 4, mt: 2 }}>
+                        <Button type="submit" fullWidth disabled={isSubmitting}>
+                          Đăng ký
+                        </Button>
+                      </Stack>
+                    </Stack>
+                  </Form>
+                )}
+              </Formik>
             </Stack>
           </Box>
           <Box component="footer" sx={{ py: 3 }}>

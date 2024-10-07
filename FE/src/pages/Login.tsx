@@ -1,29 +1,25 @@
-import * as React from 'react';
-import { CssVarsProvider, extendTheme, useColorScheme } from '@mui/joy/styles';
-import GlobalStyles from '@mui/joy/GlobalStyles';
-import CssBaseline from '@mui/joy/CssBaseline';
-import Box from '@mui/joy/Box';
-import Button from '@mui/joy/Button';
-import Checkbox from '@mui/joy/Checkbox';
-import FormControl from '@mui/joy/FormControl';
-import FormLabel from '@mui/joy/FormLabel';
-import IconButton, { IconButtonProps } from '@mui/joy/IconButton';
-import Link from '@mui/joy/Link';
-import Input from '@mui/joy/Input';
-import Typography from '@mui/joy/Typography';
-import Stack from '@mui/joy/Stack';
-import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded';
-import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
-import BadgeRoundedIcon from '@mui/icons-material/BadgeRounded';
-
-interface FormElements extends HTMLFormControlsCollection {
-  email: HTMLInputElement;
-  password: HTMLInputElement;
-  persistent: HTMLInputElement;
-}
-interface SignInFormElement extends HTMLFormElement {
-  readonly elements: FormElements;
-}
+import * as React from "react";
+import { CssVarsProvider, extendTheme, useColorScheme } from "@mui/joy/styles";
+import GlobalStyles from "@mui/joy/GlobalStyles";
+import CssBaseline from "@mui/joy/CssBaseline";
+import Box from "@mui/joy/Box";
+import Button from "@mui/joy/Button";
+import Checkbox from "@mui/joy/Checkbox";
+import FormControl from "@mui/joy/FormControl";
+import FormLabel from "@mui/joy/FormLabel";
+import IconButton, { IconButtonProps } from "@mui/joy/IconButton";
+import Link from "@mui/joy/Link";
+import Input from "@mui/joy/Input";
+import Typography from "@mui/joy/Typography";
+import Stack from "@mui/joy/Stack";
+import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
+import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded";
+import BadgeRoundedIcon from "@mui/icons-material/BadgeRounded";
+import { Formik, Form, Field } from "formik";
+import * as Yup from "yup";
+import { useEffect, useState } from 'react';
+import EyeOutlined from '@ant-design/icons/EyeOutlined';
+import EyeInvisibleOutlined from '@ant-design/icons/EyeInvisibleOutlined';
 
 function ColorSchemeToggle(props: IconButtonProps) {
   const { onClick, ...other } = props;
@@ -39,60 +35,75 @@ function ColorSchemeToggle(props: IconButtonProps) {
       variant="outlined"
       disabled={!mounted}
       onClick={(event) => {
-        setMode(mode === 'light' ? 'dark' : 'light');
+        setMode(mode === "light" ? "dark" : "light");
         onClick?.(event);
       }}
       {...other}
     >
-      {mode === 'light' ? <DarkModeRoundedIcon /> : <LightModeRoundedIcon />}
+      {mode === "light" ? <DarkModeRoundedIcon /> : <LightModeRoundedIcon />}
     </IconButton>
   );
 }
 
 const customTheme = extendTheme();
 
-export default function JoySignInSideTemplate() {
+const SignInSchema = Yup.object().shape({
+  email: Yup.string().email("Invalid email").required("Email is required"),
+  password: Yup.string()
+    .min(6, "Password is too short")
+    .required("Password is required"),
+  persistent: Yup.boolean(),
+});
+
+export default function Login() {
+
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleClickShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
+
   return (
     <CssVarsProvider theme={customTheme} disableTransitionOnChange>
       <CssBaseline />
       <GlobalStyles
         styles={{
-          ':root': {
-            '--Form-maxWidth': '800px',
-            '--Transition-duration': '0.4s', // set to `none` to disable transition
+          ":root": {
+            "--Form-maxWidth": "800px",
+            "--Transition-duration": "0.4s", // set to `none` to disable transition
           },
         }}
       />
       <Box
         sx={(theme) => ({
-          width: { xs: '100%', md: '50vw' },
-          transition: 'width var(--Transition-duration)',
-          transitionDelay: 'calc(var(--Transition-duration) + 0.1s)',
-          position: 'relative',
+          width: { xs: "100%", md: "50vw" },
+          transition: "width var(--Transition-duration)",
+          transitionDelay: "calc(var(--Transition-duration) + 0.1s)",
+          position: "relative",
           zIndex: 1,
-          display: 'flex',
-          justifyContent: 'flex-end',
-          backdropFilter: 'blur(12px)',
-          backgroundColor: 'rgba(255 255 255 / 0.2)',
-          [theme.getColorSchemeSelector('dark')]: {
-            backgroundColor: 'rgba(19 19 24 / 0.4)',
+          display: "flex",
+          justifyContent: "flex-end",
+          backdropFilter: "blur(12px)",
+          backgroundColor: "rgba(255 255 255 / 0.2)",
+          [theme.getColorSchemeSelector("dark")]: {
+            backgroundColor: "rgba(19 19 24 / 0.4)",
           },
         })}
       >
         <Box
           sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            minHeight: '100dvh',
-            width: '100%',
+            display: "flex",
+            flexDirection: "column",
+            minHeight: "100dvh",
+            width: "100%",
             px: 2,
           }}
         >
           <Box
             component="header"
-            sx={{ py: 3, display: 'flex', justifyContent: 'space-between' }}
+            sx={{ py: 3, display: "flex", justifyContent: "space-between" }}
           >
-            <Box sx={{ gap: 2, display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ gap: 2, display: "flex", alignItems: "center" }}>
               <IconButton variant="soft" color="primary" size="sm">
                 <BadgeRoundedIcon />
               </IconButton>
@@ -103,23 +114,23 @@ export default function JoySignInSideTemplate() {
           <Box
             component="main"
             sx={{
-              my: 'auto',
+              my: "auto",
               py: 2,
               pb: 5,
-              display: 'flex',
-              flexDirection: 'column',
+              display: "flex",
+              flexDirection: "column",
               gap: 2,
               width: 400,
-              maxWidth: '100%',
-              mx: 'auto',
-              borderRadius: 'sm',
-              '& form': {
-                display: 'flex',
-                flexDirection: 'column',
+              maxWidth: "100%",
+              mx: "auto",
+              borderRadius: "sm",
+              "& form": {
+                display: "flex",
+                flexDirection: "column",
                 gap: 2,
               },
               [`& .MuiFormLabel-asterisk`]: {
-                visibility: 'hidden',
+                visibility: "hidden",
               },
             }}
           >
@@ -129,7 +140,7 @@ export default function JoySignInSideTemplate() {
                   Sign in
                 </Typography>
                 <Typography level="body-sm">
-                  New to member?{' '}
+                  New to member?{" "}
                   <Link href="#replace-with-a-link" level="title-sm">
                     Sign up!
                   </Link>
@@ -146,48 +157,80 @@ export default function JoySignInSideTemplate() {
               or
             </Divider> */}
             <Stack sx={{ gap: 4, mt: 2 }}>
-              <form
-                onSubmit={(event: React.FormEvent<SignInFormElement>) => {
-                  event.preventDefault();
-                  const formElements = event.currentTarget.elements;
-                  const data = {
-                    email: formElements.email.value,
-                    password: formElements.password.value,
-                    persistent: formElements.persistent.checked,
-                  };
-                  alert(JSON.stringify(data, null, 2));
+              <Formik
+                initialValues={{
+                  email: "",
+                  password: "",
+                  persistent: false,
+                }}
+                validationSchema={SignInSchema}
+                onSubmit={(values, { setSubmitting }) => {
+                  alert(JSON.stringify(values, null, 2));
+                  setSubmitting(false);
                 }}
               >
-                <FormControl required>
-                  <FormLabel>Email</FormLabel>
-                  <Input type="email" name="email" />
-                </FormControl>
-                <FormControl required>
-                  <FormLabel>Password</FormLabel>
-                  <Input type="password" name="password" />
-                </FormControl>
-                <Stack sx={{ gap: 4, mt: 2 }}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <Checkbox size="sm" label="Remember me" name="persistent" />
-                    <Link level="title-sm" href="#replace-with-a-link">
-                      Forgot your password?
-                    </Link>
-                  </Box>
-                  <Button type="submit" fullWidth>
-                    Sign in
-                  </Button>
-                </Stack>
-              </form>
+                {({ isSubmitting, errors }) => (
+                  <Form>
+                    <FormControl required>
+                      <FormLabel>Email</FormLabel>
+                      <Field name="email" as={Input} type="email" />
+                      <Typography color="danger" sx={{ fontSize: '12px' }}>
+                        {errors.email}
+                      </Typography>
+                    </FormControl>
+
+                    <FormControl required>
+                      <FormLabel>Password</FormLabel>
+                      <Field
+                        name="password"
+                        as={Input}
+                        type={showPassword ? 'text' : 'password'}
+                        endDecorator={
+                          <IconButton
+                            onClick={handleClickShowPassword}
+                            aria-label="toggle password visibility"
+                            sx={{ marginLeft: 1 }}
+                          >
+                            {showPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+                          </IconButton>
+                        }
+                      />
+
+                      <Typography color="danger" sx={{ fontSize: '12px' }}>
+                        {errors.password}
+                      </Typography>
+                    </FormControl>
+
+                    <Stack sx={{ gap: 4, mt: 2 }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Field
+                          name="persistent"
+                          type="checkbox"
+                          as={Checkbox}
+                          label="Remember me"
+                        />
+                        <Link level="title-sm" href="#replace-with-a-link">
+                          Forgot your password?
+                        </Link>
+                      </Box>
+
+                      <Button type="submit" fullWidth disabled={isSubmitting}>
+                        Sign in
+                      </Button>
+                    </Stack>
+                  </Form>
+                )}
+              </Formik>
             </Stack>
           </Box>
           <Box component="footer" sx={{ py: 3 }}>
-            <Typography level="body-xs" sx={{ textAlign: 'center' }}>
+            <Typography level="body-xs" sx={{ textAlign: "center" }}>
               © Find word {new Date().getFullYear()}
             </Typography>
           </Box>
@@ -195,24 +238,24 @@ export default function JoySignInSideTemplate() {
       </Box>
       <Box
         sx={(theme) => ({
-          height: '100%',
-          position: 'fixed',
+          height: "100%",
+          position: "fixed",
           right: 0,
           top: 0,
           bottom: 0,
-          left: { xs: 0, md: '50vw' },
+          left: { xs: 0, md: "50vw" },
           transition:
-            'background-image var(--Transition-duration), left var(--Transition-duration) !important',
-          transitionDelay: 'calc(var(--Transition-duration) + 0.1s)',
-          backgroundColor: 'background.level1',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
+            "background-image var(--Transition-duration), left var(--Transition-duration) !important",
+          transitionDelay: "calc(var(--Transition-duration) + 0.1s)",
+          backgroundColor: "background.level1",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
           backgroundImage:
-            'url(https://images.unsplash.com/photo-1527181152855-fc03fc7949c8?auto=format&w=1000&dpr=2)',
-          [theme.getColorSchemeSelector('dark')]: {
+            "url(https://images.unsplash.com/photo-1527181152855-fc03fc7949c8?auto=format&w=1000&dpr=2)",
+          [theme.getColorSchemeSelector("dark")]: {
             backgroundImage:
-              'url(https://images.unsplash.com/photo-1572072393749-3ca9c8ea0831?auto=format&w=1000&dpr=2)',
+              "url(https://images.unsplash.com/photo-1572072393749-3ca9c8ea0831?auto=format&w=1000&dpr=2)",
           },
         })}
       />
