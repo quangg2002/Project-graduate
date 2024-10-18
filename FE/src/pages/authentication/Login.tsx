@@ -34,7 +34,7 @@ function ColorSchemeToggle(props: IconButtonProps) {
       size="sm"
       variant="outlined"
       disabled={!mounted}
-      onClick={(event) => {
+      onClick={(event : any) => {
         setMode(mode === "light" ? "dark" : "light");
         onClick?.(event);
       }}
@@ -76,7 +76,7 @@ export default function Login() {
       />
       <Box
         sx={(theme) => ({
-          width: { xs: "100%", md: "50vw" },
+          width: { xs: "100%", md: "100%" },
           transition: "width var(--Transition-duration)",
           transitionDelay: "calc(var(--Transition-duration) + 0.1s)",
           position: "relative",
@@ -103,11 +103,9 @@ export default function Login() {
             component="header"
             sx={{ py: 3, display: "flex", justifyContent: "space-between" }}
           >
-            <Box sx={{ gap: 2, display: "flex", alignItems: "center" }}>
-              <IconButton variant="soft" color="primary" size="sm">
-                <BadgeRoundedIcon />
-              </IconButton>
-              <Typography level="title-lg">Company logo</Typography>
+            <Box sx={{ gap: 1, display: "flex", alignItems: "center" }}>
+              <img src={require('../../assets/images/logocompany.png')} style={{ width: '35px', height: 'auto', marginLeft: 10}} alt="My Image" />
+              <Typography level="title-lg">Company</Typography>
             </Box>
             <ColorSchemeToggle />
           </Box>
@@ -243,7 +241,7 @@ export default function Login() {
           right: 0,
           top: 0,
           bottom: 0,
-          left: { xs: 0, md: "50vw" },
+          left: { xs: 0, md: 0 },
           transition:
             "background-image var(--Transition-duration), left var(--Transition-duration) !important",
           transitionDelay: "calc(var(--Transition-duration) + 0.1s)",

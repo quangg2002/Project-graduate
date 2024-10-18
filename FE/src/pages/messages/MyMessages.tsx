@@ -1,22 +1,17 @@
 import * as React from 'react';
 import Sheet from '@mui/joy/Sheet';
-import Navbar from '../../../components/Navbar'
-
 import MessagesPane from './MessagesPane';
 import ChatsPane from './ChatsPane';
-import { ChatProps } from '../types';
-import { chats } from '../data';
-import { Box, Grid, Typography } from '@mui/joy';
+import { ChatProps } from './types';
+import { chats } from './data';
 
 export default function MyProfile() {
   const [selectedChat, setSelectedChat] = React.useState<ChatProps>(chats[0]);
   return (
-    <Grid height={'100vh'}>
-    {/* <Navbar/> */}
     <Sheet
       sx={{
         flex: 1,
-        height: '300px',
+        // height: '300px',
         width: '100%',
         mx: 'auto',
         pt: { xs: 'var(--Header-height)', md: 0 },
@@ -48,6 +43,5 @@ export default function MyProfile() {
       </Sheet>
       <MessagesPane chat={selectedChat} />
     </Sheet>
-    </Grid>
   );
 }

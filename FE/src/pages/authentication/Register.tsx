@@ -79,13 +79,13 @@ export default function Register() {
         styles={{
           ':root': {
             '--Form-maxWidth': '800px',
-            '--Transition-duration': '0.4s', // set to `none` to disable transition
+            '--Transition-duration': '0.4s', 
           },
         }}
       />
       <Box
         sx={(theme) => ({
-          width: { xs: '100%', md: '50vw' },
+          width: { xs: '100%', md: '100%' },
           transition: 'width var(--Transition-duration)',
           transitionDelay: 'calc(var(--Transition-duration) + 0.1s)',
           position: 'relative',
@@ -112,20 +112,18 @@ export default function Register() {
             component="header"
             sx={{ py: 3, display: 'flex', justifyContent: 'space-between' }}
           >
-            <Box sx={{ gap: 2, display: 'flex', alignItems: 'center' }}>
-              <IconButton variant="soft" color="primary" size="sm">
-                <BadgeRoundedIcon />
-              </IconButton>
-              <Typography level="title-lg">Company logo</Typography>
+            <Box sx={{ gap: 1, display: "flex", alignItems: "center" }}>
+              <img src={require('../../assets/images/logocompany.png')} style={{ width: '35px', height: 'auto', marginLeft: 10}} alt="My Image" />
+              <Typography level="title-lg">Company</Typography>
             </Box>
             <ColorSchemeToggle />
           </Box>
           <Box
             component="main"
             sx={{
-              my: 'auto',
-              py: 2,
-              pb: 5,
+              // my: 'auto',
+              // py: 2,
+              // pb: 5,
               display: 'flex',
               flexDirection: 'column',
               gap: 2,
@@ -143,7 +141,7 @@ export default function Register() {
               },
             }}
           >
-            <Stack sx={{ gap: 4, mb: 2 }}>
+            <Stack sx={{ gap: 4}}>
               <Stack sx={{ gap: 1 }}>
                 <Typography component="h1" level="h3">
                   Sign up
@@ -249,7 +247,7 @@ export default function Register() {
           right: 0,
           top: 0,
           bottom: 0,
-          left: { xs: 0, md: '50vw' },
+          left: { xs: 0, md: 0 },
           transition:
             'background-image var(--Transition-duration), left var(--Transition-duration) !important',
           transitionDelay: 'calc(var(--Transition-duration) + 0.1s)',

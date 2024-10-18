@@ -4,12 +4,12 @@ import Sheet from '@mui/joy/Sheet';
 import Typography from '@mui/joy/Typography';
 import { Box, Chip, IconButton, Input } from '@mui/joy';
 import List from '@mui/joy/List';
-import EditNoteRoundedIcon from '@mui/icons-material/EditNoteRounded';
+// import EditNoteRoundedIcon from '@mui/';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import ChatListItem from './ChatListItem';
-import { ChatProps, UserProps } from '../types';
-import { toggleMessagesPane } from '../utils';
+import { ChatProps, UserProps } from './types';
+import { toggleMessagesPane } from './utils';
 
 type ChatsPaneProps = {
   chats: ChatProps[];
@@ -51,10 +51,15 @@ export default function ChatsPane(props: ChatsPaneProps) {
   return (
     <Sheet
       sx={{
+        // width: '80%',
         borderRight: '1px solid',
         borderColor: 'divider',
         height: { sm: 'calc(100dvh - var(--Header-height))', md: '100dvh' },
         overflowY: 'auto',
+        scrollbarWidth: 'none', // Hide scrollbar for Firefox
+        '&::-webkit-scrollbar': {
+          display: 'none', // Hide scrollbar for Chrome, Safari, and Edge
+        },
       }}
     >
       <Stack
@@ -71,7 +76,7 @@ export default function ChatsPane(props: ChatsPaneProps) {
               size="md"
               slotProps={{ root: { component: 'span' } }}
             >
-              {chats.length} {/* Display chat count */}
+              {chats.length} 
             </Chip>
           }
           sx={{ fontSize: { xs: 'md', md: 'lg' }, fontWeight: 'lg', mr: 'auto' }}
@@ -86,7 +91,7 @@ export default function ChatsPane(props: ChatsPaneProps) {
           onClick={handleAddChat} // Trigger adding chat
           sx={{ display: { xs: 'none', sm: 'unset' } }}
         >
-          <EditNoteRoundedIcon />
+          {/* <EditNoteRoundedIcon /> */}
         </IconButton>
         <IconButton
           variant="plain"

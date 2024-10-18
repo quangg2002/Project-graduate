@@ -24,6 +24,7 @@ export default function MessageInput(props: MessageInputProps) {
     if (textAreaValue.trim() !== '') {
       onSubmit();
       setTextAreaValue('');
+      console.log(props )
     }
   };
   return (
