@@ -1,6 +1,5 @@
 import * as React from "react";
 import Box from "@mui/material/Box";
-import Stack from "@mui/material/Stack";
 import { CssVarsProvider } from "@mui/joy/styles";
 import CssBaseline from "@mui/joy/CssBaseline";
 import Header from "../../components/Header";
@@ -29,14 +28,10 @@ import AccordionSummary, { accordionSummaryClasses } from "@mui/joy/AccordionSum
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import KeyboardArrowRightRoundedIcon from "@mui/icons-material/KeyboardArrowRightRounded";
 import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
-import { Grid } from "@mui/material";
 import { Breadcrumbs, Link } from "@mui/joy";
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 
 export default function Overview() {
-
-  const [drawerOpen, setDrawerOpen] = React.useState(false);
-
   const peopleData = [
     {
       name: "Andrew Smith",
@@ -103,7 +98,7 @@ export default function Overview() {
           component="main"
           className="MainContent"
           sx={{
-            bgcolor: "background.appBody",
+            bgcolor: "background.level1",
             px: { xs: 2, md: 6 },
             pt: {
               xs: 'calc(12px + var(--Header-height))',
@@ -116,7 +111,7 @@ export default function Overview() {
             flexDirection: 'column',
             minWidth: 0,
             // height: '100dvh',
-            gap: 1,
+            gap: 2,
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -165,10 +160,11 @@ export default function Overview() {
               sx={[
                 {
                   bgcolor: "background.surface",
-                  borderRight: "1px solid",
+                  border: "1px solid",
                   borderColor: "divider",
-                  borderRadius: 'sm', 
-                  p: 2 
+                  borderRadius: 'sm',
+                  p: 2,
+                  boxShadow: 'md'
                 },
               ]}
             >
@@ -191,7 +187,7 @@ export default function Overview() {
                   Add new
                 </Button>
               </Box>
-              
+
               <AccordionGroup
                 sx={{
                   [`& .${accordionDetailsClasses.content}`]: {
@@ -356,78 +352,85 @@ export default function Overview() {
               </AccordionGroup>
             </Box>
             <Box>
-                {peopleData.map((person, index) => (
-                  <Sheet
-                    key={index}
-                    component="li"
-                    sx={{ borderRadius: 'sm', p: 2, listStyle: 'none' }}
-                  >
-                    <Box sx={{ display: 'flex', gap: 2 }}>
-                      <Avatar
-                        variant="outlined"
-                        src={person.avatar2x}
-                        srcSet={`${person.avatar2x} 2x`}
-                        sx={{ borderRadius: '50%' }}
-                      />
-                      <div>
-                        <Typography level="title-md">{person.name}</Typography>
-                        <Typography level="body-xs">{person.position}</Typography>
-                      </div>
-                    </Box>
-                    <Divider component="div" sx={{ my: 2 }} />
-                    <List sx={{ '--ListItemDecorator-size': '40px', gap: 2 }}>
-                      {person.companyData.map((company, companyIndex) => (
-                        <ListItem key={companyIndex} sx={{ alignItems: 'flex-start' }}>
-                          <ListItemDecorator
-                            sx={{
-                              '&::before': {
-                                content: '""',
-                                position: 'absolute',
-                                height: '100%',
-                                width: '1px',
-                                bgcolor: 'divider',
-                                left: 'calc(var(--ListItem-paddingLeft) + 12px)',
-                                top: '50%',
-                              },
-                            }}
-                          >
-                            <Avatar
-                              src={company.logo}
-                              sx={{ '--Avatar-size': '24px' }}
-                            />
-                          </ListItemDecorator>
-                          <ListItemContent>
-                            <Typography level="title-sm">{company.role}</Typography>
-                            <Typography level="body-xs">{company.name}</Typography>
-                          </ListItemContent>
-                          <Typography level="body-xs">{company.years}</Typography>
-                        </ListItem>
-                      ))}
-                    </List>
-                    <Button
-                      size="sm"
-                      variant="plain"
-                      endDecorator={<KeyboardArrowRightRoundedIcon fontSize="small" />}
-                      sx={{ px: 1, mt: 1 }}
-                    >
-                      Expand
-                    </Button>
-                    <Divider component="div" sx={{ my: 2 }} />
-                    <Typography level="title-sm">Skills tags:</Typography>
-                    <Box sx={{ mt: 1.5, display: 'flex', gap: 1 }}>
-                      {person.skills.map((skill, skillIndex) => (
-                        <Chip
-                          key={skillIndex}
-                          variant="outlined"
-                          color="neutral"
-                          size="sm"
+              {peopleData.map((person, index) => (
+                <Sheet
+                  key={index}
+                  component="li"
+                  sx={{ borderRadius: 'sm', 
+                      p: 2, 
+                      listStyle: 'none',
+                      bgcolor: "background.surface",
+                      border: "1px solid",
+                      borderColor: "divider",
+                      boxShadow: 'md'
+                  }}
+                >
+                  <Box sx={{ display: 'flex', gap: 2 }}>
+                    <Avatar
+                      variant="outlined"
+                      src={person.avatar2x}
+                      srcSet={`${person.avatar2x} 2x`}
+                      sx={{ borderRadius: '50%' }}
+                    />
+                    <div>
+                      <Typography level="title-md">{person.name}</Typography>
+                      <Typography level="body-xs">{person.position}</Typography>
+                    </div>
+                  </Box>
+                  <Divider component="div" sx={{ my: 2 }} />
+                  <List sx={{ '--ListItemDecorator-size': '40px', gap: 2 }}>
+                    {person.companyData.map((company, companyIndex) => (
+                      <ListItem key={companyIndex} sx={{ alignItems: 'flex-start' }}>
+                        <ListItemDecorator
+                          sx={{
+                            '&::before': {
+                              content: '""',
+                              position: 'absolute',
+                              height: '100%',
+                              width: '1px',
+                              bgcolor: 'divider',
+                              left: 'calc(var(--ListItem-paddingLeft) + 12px)',
+                              top: '50%',
+                            },
+                          }}
                         >
-                          {skill}
-                        </Chip>
-                      ))}
-                    </Box>
-                  </Sheet>
-                ))}
+                          <Avatar
+                            src={company.logo}
+                            sx={{ '--Avatar-size': '24px' }}
+                          />
+                        </ListItemDecorator>
+                        <ListItemContent>
+                          <Typography level="title-sm">{company.role}</Typography>
+                          <Typography level="body-xs">{company.name}</Typography>
+                        </ListItemContent>
+                        <Typography level="body-xs">{company.years}</Typography>
+                      </ListItem>
+                    ))}
+                  </List>
+                  <Button
+                    size="sm"
+                    variant="plain"
+                    endDecorator={<KeyboardArrowRightRoundedIcon fontSize="small" />}
+                    sx={{ px: 1, mt: 1 }}
+                  >
+                    Expand
+                  </Button>
+                  <Divider component="div" sx={{ my: 2 }} />
+                  <Typography level="title-sm">Skills tags:</Typography>
+                  <Box sx={{ mt: 1.5, display: 'flex', gap: 1 }}>
+                    {person.skills.map((skill, skillIndex) => (
+                      <Chip
+                        key={skillIndex}
+                        variant="outlined"
+                        color="neutral"
+                        size="sm"
+                      >
+                        {skill}
+                      </Chip>
+                    ))}
+                  </Box>
+                </Sheet>
+              ))}
             </Box>
           </Box>
         </Box>

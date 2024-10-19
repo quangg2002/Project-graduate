@@ -11,6 +11,8 @@ import { ToastContainer } from "react-toastify";
 import { Route, Routes } from "react-router-dom";
 import Overview from "./pages/company/Overview";
 import Candidate from "./pages/company/Candidate";
+import Listjob from "./pages/company/Listjob";
+
 
 function App() {
   return (
@@ -28,6 +30,7 @@ function App() {
           <Route path="/addjob" element={<Addjob/>}/>
           <Route path="/overview" element={<Overview/>}/>
           <Route path="/candidate" element={<Candidate/>}/>
+          <Route path="/listjob" element={<Listjob/>}/>
         </Routes>
       {/* </ThemeCustomization> */}
       <ToastContainer

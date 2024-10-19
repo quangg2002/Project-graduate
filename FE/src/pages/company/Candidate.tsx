@@ -4,7 +4,6 @@ import CssBaseline from "@mui/joy/CssBaseline";
 import Header from "../../components/Header";
 import Navigation from "../../components/Navigation";
 import { Typography, IconButton, Input, Box, Button } from "@mui/joy";
-import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 
 import List from '@mui/joy/List';
 import ListItem from '@mui/joy/ListItem';
@@ -16,13 +15,10 @@ import MenuButton from '@mui/joy/MenuButton';
 import MenuItem from '@mui/joy/MenuItem';
 import Dropdown from '@mui/joy/Dropdown';
 import Divider from '@mui/joy/Divider';
-import { iconButtonClasses } from '@mui/joy/IconButton';
 import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded';
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import BlockIcon from '@mui/icons-material/Block';
 import AutorenewRoundedIcon from '@mui/icons-material/AutorenewRounded';
-import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
-import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import { ColorPaletteProp } from '@mui/joy/styles';
 import Avatar from '@mui/joy/Avatar';
 import Link from '@mui/joy/Link';
@@ -295,9 +291,9 @@ type Order = 'asc' | 'desc';
 
 function getComparator<Key extends keyof any>(
   order: Order,
-  orderBy: Key | string, 
+  orderBy: Key | string,
 ): (
-  a: { [key: string]: any }, 
+  a: { [key: string]: any },
   b: { [key: string]: any },
 ) => number {
   return order === 'desc'
@@ -311,7 +307,7 @@ function descendingComparator<Key extends keyof any>(
   orderBy: Key | string,
 ) {
   const keys = (orderBy as string).split('.');
-  
+
   const aValue = keys.reduce((obj, key) => obj?.[key], a);
   const bValue = keys.reduce((obj, key) => obj?.[key], b);
 
@@ -347,27 +343,6 @@ function descendingComparator<Key extends keyof any>(
 //     ? (a, b) => descendingComparator(a, b, orderBy)
 //     : (a, b) => -descendingComparator(a, b, orderBy);
 // }
-
-function RowMenu() {
-  return (
-    <Dropdown>
-      <MenuButton
-        slots={{ root: IconButton }}
-        slotProps={{ root: { variant: 'plain', color: 'neutral', size: 'sm' } }}
-      >
-        <MoreHorizRoundedIcon />
-      </MenuButton>
-      <Menu size="sm" sx={{ minWidth: 140 }}>
-        <MenuItem>Edit</MenuItem>
-        <MenuItem>Rename</MenuItem>
-        <MenuItem>Move</MenuItem>
-        <Divider />
-        <MenuItem color="danger">Delete</MenuItem>
-      </Menu>
-    </Dropdown>
-  );
-}
-
 
 export default function Candidate() {
 
@@ -697,7 +672,7 @@ export default function Candidate() {
                     </td>
                     <td>
                       <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                        <Avatar size="sm">{row.customer.name.substring(0,1)}</Avatar>
+                        <Avatar size="sm">{row.customer.name.substring(0, 1)}</Avatar>
                         <div>
                           <Typography level="body-xs">{row.customer.name}</Typography>
                           <Typography level="body-xs">{row.customer.email}</Typography>
@@ -735,7 +710,21 @@ export default function Candidate() {
                         <Link level="body-xs" component="button">
                           Download
                         </Link>
-                        <RowMenu />
+                        <Dropdown>
+                          <MenuButton
+                            slots={{ root: IconButton }}
+                            slotProps={{ root: { variant: 'plain', color: 'neutral', size: 'sm' } }}
+                          >
+                            <MoreHorizRoundedIcon />
+                          </MenuButton>
+                          <Menu size="sm" sx={{ minWidth: 140 }}>
+                            <MenuItem>Edit</MenuItem>
+                            <MenuItem>Rename</MenuItem>
+                            <MenuItem>Move</MenuItem>
+                            <Divider />
+                            <MenuItem color="danger">Delete</MenuItem>
+                          </Menu>
+                        </Dropdown>
                       </Box>
                     </td>
                   </tr>
@@ -743,50 +732,8 @@ export default function Candidate() {
               </tbody>
             </Table>
           </Sheet>
-          <Box
-            className="Pagination-laptopUp"
-            sx={{
-              pt: 2,
-              gap: 1,
-              [`& .${iconButtonClasses.root}`]: { borderRadius: '50%' },
-              display: {
-                xs: 'none',
-                md: 'flex',
-              },
-            }}
-          >
-            <Button
-              size="sm"
-              variant="outlined"
-              color="neutral"
-              startDecorator={<KeyboardArrowLeftIcon />}
-            >
-              Previous
-            </Button>
 
-            <Box sx={{ flex: 1 }} />
-            {['1', '2', '3', '…', '8', '9', '10'].map((page) => (
-              <IconButton
-                key={page}
-                size="sm"
-                variant={Number(page) ? 'outlined' : 'plain'}
-                color="neutral"
-              >
-                {page}
-              </IconButton>
-            ))}
-            <Box sx={{ flex: 1 }} />
-            <Button
-              size="sm"
-              variant="outlined"
-              color="neutral"
-              endDecorator={<KeyboardArrowRightIcon />}
-            >
-              Next
-            </Button>
-          </Box>
-
-          <Box sx={{ display: { xs: 'block', sm: 'none' } }}>
+          <Box sx={{ display: { xs: 'block', sm: 'none'}, pb: 7 }}>
             {listItems.map((listItem) => (
               <List key={listItem.id} size="sm" sx={{ '--ListItem-paddingX': 0 }}>
                 <ListItem
@@ -824,7 +771,21 @@ export default function Candidate() {
                         <Link level="body-sm" component="button">
                           Download
                         </Link>
-                        <RowMenu />
+                        <Dropdown>
+                          <MenuButton
+                            slots={{ root: IconButton }}
+                            slotProps={{ root: { variant: 'plain', color: 'neutral', size: 'sm' } }}
+                          >
+                            <MoreHorizRoundedIcon />
+                          </MenuButton>
+                          <Menu size="sm" sx={{ minWidth: 140 }}>
+                            <MenuItem>Edit</MenuItem>
+                            <MenuItem>Rename</MenuItem>
+                            <MenuItem>Move</MenuItem>
+                            <Divider />
+                            <MenuItem color="danger">Delete</MenuItem>
+                          </Menu>
+                        </Dropdown>
                       </Box>
                     </div>
                   </ListItemContent>
@@ -852,30 +813,6 @@ export default function Candidate() {
                 <ListDivider />
               </List>
             ))}
-            <Box
-              className="Pagination-mobile"
-              sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center', py: 2 }}
-            >
-              <IconButton
-                aria-label="previous page"
-                variant="outlined"
-                color="neutral"
-                size="sm"
-              >
-                <KeyboardArrowLeftIcon />
-              </IconButton>
-              <Typography level="body-sm" sx={{ mx: 'auto' }}>
-                Page 1 of 10
-              </Typography>
-              <IconButton
-                aria-label="next page"
-                variant="outlined"
-                color="neutral"
-                size="sm"
-              >
-                <KeyboardArrowRightIcon />
-              </IconButton>
-            </Box>
           </Box>
         </Box>
       </Box>
