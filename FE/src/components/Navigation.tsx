@@ -1,5 +1,5 @@
 import { Fragment, useState } from 'react';
-import { useLocation } from 'react-router-dom'; // Import useLocation
+import { useLocation } from 'react-router-dom';
 import Chip from '@mui/joy/Chip';
 import List from '@mui/joy/List';
 import ListSubheader from '@mui/joy/ListSubheader';
@@ -104,7 +104,7 @@ export default function Navigation() {
 
           <ListItem>
             <ListItemButton
-              selected={location.pathname === '/company-info'} // Kiểm tra đường dẫn
+              selected={location.pathname === '/company-info'} 
               component="a"
               href="/company-info"
               sx={underlineStyle}
@@ -160,7 +160,7 @@ export default function Navigation() {
 
           <ListItem>
             <ListItemButton
-              selected={location.pathname === '/candidate'} // Kiểm tra đường dẫn
+              selected={location.pathname === '/candidate'} 
               component="a"
               href="/candidate"
               sx={underlineStyle}

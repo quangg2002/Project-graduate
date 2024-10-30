@@ -43,7 +43,7 @@ import Breadcrumbs from '@mui/joy/Breadcrumbs';
 
 const listItems = [
   {
-    id: 'INV-1234',
+    id: 'INV-1234 INV-1234 INV-1234 INV-123   4INV-1234 NV-1234 INV-12 34INV -1234',
     date: 'Feb 3, 2023',
     status: 'Refunded',
     customer: {
@@ -106,7 +106,7 @@ const listItems = [
 
 const rows = [
   {
-    id: 'INV-1234',
+    id: 'INV-1234 INV-1234 INV-1234 INV-123   4INV-1234 NV-1234 INV-12 34INV -1234',
     date: 'Feb 3, 2023',
     status: 'Refunded',
     customer: {
@@ -465,7 +465,7 @@ export default function Candidate() {
           >
             <Input
               size="sm"
-              placeholder="Search"
+              placeholder="Tìm kiếm"
               startDecorator={<SearchIcon />}
               sx={{ flexGrow: 1 }}
             />
@@ -540,20 +540,20 @@ export default function Candidate() {
             }}
           >
             <FormControl sx={{ flex: 1 }} size="sm">
-              <FormLabel>Search for customer</FormLabel>
-              <Input size="sm" placeholder="Search" startDecorator={<SearchIcon />} />
+              <FormLabel>Tìm kiếm theo tên ứng viên</FormLabel>
+              <Input size="sm" placeholder="Nhập tên ứng viên" startDecorator={<SearchIcon />} />
             </FormControl>
             <FormControl size="sm">
-              <FormLabel>Status</FormLabel>
+              <FormLabel>Trạng thái</FormLabel>
               <Select
                 size="sm"
-                placeholder="Filter by status"
+                placeholder="Chọn trạng thái"
                 slotProps={{ button: { sx: { whiteSpace: 'nowrap' } } }}
               >
-                <Option value="paid">All</Option>
-                <Option value="pending">Pending</Option>
-                <Option value="refunded">Refunded</Option>
-                <Option value="cancelled">Cancelled</Option>
+                <Option value="paid">Tất cả</Option>
+                <Option value="pending">Phê duyệt</Option>
+                <Option value="refunded">Đang chờ</Option>
+                <Option value="cancelled">Từ chối</Option>
               </Select>
             </FormControl>
             <FormControl size="sm">
@@ -616,10 +616,10 @@ export default function Candidate() {
                       sx={{ verticalAlign: 'text-bottom' }}
                     />
                   </th>
-                  <th style={{ width: 120, padding: '12px 6px' }}>
-                    Mã ứng viên
-                  </th>
                   <th style={{ width: 240, padding: '12px 6px' }}>
+                    Tên bài đăng tuyển
+                  </th>
+                  <th style={{ width: 180, padding: '12px 24px', }}>
                     <Link
                       underline="none"
                       color="primary"
@@ -643,8 +643,8 @@ export default function Candidate() {
                       Ứng viên
                     </Link>
                   </th>
-                  <th style={{ width: 140, padding: '12px 6px' }}>Status</th>
-                  <th style={{ width: 140, padding: '12px 6px' }}>Date</th>
+                  <th style={{ width: 140, padding: '12px 12px' }}>Status</th>
+                  <th style={{ width: 100, padding: '12px 6px' }}>Date</th>
                   <th style={{ width: 140, padding: '12px 6px' }}> </th>
                 </tr>
               </thead>
@@ -668,7 +668,7 @@ export default function Candidate() {
                       />
                     </td>
                     <td>
-                      <Typography level="body-xs">{row.id}</Typography>
+                      <Typography level="title-sm">{row.id}</Typography>
                     </td>
                     <td>
                       <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
@@ -708,7 +708,7 @@ export default function Candidate() {
                     <td>
                       <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
                         <Link level="body-xs" component="button">
-                          Download
+                          Download cv
                         </Link>
                         <Dropdown>
                           <MenuButton
@@ -718,9 +718,8 @@ export default function Candidate() {
                             <MoreHorizRoundedIcon />
                           </MenuButton>
                           <Menu size="sm" sx={{ minWidth: 140 }}>
-                            <MenuItem>Edit</MenuItem>
-                            <MenuItem>Rename</MenuItem>
-                            <MenuItem>Move</MenuItem>
+                            <MenuItem>Xem chi tiết</MenuItem>
+                            <MenuItem color='success'>Phê duyệt</MenuItem>
                             <Divider />
                             <MenuItem color="danger">Delete</MenuItem>
                           </Menu>

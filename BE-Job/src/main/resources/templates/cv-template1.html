@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profile Layout</title>
+    <link
+            href="https://fonts.googleapis.com/css2?family=Arima&display=swap"
+            rel="stylesheet"
+    />
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Arima", sans-serif;
+        }
+
+        body {
+            background-color: #f8f8f8;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 900px;
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .left-panel {
+            /* background-color: #ff7b4b; */
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* padding: 30px 20px; */
+            text-align: center;
+            background-image: url('./bg1.png');
+        }
+
+        .profile-pic {
+            width: 150px;
+            height: 150px;
+            background-color: gray;
+            border-radius: 50%;
+        }
+
+        .contact-info {
+            color: white;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-top: 20px;
+        }
+
+
+        .title {
+            font-size: 24px;
+            color: white;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Left Panel -->
+    <div class="left-panel">
+        <div class="title">NGUYỄN VĂN A</div>
+        <div class="subtitle">Chuyên Viên Đào Tạo Nội Bộ</div>
+        <!-- <div class="contact-info">
+            <p>Email: <a href="mailto:hotro@topcv.vn" style="color: white;">hotro@topcv.vn</a></p>
+            <p>Điện thoại: (024) 6680 5588</p>
+            <p>Địa chỉ: Quận A, Hà Nội</p>
+        </div> -->
+    </div>
+
+    <!-- Right Panel -->
+    <div class="right-panel">
+        <div style="background-color: #666; width: 200px; height: 300px; margin-top: -60px; margin-left: 10px; border-radius: 60px; display: flex; justify-content: center; transform: rotate(-45deg);filter: brightness(110%);">
+            <div class="profile-pic"></div>
+        </div>
+        <!-- Career Objective Section -->
+    </div>
+</div>
+</body>
+</html>

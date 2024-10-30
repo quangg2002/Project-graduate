@@ -4,9 +4,7 @@ import { CssVarsProvider } from "@mui/joy/styles";
 import CssBaseline from "@mui/joy/CssBaseline";
 import Header from "../../components/Header";
 import Navigation from "../../components/Navigation";
-
 import Typography from "@mui/joy/Typography";
-
 import Autocomplete from "@mui/joy/Autocomplete";
 import Avatar from "@mui/joy/Avatar";
 import Chip from "@mui/joy/Chip";
@@ -31,7 +29,7 @@ import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
 import { Breadcrumbs, Link } from "@mui/joy";
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 
-export default function Overview() {
+export default function Addjob() {
   const peopleData = [
     {
       name: "Andrew Smith",
