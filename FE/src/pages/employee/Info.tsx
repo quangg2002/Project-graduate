@@ -1,30 +1,46 @@
 import React, { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 
-import { Box, Breadcrumbs, Card, CardContent, CardCover, CssBaseline, CssVarsProvider, Link, Stack, Typography } from "@mui/joy";
+import { Box, Breadcrumbs, Button, Card, CardContent, CardCover, CardOverflow, CssBaseline, CssVarsProvider, Divider, FormControl, FormLabel, IconButton, Input, Link, Modal, ModalClose, Sheet, Stack, Tab, TabList, TabPanel, Tabs, Typography } from "@mui/joy";
 import Header from "../../components/Header";
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
+import BorderColorIcon from '@mui/icons-material/BorderColor';
+import { Field, Form, Formik } from "formik";
+import * as Yup from "yup";
+import EyeOutlined from '@ant-design/icons/EyeOutlined';
+import EyeInvisibleOutlined from '@ant-design/icons/EyeInvisibleOutlined';
+
+const SignUpSchema = Yup.object().shape({
+    username: Yup.string()
+        .required("Họ tên là bắt buộc"),
+    email: Yup.string()
+        .email('Email không hợp lệ'),
+    phoneNumber: Yup.string(),
+    workPosition: Yup.string(),
+    career: Yup.string(),
+});
 
 export default function Info() {
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-    const [fileName, setFileName] = useState<string | null>(null);
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
         const file = acceptedFiles[0];
-        setFileName(file.name);  // Lưu tên file
-        setPreviewUrl(URL.createObjectURL(file)); // Tạo URL cho hình ảnh
+        console.log(file)
+        setPreviewUrl(URL.createObjectURL(file));
     }, []);
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+
+    const [openEdit, setOpenEdit] = useState<boolean>(false);
 
     return (
         <CssVarsProvider disableTransitionOnChange>
             <CssBaseline />
             <Header />
 
-            <Stack mx={5} my={3}>
-                <Box display={'flex'} alignItems={'center'}>
+            <Box component="main" className="MainContent" width={'95%'} alignSelf={'center'} justifySelf={'center'}>
+                <Box display={'flex'} alignItems={'center'} mt={2} mb={2}>
                     <Breadcrumbs
                         size="sm"
                         aria-label="breadcrumbs"
@@ -39,80 +55,244 @@ export default function Info() {
                         >
                             <HomeRoundedIcon />
                         </Link>
-                        <Link
-                            underline="hover"
-                            color="neutral"
-                            href="#some-link"
-                            sx={{ fontSize: 12, fontWeight: 500 }}
-                        >
-                            Nhà tuyển dụng
-                        </Link>
-                        <Typography color="primary" sx={{ fontWeight: 500, fontSize: 12 }}>
-                            Ứng viên
+                        <Typography color="primary" level="body-xs">
+                            Thông tin cá nhân
                         </Typography>
                     </Breadcrumbs>
                 </Box>
                 <Box
-                    component="main"
-                    className="MainContent"
+                    borderRadius={10}
+                    boxShadow={'xl'}
+                    border={'2px solid #F0F0F0'}
                     sx={{
-                        bgcolor: "#1234",
+                        bgcolor: "#f0F0F0",
                         px: { xs: 2, md: 6 },
                         pt: {
                             xs: 'calc(12px + var(--Header-height))',
                             sm: 'calc(12px + var(--Header-height))',
                             md: 3,
                         },
-                        pb: { xs: 2, sm: 2, md: 3 },
-                        display: "grid",
-                        gridTemplateColumns: {
-                            xs: "1fr",
-                            sm: "minmax(64px, 200px) minmax(450px, 1fr)",
-                            md: "minmax(180px, 300px) minmax(500px, 1fr)",
-                        },
-                        gap: 8
-                    }}
-                >
-                    <Box>
-                        <Box {...getRootProps()} style={{ position: 'relative' }}>
-                            <Card sx={{ height: '200px', borderRadius: 0 }}>
-                                <input {...getInputProps()} />
-                                <CardCover>
-                                    {previewUrl ? (
-                                        <img
-                                            src={previewUrl}
-                                            alt="Preview"
-                                            style={{ width: "100%", maxHeight: "200px", objectFit: "cover" }}
-                                        />
-                                    ) : (
-                                        <Typography level="body-md" textAlign={'center'}>Kéo thả hình ảnh vào đây hoặc click để chọn file</Typography>
-                                    )}
-                                </CardCover>
-                            </Card>
-                            {previewUrl &&
-                                <Box
-                                    sx={{
-                                        background: 'linear-gradient(to top, rgba(0,0,0,0.6), rgba(0,0,0,0)), linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0))',
-                                        padding: 2,
-                                        width: '100%'
-                                    }}
-                                    position={'absolute'}
-                                    bottom={0}
-                                >
-                                    <Typography level="body-md" textAlign={'center'} sx={{ color: '#FFF' }}>
-                                        Thay đổi hình ảnh
-                                    </Typography>
-                                </Box>
-                            }
-                        </Box>
-                        <Typography level="title-md">Work Link</Typography>
-                        <Typography level="title-md">Skin</Typography>
+                        pb: { xs: 2, sm: 2, md: 5 },
+                        maxWidth: "100vw",
+                    }}>
+                    <Box mb={3}>
+                        <Typography level="h3">Thông tin cá nhân</Typography>
+                        <Typography level="body-xs">
+                            Tùy chỉnh các thông tin hồ sơ của bạn.
+                        </Typography>
                     </Box>
-                    <Box>
-                        <Typography level="h3">Ngô Minh Quang</Typography>
+                    <Box
+                        sx={{
+                            display: "grid",
+                            gridTemplateColumns: {
+                                xs: "1fr",
+                                md: "minmax(180px, 300px) minmax(400px, 1fr)",
+                            },
+                            gap: { xs: 2, sm: 2, md: 8 },
+                            width: "100%",
+                            maxWidth: "100vw",
+                        }}
+                    >
+                        <Box>
+                            <Box {...getRootProps()} style={{ position: 'relative' }}>
+                                <Card sx={{ height: '200px', borderRadius: 0 }}>
+                                    <input {...getInputProps()} />
+                                    <CardCover>
+                                        {previewUrl ? (
+                                            <img
+                                                src={previewUrl}
+                                                alt="Preview"
+                                                style={{ maxWidth: "100%", maxHeight: "200px", objectFit: "cover" }}
+                                            />
+                                        ) : (
+                                            <Typography level="body-sm" textAlign={'center'}>Kéo thả hình ảnh vào đây hoặc click để chọn file</Typography>
+                                        )}
+                                    </CardCover>
+                                </Card>
+                                {previewUrl &&
+                                    <Box
+                                        sx={{
+                                            background: 'linear-gradient(to top, rgba(0,0,0,0.6), rgba(0,0,0,0)), linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0))',
+                                            padding: 2,
+                                            width: '100%'
+                                        }}
+                                        position={'absolute'}
+                                        bottom={0}
+                                    >
+                                        <Typography level="body-md" textAlign={'center'} sx={{ color: '#FFF' }}>
+                                            Thay đổi hình ảnh
+                                        </Typography>
+                                    </Box>
+                                }
+                            </Box>
+                            <Typography level="title-md">Work Link</Typography>
+                            <Typography level="title-md">Skin</Typography>
+                        </Box>
+                        <Box display={'flex'} flexDirection={"column"} gap={2} maxWidth={'100%'}>
+                            <Box display={'flex'} justifyContent={'space-between'} alignItems={'center'}>
+                                <Box>
+                                    <Typography level="h3">Ngô Minh Quang</Typography>
+                                    <Typography level="h4" color="primary">Vị trí: BackEnd</Typography>
+                                </Box>
+                                <Button variant="soft" color="primary" size="sm" onClick={() => setOpenEdit(true)} startDecorator={<BorderColorIcon sx={{ fontSize: 'sm' }} />}>
+                                    <Typography level="body-sm">Chỉnh sửa</Typography>
+                                </Button>
+                            </Box>
+                            <Tabs
+                                defaultValue={0}
+                                aria-label="Basic tabs"
+                                sx={{
+                                    bgcolor: 'transparent'
+                                }}
+                            >
+                                <TabList>
+                                    <Tab
+                                        sx={{
+                                            '&.Mui-selected': {
+                                                color: 'var(--variant-plainColor, rgba(var(--joy-palette-primary-mainChannel) / 1))',
+                                            },
+                                        }}
+                                    >
+                                        Thông tin
+                                    </Tab>
+                                    <Tab indicatorPlacement={"bottom"}>
+                                        Kinh Nghiệm
+                                    </Tab>
+                                </TabList>
+                                <TabPanel value={0}>
+                                    <Box
+                                        sx={{
+                                            display: "grid",
+                                            gridTemplateColumns: "30% 60%",
+                                            gap: { xs: 4, sm: 8, md: 12 }
+                                        }}
+                                    >
+                                        <Box display={'flex'} flexDirection={'column'} gap={1}>
+                                            <Typography>Họ và tên: </Typography>
+                                            <Typography>Email: </Typography>
+                                            <Typography>Số điện thoại: </Typography>
+                                            <Typography>Nghề Nghiệp: </Typography>
+                                        </Box>
+                                        <Box display={'flex'} flexDirection={'column'} gap={1}>
+                                            <Typography color="primary">Ngô Minh Quang</Typography>
+                                            <Typography
+                                                color="primary"
+                                                sx={{
+                                                    wordBreak: 'break-word',
+                                                    overflowWrap: 'break-word',
+                                                    whiteSpace: 'normal'
+                                                }}
+                                            >
+                                                ngominhquang12a2nl@gmail.com
+                                            </Typography>
+                                            <Typography color="primary">0359693129</Typography>
+                                            <Typography color="primary">Học sinh</Typography>
+                                        </Box>
+                                    </Box>
+                                </TabPanel>
+                            </Tabs>
+                        </Box>
                     </Box>
                 </Box>
-            </Stack>
+            </Box>
+            <Modal
+                aria-labelledby="modal-title"
+                aria-describedby="modal-desc"
+                open={openEdit}
+                onClose={() => setOpenEdit(false)}
+                sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+            >
+                <Sheet
+                    variant="outlined"
+                    sx={{ width: '70%', borderRadius: 'md', p: 3, boxShadow: 'lg' }}
+                >
+                    <ModalClose variant="plain" sx={{ m: 1 }} />
+                    <Typography
+                        component="h2"
+                        id="modal-title"
+                        level="h4"
+                        textColor="inherit"
+                    >
+                        Thay đổi thông tin của bạn
+                    </Typography>
+                    <Box id="modal-desc" mt={2} gap={3}>
+                        <Formik
+                            initialValues={{
+                                username: 'Ngô Minh Quang',
+                                workPosition: '',
+                                email: 'ngominhquang12a2nl@gmail.com',
+                                phoneNumber: '',
+                                career: '',
+                            }}
+                            validationSchema={SignUpSchema}
+                            onSubmit={(values, { setSubmitting }) => {
+                                console.log(JSON.stringify(values, null, 2));
+                                setSubmitting(false);
+                            }}
+                        >
+                            {({ isSubmitting, errors, touched }) => (
+                                <Form>
+                                    <FormControl required sx={{ mb: 2 }}>
+                                        <FormLabel>Họ và tên</FormLabel>
+                                        <Field
+                                            name="username"
+                                            as={Input}
+                                            placeholder='Nhập họ và tên'
+                                        />
+                                    </FormControl>
+
+                                    <FormControl required sx={{ mb: 2 }}>
+                                        <FormLabel>Email</FormLabel>
+                                        <Field
+                                            name="email"
+                                            as={Input}
+                                            disabled
+                                        />
+                                    </FormControl>
+
+                                    <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} flexWrap={'wrap'} mb={2}>
+
+                                        <FormControl sx={{ flexGrow: 1 }}>
+                                            <FormLabel>Nghề Nghiệp</FormLabel>
+                                            <Field
+                                                name="career"
+                                                as={Input}
+                                                placeholder='Nhập nghề nghiệp'
+                                            />
+                                        </FormControl>
+                                        <FormControl sx={{ flexGrow: 1 }}>
+                                            <FormLabel>Vị trí làm việc</FormLabel>
+                                            <Field
+                                                name="workPosition"
+                                                as={Input}
+                                                placeholder='Nhập vị trí làm việc'
+                                            />
+                                        </FormControl>
+                                    </Stack>
+
+                                    <FormControl sx={{ flexGrow: 1 }}>
+                                        <FormLabel>Số điện thoại</FormLabel>
+                                        <Field
+                                            name="phoneNumber"
+                                            as={Input}
+                                            placeholder='Nhập số điện thoại'
+                                        />
+                                    </FormControl>
+
+                                    <Divider />
+                                    <Box display="flex" alignItems={"flex-end"} justifyContent={"right"} mt={2} >
+                                        <Button type="submit" size="md" variant="solid" color='success' disabled={isSubmitting}>
+                                            Lưu
+                                        </Button>
+                                    </Box>
+                                </Form>
+
+                            )}
+
+                        </Formik>
+                    </Box>
+                </Sheet>
+            </Modal>
         </CssVarsProvider>
     );
 }

@@ -1,4 +1,3 @@
-import MyComponent from "./pages/MyComponent";
 import Login from "./pages/authentication/Login";
 import Register from "./pages/authentication/Register";
 import Forgotpass from "./pages/authentication/Forgotpass";
@@ -16,6 +15,7 @@ import Layout1 from "./pages/cv/Layout1";
 import Uploadcv from "./pages/employee/Uploadcv";
 import Info from "./pages/employee/Info";
 import { CssVarsProvider, extendTheme } from "@mui/joy/styles";
+import JobPosting from "./pages/job/JobPosting";
 
 
 const customTheme = extendTheme({
@@ -30,7 +30,6 @@ function App() {
     <CssVarsProvider disableTransitionOnChange theme={customTheme}>
       {/* <ThemeCustomization> */}
       <Routes >
-        <Route path="/" element={<MyComponent />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgotpass" element={<Forgotpass />} />
@@ -45,6 +44,7 @@ function App() {
         <Route path="/layout1" element={<Layout1 />} />
         <Route path="/upcv" element={<Uploadcv />} />
         <Route path="/info" element={<Info/>} />
+        <Route path="/jobposting" element={<JobPosting/>} />
       </Routes>
       {/* </ThemeCustomization> */}
       <ToastContainer

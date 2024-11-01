@@ -34,7 +34,7 @@ export default function Listjob() {
   const [jobTitle, setJobTitle] = useState('');
   const [location, setLocation] = useState('');
 
-  const [showDetails, setShowDetails] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);  
 
   const handleToggleDetails = () => {
     setShowDetails(!showDetails);
@@ -217,7 +217,7 @@ export default function Listjob() {
               <Typography color="success">8 người</Typography>
               <Box>
                 <IconButton color="primary" size='sm' onClick={handleToggleDetails}>
-                  <VisibilityIcon onClick={handleToggleDetails} />
+                  <VisibilityIcon />
                 </IconButton>
                 {/* <IconButton color="primary" size='sm'>
                   <EditIcon/>

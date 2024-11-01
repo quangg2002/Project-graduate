@@ -238,7 +238,7 @@ export default function Header() {
                 </Tooltip>
               </MenuButton>
             </Dropdown>
-            <ColorSchemeToggle />
+            {/* <ColorSchemeToggle /> */}
             <Dropdown>
               <MenuButton
                 variant="plain"
