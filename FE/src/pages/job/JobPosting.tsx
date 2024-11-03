@@ -36,7 +36,8 @@ import LaunchIcon from '@mui/icons-material/Launch';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import SearchIcon from '@mui/icons-material/Search';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-
+import RoomOutlinedIcon from '@mui/icons-material/RoomOutlined';
+import { selectClasses } from '@mui/joy/Select';
 import * as Yup from "yup";
 
 const FindJobSchema = Yup.object().shape({
@@ -61,35 +62,61 @@ function JobPosting() {
                     console.log('Search Data:', values);
                 }}
             >
-                {({ handleSubmit, setFieldValue  }) => (
+                {({ handleSubmit, setFieldValue }) => (
                     <Form onSubmit={handleSubmit}>
                         <Stack bgcolor={'#19734e'} py={3} alignItems={'center'}>
-                            <Stack direction={'row'} width={'80%'} gap={1}>
+                            <Stack direction={'row'} width={'80%'} gap={1} flexWrap={'wrap'}>
                                 <Stack flex={2}>
                                     <Field name="jobPosition" as={Input} placeholder="Vị trí tuyển dụng" />
                                 </Stack>
                                 <Field name="jobCategory">
                                     {({ field, form }: FieldProps) => (
                                         <Select
-                                            {...field} 
+                                            {...field}
                                             onChange={(event, newValue) => {
                                                 setFieldValue(field.name, newValue)
+                                            }}
+                                            startDecorator={<RoomOutlinedIcon sx={{fontSize: 'medium'}}/>}
+                                            // indicator={<KeyboardArrowDownIcon/>}
+                                            sx={{
+                                                [`& .${selectClasses.indicator}`]: {
+                                                    transition: '0.2s',
+                                                    [`&.${selectClasses.expanded}`]: {
+                                                        transform: 'rotate(-180deg)',
+                                                    },
+                                                },
                                             }}
                                             value={field.value}
                                         >
                                             <Option value="" disabled>
-                                                Chọn danh mục
+                                                Địa điểm
                                             </Option>
-                                            <Option value="it">IT</Option>
-                                            <Option value="marketing">Marketing</Option>
+                                            <Option value="Hà Nội">Hà Nội</Option>
+                                            <Option value="Hà Nam">Hà Nam</Option>
                                         </Select>
                                     )}
                                 </Field>
-                                <Button type="submit" startDecorator={<SearchIcon />} sx={{bgcolor: '#00b14f'}}>
+                                <Button type="submit" startDecorator={<SearchIcon />}
+                                    sx={{
+                                        bgcolor: '#00b14f',
+                                        '&:hover': {
+                                            bgcolor: '#008f3e',
+                                        },
+                                    }}>
                                     Tìm kiếm
                                 </Button>
-                                <Button startDecorator={<FilterListIcon />} variant="solid" sx={{bgcolor: '#145c3e'}} endDecorator={<KeyboardArrowDownIcon/>}>
-                                    <Typography sx={{color: '#FFF'}}>Lọc nâng cao</Typography>
+                                <Button 
+                                    startDecorator={<FilterListIcon />} 
+                                    endDecorator={<KeyboardArrowDownIcon />}
+                                    variant="solid" 
+                                    sx={{ 
+                                        bgcolor: '#145c3e',
+                                        '&:hover': {
+                                            bgcolor: '#0f4d31',
+                                        },
+                                    }} 
+                                >
+                                    <Typography sx={{ color: '#FFF' }}>Lọc nâng cao</Typography>
                                 </Button>
                             </Stack>
                         </Stack>

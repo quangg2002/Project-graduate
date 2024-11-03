@@ -10,25 +10,18 @@ import {
   Breadcrumbs,
   Button,
   Sheet,
-  Table,
-  Checkbox,
   Divider,
   IconButton,
-  Stack,
   Input,
   Select,
   Option,
 } from "@mui/joy";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
-import Card from "@mui/joy/Card";
-import CardContent from "@mui/joy/CardContent";
-import EditIcon from "@mui/icons-material/Edit";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SearchIcon from '@mui/icons-material/Search';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
-import JobCard from '../../components/JobCard';
 
 export default function Listjob() {
   const [jobTitle, setJobTitle] = useState('');
