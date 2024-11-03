@@ -1,0 +1,16 @@
+package com.example.bejob.security.dto.response;
+
+import lombok.Builder;
+import lombok.Getter;
+
+@Getter
+@Builder
+public class TokenResponse {
+    private String accessToken;
+
+    private String username;
+
+    private String role;
+
+    private Long userId;
+}
