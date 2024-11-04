@@ -20,7 +20,6 @@ export default function JobApplied() {
                     size="sm"
                     aria-label="breadcrumbs"
                     separator={<ChevronRightRoundedIcon fontSize="small" />}
-                    sx={{ pl: 0 }}
                 >
                     <Link
                         underline="none"

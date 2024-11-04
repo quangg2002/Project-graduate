@@ -29,6 +29,8 @@ import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
 import { Breadcrumbs, Link } from "@mui/joy";
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 
+
+
 export default function Addjob() {
   const peopleData = [
     {
@@ -50,6 +52,33 @@ export default function Addjob() {
         },
       ],
       skills: ["UI design", "Illustration"],
+    },
+  ];
+
+  const options = [
+    {
+      category: "Position",
+      title: "Frontend engineer",
+    },
+    {
+      category: "Position",
+      title: "Backend engineer",
+    },
+    {
+      category: "Position",
+      title: "Product manager",
+    },
+    {
+      category: "Skill",
+      title: "JavaScript",
+    },
+    {
+      category: "Skill",
+      title: "TypeScript",
+    },
+    {
+      category: "Skill",
+      title: "Project management",
     },
   ];
 
@@ -205,34 +234,8 @@ export default function Addjob() {
                       <Autocomplete
                         size="sm"
                         placeholder="Position, skills, etc…"
-                        options={[
-                          {
-                            category: "Position",
-                            title: "Frontend engineer",
-                          },
-                          {
-                            category: "Position",
-                            title: "Backend engineer",
-                          },
-                          {
-                            category: "Position",
-                            title: "Product manager",
-                          },
-                          {
-                            category: "Skill",
-                            title: "JavaScript",
-                          },
-                          {
-                            category: "Skill",
-                            title: "TypeScript",
-                          },
-                          {
-                            category: "Skill",
-                            title: "Project management",
-                          },
-                        ]}
+                        options={options} 
                         groupBy={(option) => option.category}
-                        getOptionLabel={(option) => option.title}
                       />
                       <Box sx={{ my: 2, display: "flex", gap: 1 }}>
                         <Chip

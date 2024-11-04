@@ -1,5 +1,12 @@
-import * as React from "react";
-import { CssVarsProvider, extendTheme, useColorScheme } from "@mui/joy/styles";
+import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { RootState } from '../../redux/store';
+import { login } from '../../services/authApi';
+import { startLoading, stopLoading } from '../../redux/slice/loadingSlice';
+import { toast } from 'react-toastify';
+import useAppDispatch from '../../hooks/useAppDispatch';
+import { CssVarsProvider } from "@mui/joy/styles";
 import GlobalStyles from "@mui/joy/GlobalStyles";
 import CssBaseline from "@mui/joy/CssBaseline";
 import Box from "@mui/joy/Box";
@@ -7,55 +14,35 @@ import Button from "@mui/joy/Button";
 import Checkbox from "@mui/joy/Checkbox";
 import FormControl from "@mui/joy/FormControl";
 import FormLabel from "@mui/joy/FormLabel";
-import IconButton, { IconButtonProps } from "@mui/joy/IconButton";
+import IconButton from "@mui/joy/IconButton";
 import Link from "@mui/joy/Link";
 import Input from "@mui/joy/Input";
 import Typography from "@mui/joy/Typography";
 import Stack from "@mui/joy/Stack";
-import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
-import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded";
-import BadgeRoundedIcon from "@mui/icons-material/BadgeRounded";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
-import { useEffect, useState } from 'react';
 import EyeOutlined from '@ant-design/icons/EyeOutlined';
 import EyeInvisibleOutlined from '@ant-design/icons/EyeInvisibleOutlined';
 
-function ColorSchemeToggle(props: IconButtonProps) {
-  const { onClick, ...other } = props;
-  const { mode, setMode } = useColorScheme();
-  const [mounted, setMounted] = React.useState(false);
-
-  React.useEffect(() => setMounted(true), []);
-
-  return (
-    <IconButton
-      aria-label="toggle light/dark mode"
-      size="sm"
-      variant="outlined"
-      disabled={!mounted}
-      onClick={(event : any) => {
-        setMode(mode === "light" ? "dark" : "light");
-        onClick?.(event);
-      }}
-      {...other}
-    >
-      {mode === "light" ? <DarkModeRoundedIcon /> : <LightModeRoundedIcon />}
-    </IconButton>
-  );
-}
-
-const customTheme = extendTheme();
 
 const SignInSchema = Yup.object().shape({
-  email: Yup.string().email("Invalid email").required("Email is required"),
+  email: Yup.string(),
   password: Yup.string()
     .min(6, "Password is too short")
     .required("Password is required"),
-  persistent: Yup.boolean(),
 });
 
 export default function Login() {
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const queryParams = new URLSearchParams(useLocation().search);
+  const { isLoading } = useSelector((state: RootState) => state.loadingReducer);
+  const [sessionExp, setSessionExp] = useState(queryParams.get('expired') == null ? false : true);
+
+  useEffect(() => {
+    sessionExp && toast.info("Your session has expired.", { autoClose: false })
+    console.log(sessionExp)
+  }, [sessionExp]);
 
   const [showPassword, setShowPassword] = useState(false);
 
@@ -64,13 +51,13 @@ export default function Login() {
   };
 
   return (
-    <CssVarsProvider theme={customTheme} disableTransitionOnChange>
+    <CssVarsProvider disableTransitionOnChange>
       <CssBaseline />
       <GlobalStyles
         styles={{
           ":root": {
             "--Form-maxWidth": "800px",
-            "--Transition-duration": "0.4s", // set to `none` to disable transition
+            "--Transition-duration": "0.4s",
           },
         }}
       />
@@ -104,10 +91,9 @@ export default function Login() {
             sx={{ py: 3, display: "flex", justifyContent: "space-between" }}
           >
             <Box sx={{ gap: 1, display: "flex", alignItems: "center" }}>
-              <img src={require('../../assets/images/logocompany.png')} style={{ width: '35px', height: 'auto', marginLeft: 10}} alt="My Image" />
+              <img src={require('../../assets/images/logocompany.png')} style={{ width: '35px', height: 'auto', marginLeft: 10 }} alt="My Image" />
               <Typography level="title-lg">Company</Typography>
             </Box>
-            <ColorSchemeToggle />
           </Box>
           <Box
             component="main"
@@ -145,33 +131,44 @@ export default function Login() {
                 </Typography>
               </Stack>
             </Stack>
-            {/* <Divider
-              sx={(theme) => ({
-                [theme.getColorSchemeSelector('light')]: {
-                  color: { xs: '#FFF', md: 'text.tertiary' },
-                },
-              })}
-            >
-              or
-            </Divider> */}
             <Stack sx={{ gap: 4, mt: 2 }}>
               <Formik
                 initialValues={{
                   email: "",
                   password: "",
-                  persistent: false,
                 }}
                 validationSchema={SignInSchema}
-                onSubmit={(values, { setSubmitting }) => {
-                  alert(JSON.stringify(values, null, 2));
-                  setSubmitting(false);
+                onSubmit={async (values, { setSubmitting }) => {
+                  try {
+                    dispatch(startLoading());
+                    const result = await dispatch(login({ username: values.email, password: values.password }));
+                    dispatch(stopLoading());
+
+                    console.log(result?.payload?.response?.success)
+
+                    if (result?.payload?.response?.success) {
+                      if (result?.payload?.response?.data.role === 'EMPLOYEE') {
+                        navigate('/find-jobs');
+                        toast.success("ádsadasd")
+                      } else {
+                        navigate('/info');
+                      }
+                    } else {
+                      console.log("Login failed:", result?.payload?.response);
+                      toast.error('Đã có lỗi xảy ra. â');
+                    }
+                  } catch (error) {
+                    toast.error('Đã có lỗi xảy ra.');
+                  } finally {
+                    setSubmitting(false);
+                  }
                 }}
               >
                 {({ isSubmitting, errors }) => (
                   <Form>
                     <FormControl required>
                       <FormLabel>Email</FormLabel>
-                      <Field name="email" as={Input} type="email" />
+                      <Field name="email" as={Input} />
                       <Typography color="danger" sx={{ fontSize: '12px' }}>
                         {errors.email}
                       </Typography>
@@ -218,8 +215,8 @@ export default function Login() {
                         </Link>
                       </Box>
 
-                      <Button type="submit" fullWidth disabled={isSubmitting}>
-                        Sign in
+                      <Button type="submit" fullWidth disabled={isLoading}>
+                        {isLoading ? 'Đang đăng nhập...' : 'Đăng nhập'}
                       </Button>
                     </Stack>
                   </Form>

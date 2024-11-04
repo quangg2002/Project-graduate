@@ -8,8 +8,6 @@ import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import BorderColorIcon from '@mui/icons-material/BorderColor';
 import { Field, Form, Formik } from "formik";
 import * as Yup from "yup";
-import EyeOutlined from '@ant-design/icons/EyeOutlined';
-import EyeInvisibleOutlined from '@ant-design/icons/EyeInvisibleOutlined';
 
 const SignUpSchema = Yup.object().shape({
     username: Yup.string()

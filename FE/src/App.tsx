@@ -7,6 +7,7 @@ import Navbar from "./components/Header";
 import Addjob from "./pages/company/Addjob";
 import MyMessages from "./pages/messages/MyMessages"
 import { ToastContainer } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 import { Route, Routes } from "react-router-dom";
 import Overview from "./pages/company/Overview";
 import Candidate from "./pages/company/Candidate";
@@ -19,12 +20,11 @@ import JobPosting from "./pages/job/JobPosting";
 import JobApplied from "./pages/job/JobApplied";
 import JobSaved from "./pages/job/JobSaved";
 
-
 const customTheme = extendTheme({
-	fontFamily: {
-		display: '"Sansita", sans-serif',
-		body: '"Sansita", sans-serif',
-	},
+  fontFamily: {
+    display: '"Sansita", sans-serif',
+    body: '"Sansita", sans-serif',
+  },
 });
 
 function App() {
@@ -45,22 +45,24 @@ function App() {
         <Route path="/listjob" element={<Listjob />} />
         <Route path="/layout1" element={<Layout1 />} />
         <Route path="/upcv" element={<Uploadcv />} />
-        <Route path="/info" element={<Info/>} />
-        <Route path="/jobposting" element={<JobPosting/>} />
-        <Route path="/jobapplied" element={<JobApplied/>} />
-        <Route path="/jobsaved" element={<JobSaved/>} />
+        <Route path="/info" element={<Info />} />
+        <Route path="/jobposting" element={<JobPosting />} />
+        <Route path="/jobapplied" element={<JobApplied />} />
+        <Route path="/jobsaved" element={<JobSaved />} />
       </Routes>
-      {/* </ThemeCustomization> */}
+      
       <ToastContainer
         position="top-center"
-        autoClose={3000}
+        autoClose={4000}
         hideProgressBar={false}
         newestOnTop={false}
         closeOnClick
         draggable
         theme="light"
+        pauseOnFocusLoss={false}
+        stacked
       />
-      </CssVarsProvider>
+    </CssVarsProvider>
   );
 }
 
