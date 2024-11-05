@@ -1,4 +1,4 @@
-package com.example.bejob.security.until;
+package com.example.bejob.security.util;
 
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;

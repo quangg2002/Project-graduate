@@ -1,16 +1,23 @@
-import React, { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
-
-import { Box, Breadcrumbs, Button, Card, CardContent, CardCover, CardOverflow, CssBaseline, CssVarsProvider, Divider, FormControl, FormLabel, IconButton, Input, Link, Modal, ModalClose, Sheet, Stack, Tab, TabList, TabPanel, Tabs, Typography } from "@mui/joy";
+import { confirmAlert } from 'react-confirm-alert'; // Import thư viện
+import 'react-confirm-alert/src/react-confirm-alert.css';
+import { Box, Breadcrumbs, Button, Card, CardCover, CssBaseline, CssVarsProvider, Divider, FormControl, FormLabel, Input, Link, Modal, ModalClose, Sheet, Stack, Tab, TabList, TabPanel, Tabs, Typography } from "@mui/joy";
 import Header from "../../components/Header";
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import BorderColorIcon from '@mui/icons-material/BorderColor';
 import { Field, Form, Formik } from "formik";
 import * as Yup from "yup";
+import useAppDispatch from '../../hooks/useAppDispatch';
+import { toast } from 'react-toastify';
+import { updateEmployee } from '../../services/employeeApi';
+import { getEmployees } from '../../services/employeeApi';
+import { startLoading, stopLoading } from '../../redux/slice/loadingSlice';
+import { useNavigate } from 'react-router-dom';
 
 const SignUpSchema = Yup.object().shape({
-    username: Yup.string()
+    fullName: Yup.string()
         .required("Họ tên là bắt buộc"),
     email: Yup.string()
         .email('Email không hợp lệ'),
@@ -19,18 +26,106 @@ const SignUpSchema = Yup.object().shape({
     career: Yup.string(),
 });
 
+
 export default function Info() {
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [employeeData, setEmployeeData] = useState({
+        fullName: '',
+        gender: '',
+        dateOfBirth: '',
+        address: '',
+        email: '',
+        phoneNumber: '',
+    })
+
+    const navigate = useNavigate();
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
         const file = acceptedFiles[0];
-        console.log(file)
-        setPreviewUrl(URL.createObjectURL(file));
+
+        confirmAlert({
+            title: 'Xác nhận',
+            message: 'Bạn có chắc chắn muốn cập nhật thông tin cá nhân với hình ảnh mới này không?',
+            buttons: [
+                {
+                    label: 'Có',
+                    onClick: async () => {
+                        const formData = new FormData();
+                        formData.append('avatar', file);
+
+                        const result = await dispatch(updateEmployee(formData));
+                        if (result?.payload?.response?.success === true) {
+                            toast.success('Cập nhật thông tin cá nhân thành công');
+                        } else {
+                            toast.error('Cập nhật thông tin cá nhân thất bại');
+                        }
+
+                        setPreviewUrl(URL.createObjectURL(file));
+                    },
+                    style: {
+                        backgroundColor: '#4caf50',
+                        color: 'white',
+                        border: 'none',
+                        padding: '10px 20px',
+                        borderRadius: '5px',
+                        cursor: 'pointer',
+                    },
+                },
+                {
+                    label: 'Không',
+                    onClick: () => {
+                        console.log('Cập nhật bị hủy bỏ');
+                    },
+                    style: {
+                        backgroundColor: '#f44336',
+                        color: 'white',
+                        border: 'none',
+                        padding: '10px 20px',
+                        borderRadius: '5px',
+                        cursor: 'pointer',
+                    },
+                }
+            ]
+        });
     }, []);
 
-    const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({
+        onDrop,
+        accept: {
+            'image/*': ['.jpg', '.jpeg', '.png', '.gif']
+        }
+    });
 
     const [openEdit, setOpenEdit] = useState<boolean>(false);
+
+    const dispatch = useAppDispatch();
+
+    useEffect(() => {
+        const fetchEmployeeData = async () => {
+            try {
+                const action = await dispatch(getEmployees());
+                if (getEmployees.fulfilled.match(action)) {
+                    const response = action.payload.response?.data;
+                    if (response) {
+                        setEmployeeData({
+                            fullName: response.fullName,
+                            gender: response.gender,
+                            dateOfBirth: response.dateOfBirth,
+                            address: response.address,
+                            email: response.email,
+                            phoneNumber: response.phoneNumber,
+                        });
+                        setPreviewUrl(response.avatar)
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to fetch employee data:', error);
+            }
+        };
+
+        fetchEmployeeData();
+    }, [dispatch]);
+
 
     return (
         <CssVarsProvider disableTransitionOnChange>
@@ -129,7 +224,7 @@ export default function Info() {
                         <Box display={'flex'} flexDirection={"column"} gap={2} maxWidth={'100%'}>
                             <Box display={'flex'} justifyContent={'space-between'} alignItems={'center'}>
                                 <Box>
-                                    <Typography level="h3">Ngô Minh Quang</Typography>
+                                    <Typography level="h3">{employeeData.fullName}</Typography>
                                     <Typography level="h4" color="primary">Vị trí: BackEnd</Typography>
                                 </Box>
                                 <Button variant="soft" color="primary" size="sm" onClick={() => setOpenEdit(true)} startDecorator={<BorderColorIcon sx={{ fontSize: 'sm' }} />}>
@@ -169,10 +264,10 @@ export default function Info() {
                                             <Typography>Họ và tên: </Typography>
                                             <Typography>Email: </Typography>
                                             <Typography>Số điện thoại: </Typography>
-                                            <Typography>Nghề Nghiệp: </Typography>
+                                            <Typography>Giới tính: </Typography>
                                         </Box>
                                         <Box display={'flex'} flexDirection={'column'} gap={1}>
-                                            <Typography color="primary">Ngô Minh Quang</Typography>
+                                            <Typography color="primary">{employeeData.fullName}</Typography>
                                             <Typography
                                                 color="primary"
                                                 sx={{
@@ -181,10 +276,10 @@ export default function Info() {
                                                     whiteSpace: 'normal'
                                                 }}
                                             >
-                                                ngominhquang12a2nl@gmail.com
+                                                {employeeData.email}
                                             </Typography>
-                                            <Typography color="primary">0359693129</Typography>
-                                            <Typography color="primary">Học sinh</Typography>
+                                            <Typography color="primary">{employeeData.phoneNumber}</Typography>
+                                            <Typography color="primary">{employeeData.gender}</Typography>
                                         </Box>
                                     </Box>
                                 </TabPanel>
@@ -216,16 +311,38 @@ export default function Info() {
                     <Box id="modal-desc" mt={2} gap={3}>
                         <Formik
                             initialValues={{
-                                username: 'Ngô Minh Quang',
+                                fullName: 'Ngô Minh Quang',
                                 workPosition: '',
                                 email: 'ngominhquang12a2nl@gmail.com',
                                 phoneNumber: '',
                                 career: '',
                             }}
                             validationSchema={SignUpSchema}
-                            onSubmit={(values, { setSubmitting }) => {
-                                console.log(JSON.stringify(values, null, 2));
-                                setSubmitting(false);
+                            onSubmit={async (values, { setSubmitting }) => {
+                                try {
+                                    dispatch(startLoading());
+
+                                    const formData = new FormData();
+                                    formData.append('fullName', values.fullName);
+                                    formData.append('email', values.email);
+                                    formData.append('phoneNumber', values.phoneNumber);
+                                    const result = await dispatch(updateEmployee(formData));
+
+                                    dispatch(stopLoading());
+
+                                    console.log(result?.payload?.response?.success)
+                                    if (result?.payload?.response?.success == true) {
+                                        toast.success('Cập nhật thành công');
+                                        navigate('/info')
+                                    } else {
+                                        toast.error('Cập nhật thất bại');
+                                    }
+
+                                } catch (error) {
+                                    toast.error('Đã có lỗi xảy ra.');
+                                } finally {
+                                    setSubmitting(false);
+                                }
                             }}
                         >
                             {({ isSubmitting, errors, touched }) => (
@@ -233,7 +350,7 @@ export default function Info() {
                                     <FormControl required sx={{ mb: 2 }}>
                                         <FormLabel>Họ và tên</FormLabel>
                                         <Field
-                                            name="username"
+                                            name="fullName"
                                             as={Input}
                                             placeholder='Nhập họ và tên'
                                         />
@@ -284,9 +401,7 @@ export default function Info() {
                                         </Button>
                                     </Box>
                                 </Form>
-
                             )}
-
                         </Formik>
                     </Box>
                 </Sheet>

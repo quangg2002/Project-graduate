@@ -1,4 +1,4 @@
-package com.example.bejob.containts;
+package com.example.bejob.constants;
 
 public class FileConstant {
     public final static String DIRECTORY_DIVIDE = "/";

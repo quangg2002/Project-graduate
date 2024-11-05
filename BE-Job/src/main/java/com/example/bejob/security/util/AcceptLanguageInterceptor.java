@@ -1,4 +1,4 @@
-package com.example.bejob.security.until;
+package com.example.bejob.security.util;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

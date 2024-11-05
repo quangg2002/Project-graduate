@@ -125,7 +125,7 @@ export default function Login() {
                 </Typography>
                 <Typography level="body-sm">
                   New to member?{" "}
-                  <Link href="#replace-with-a-link" level="title-sm">
+                  <Link href="/register" level="title-sm">
                     Sign up!
                   </Link>
                 </Typography>
@@ -134,28 +134,26 @@ export default function Login() {
             <Stack sx={{ gap: 4, mt: 2 }}>
               <Formik
                 initialValues={{
-                  email: "",
+                  username: "",
                   password: "",
                 }}
                 validationSchema={SignInSchema}
                 onSubmit={async (values, { setSubmitting }) => {
                   try {
                     dispatch(startLoading());
-                    const result = await dispatch(login({ username: values.email, password: values.password }));
+                    const result = await dispatch(login({ username: values.username, password: values.password }));
                     dispatch(stopLoading());
 
                     console.log(result?.payload?.response?.success)
 
                     if (result?.payload?.response?.success) {
                       if (result?.payload?.response?.data.role === 'EMPLOYEE') {
-                        navigate('/find-jobs');
-                        toast.success("ádsadasd")
+                        navigate('/info');
                       } else {
                         navigate('/info');
                       }
                     } else {
-                      console.log("Login failed:", result?.payload?.response);
-                      toast.error('Đã có lỗi xảy ra. â');
+                      toast.error('Đăng nhập thất bại. Kiểm tra lại tài khoản mật khẩu của bạn');
                     }
                   } catch (error) {
                     toast.error('Đã có lỗi xảy ra.');
@@ -167,19 +165,20 @@ export default function Login() {
                 {({ isSubmitting, errors }) => (
                   <Form>
                     <FormControl required>
-                      <FormLabel>Email</FormLabel>
-                      <Field name="email" as={Input} />
+                      <FormLabel>Tài khoản</FormLabel>
+                      <Field name="username" as={Input} placeholder="Nhập tên tài khoản"/>
                       <Typography color="danger" sx={{ fontSize: '12px' }}>
-                        {errors.email}
+                        {errors.username}
                       </Typography>
                     </FormControl>
 
                     <FormControl required>
-                      <FormLabel>Password</FormLabel>
+                      <FormLabel>Mật khẩu</FormLabel>
                       <Field
                         name="password"
                         as={Input}
                         type={showPassword ? 'text' : 'password'}
+                        placeholder="Nhập mật khẩu"
                         endDecorator={
                           <IconButton
                             onClick={handleClickShowPassword}

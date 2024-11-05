@@ -1,5 +1,5 @@
-package com.example.bejob.security.until;
-import com.example.bejob.containts.FileConstant;
+package com.example.bejob.security.util;
+import com.example.bejob.constants.FileConstant;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
