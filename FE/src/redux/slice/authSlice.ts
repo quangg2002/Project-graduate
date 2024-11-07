@@ -46,6 +46,7 @@ const authSlice = createSlice({
       });
   }
 });
+// const userId = useSelector((state: RootState) => state.authReducer.userId);
 
 export const { logout } = authSlice.actions;
 export default authSlice.reducer;

@@ -1,0 +1,26 @@
+package com.example.bejob.dto.request;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class JobRequest {
+    private String title;
+    private String description;
+    private String location;
+    private String requirements;
+    private Long yearExperience;
+    private Long salary;
+    private Long tech;
+    private Long city;
+    private Long district;
+    private Long position;
+    private Long jobType;
+    private Long contractType;
+    private String deadline;
+}

@@ -6,34 +6,21 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-
 @Entity
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Table(name = "employee")
-public class Employee {
+@Table(name = "favorite_job")
+public class FavoriteJob {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_id", unique = true)
+    @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    private String fullName;
-
-    private String email;
-
-    private String dateOfBirth;
-
-    private String address;
-
-    private BigDecimal salary;
-
-    private String gender;
-
-    private String positionWork;
-
+    @Column(name = "job_id", nullable = false)
+    private Long jobId;
 }

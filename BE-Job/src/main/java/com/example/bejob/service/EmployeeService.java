@@ -177,7 +177,6 @@ public class EmployeeService {
     
                 EmployeeResponse employeeResponse = modelMapper.map(employee, EmployeeResponse.class);
                 employeeResponse.setFullName(user.getFullName());
-                employeeResponse.setPhoneNumber(user.getPhoneNumber());
                 employeeResponse.setAvatar(user.getAvatar());
     
                 return ResponseBuilder.okResponse(
