@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("/job")
 public class JobController {
+
     private final JobService jobService;
 
     @PostMapping()
