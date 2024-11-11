@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { useCallback, useState, useEffect } from "react";
 import {
     Box,
     Button,
@@ -14,7 +14,10 @@ import {
     Select,
     Option,
     Input,
-    MenuItem
+    ModalClose,
+    CardCover,
+    Textarea,
+    Snackbar
 } from '@mui/joy';
 import { Formik, Form, Field, FieldProps } from 'formik';
 import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
@@ -39,6 +42,20 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import RoomOutlinedIcon from '@mui/icons-material/RoomOutlined';
 import { selectClasses } from '@mui/joy/Select';
 import * as Yup from "yup";
+import { Transition } from 'react-transition-group';
+import Modal from '@mui/joy/Modal';
+import ModalDialog from '@mui/joy/ModalDialog';
+import DialogTitle from '@mui/joy/DialogTitle';
+import DialogContent from '@mui/joy/DialogContent';
+import FolderSharedIcon from '@mui/icons-material/FolderShared';
+import { useDropzone } from "react-dropzone";
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
+import BorderColorOutlinedIcon from '@mui/icons-material/BorderColorOutlined';
+import { applicationCreate } from '../../services/applicayionApi';
+import useAppDispatch from '../../hooks/useAppDispatch';
+import { toast } from 'react-toastify';
+import city from '../../utils/citis.json';
 
 const FindJobSchema = Yup.object().shape({
     jobCategory: Yup.string(),
@@ -46,8 +63,73 @@ const FindJobSchema = Yup.object().shape({
     location: Yup.string(),
 });
 
+const validationSchema = Yup.object({
+    coverLetter: Yup.string().required('Thư giới thiệu là bắt buộc'),
+    selectedFile: Yup.mixed()
+        .required('Vui lòng chọn file CV')
+        .test('fileSize', 'Kích thước file không được vượt quá 5MB', (value) => {
+            return value && (value as File).size <= 5 * 1024 * 1024; // 5MB
+        })
+        .test('fileType', 'Chỉ hỗ trợ định dạng .doc, .docx, .pdf', (value) => {
+            const file = value as File;
+            return file && ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'].includes(file.type);
+        })
+});
 
 function JobPosting() {
+    const [open, setOpen] = useState<boolean>(false)
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [coverLetter, setCoverLetter] = useState('');
+    const dispatch = useAppDispatch();
+    const [loading, setLoading] = useState(false);
+    const [citis, setCitis] = useState([]);
+
+    useEffect(() => {
+        // Giả sử dữ liệu đã được import từ file JSON
+        setCitis(city);
+    }, []);
+
+    const onDrop = useCallback((acceptedFiles: File[]) => {
+        const file = acceptedFiles[0];
+        setSelectedFile(file);
+    }, []);
+
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({
+        onDrop,
+        accept: {
+            'application/pdf': ['.pdf'],
+            'application/msword': ['.doc'],
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx']
+        }
+    });
+
+    const handleSubmit = async (values) => {
+        setLoading(true);
+
+        try {
+            const formData = new FormData();
+            formData.append('coverLetter', coverLetter);
+            formData.append('jobId', 1?.toString() || '');
+            if (selectedFile) {
+                formData.append('cvPdf', selectedFile);
+            }
+
+            const result = await dispatch(applicationCreate(formData));
+
+            if (result.payload?.response?.success === true) {
+                toast.success('Application submitted successfully!');
+                setCoverLetter('');
+                setSelectedFile(null);
+            } else {
+                toast.error('Failed to submit application');
+            }
+        } catch (error) {
+            toast.error('Something went wrong. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <Box bgcolor={'#f4f5f5'}>
             <Header />
@@ -63,7 +145,7 @@ function JobPosting() {
                 }}
             >
                 {({ handleSubmit, setFieldValue }) => (
-                    <Form onSubmit={handleSubmit}>
+                    <Form >
                         <Stack bgcolor={'#19734e'} py={3} alignItems={'center'}>
                             <Stack direction={'row'} width={'80%'} gap={1} flexWrap={'wrap'}>
                                 <Stack flex={2}>
@@ -76,7 +158,7 @@ function JobPosting() {
                                             onChange={(event, newValue) => {
                                                 setFieldValue(field.name, newValue)
                                             }}
-                                            startDecorator={<RoomOutlinedIcon sx={{fontSize: 'medium'}}/>}
+                                            startDecorator={<RoomOutlinedIcon sx={{ fontSize: 'medium' }} />}
                                             // indicator={<KeyboardArrowDownIcon/>}
                                             sx={{
                                                 [`& .${selectClasses.indicator}`]: {
@@ -91,8 +173,11 @@ function JobPosting() {
                                             <Option value="" disabled>
                                                 Địa điểm
                                             </Option>
-                                            <Option value="Hà Nội">Hà Nội</Option>
-                                            <Option value="Hà Nam">Hà Nam</Option>
+                                            {citis.map(city => (
+                                                <Option key={city.id} value={city.name}>
+                                                    {city.name}
+                                                </Option>
+                                            ))}
                                         </Select>
                                     )}
                                 </Field>
@@ -105,16 +190,16 @@ function JobPosting() {
                                     }}>
                                     Tìm kiếm
                                 </Button>
-                                <Button 
-                                    startDecorator={<FilterListIcon />} 
+                                <Button
+                                    startDecorator={<FilterListIcon />}
                                     endDecorator={<KeyboardArrowDownIcon />}
-                                    variant="solid" 
-                                    sx={{ 
+                                    variant="solid"
+                                    sx={{
                                         bgcolor: '#145c3e',
                                         '&:hover': {
                                             bgcolor: '#0f4d31',
                                         },
-                                    }} 
+                                    }}
                                 >
                                     <Typography sx={{ color: '#FFF' }}>Lọc nâng cao</Typography>
                                 </Button>
@@ -269,7 +354,7 @@ function JobPosting() {
                                 </Stack>
                                 <Typography>Hạn nộp hồ sơ: 29/11/2024</Typography>
                                 <Stack direction="row" spacing={2}>
-                                    <Button color="success" variant="solid">
+                                    <Button color="success" variant="solid" onClick={() => setOpen(true)}>
                                         Ứng tuyển ngay
                                     </Button>
                                     <Button variant="outlined">
@@ -365,6 +450,135 @@ function JobPosting() {
                     </Stack>
                 </Stack>
             </Box>
+
+            <Transition in={open} timeout={400}>
+                {(state: string) => (
+                    <Modal
+                        keepMounted
+                        open={!['exited', 'exiting'].includes(state)}
+                        onClose={() => setOpen(false)}
+                        slotProps={{
+                            backdrop: {
+                                sx: {
+                                    opacity: 0,
+                                    backdropFilter: 'none',
+                                    transition: `opacity 400ms, backdrop-filter 400ms`,
+                                    ...{
+                                        entering: { opacity: 1, backdropFilter: 'blur(8px)' },
+                                        entered: { opacity: 1, backdropFilter: 'blur(8px)' },
+                                    }[state],
+                                },
+                            },
+                        }}
+                        sx={[
+                            state === 'exited'
+                                ? { visibility: 'hidden' }
+                                : { visibility: 'visible' },
+                        ]}
+                    >
+                        <ModalDialog
+                            sx={{
+                                width: '80%',
+                                maxWidth: '800px',
+                                opacity: 0,
+                                transition: `opacity 300ms`,
+                                ...{
+                                    entering: { opacity: 1 },
+                                    entered: { opacity: 1 },
+                                }[state],
+                            }}
+                        >
+                            <DialogTitle><Typography level='h4'>Ứng tuyển</Typography></DialogTitle>
+                            <ModalClose></ModalClose>
+                            <DialogContent>
+                                <Formik
+                                    initialValues={{
+                                        coverLetter: '',
+                                        selectedFile: null as File | null,
+                                    }}
+                                    validationSchema={validationSchema}
+                                    onSubmit={handleSubmit}
+                                >
+                                    {({ isSubmitting, setFieldValue, errors, touched }) => (
+                                        <Form>
+                                            <Stack gap={2}>
+                                                <Stack gap={1}>
+                                                    <Stack direction={'row'} alignItems={'center'}>
+                                                        <FolderSharedIcon color='success' sx={{ fontSize: '30px' }} /> &nbsp;
+                                                        <Typography level='title-md'>Chọn CV để ứng tuyển</Typography>
+                                                    </Stack>
+
+                                                    <Box {...getRootProps()} style={{ position: 'relative' }}>
+                                                        <Card
+                                                            sx={{
+                                                                height: '150px',
+                                                                borderStyle: 'dashed',
+                                                                borderWidth: '1.5px',
+                                                                borderColor: '#00b14f'
+                                                            }}
+                                                        >
+                                                            <input
+                                                                {...getInputProps()}
+                                                                onChange={(e) => {
+                                                                    const file = e.target.files?.[0];
+                                                                    if (file) {
+                                                                        setSelectedFile(file);
+                                                                        setFieldValue('selectedFile', file);
+                                                                    }
+                                                                }}
+                                                            />
+                                                            <CardCover>
+                                                                <Stack gap={1}>
+                                                                    <Stack direction={'row'} gap={1} alignItems={'center'}>
+                                                                        <CloudUploadIcon sx={{ fontSize: '30px' }} />
+                                                                        <Typography level="title-md">Tải CV từ máy tính, chọn hoặc kéo thả</Typography>
+                                                                    </Stack>
+                                                                    <Typography level="body-sm">Hỗ trợ định dạng .doc, .docx, pdf có kích thước dưới 5MB</Typography>
+
+                                                                    <Stack direction={'row'} gap={1} alignItems={'center'}>
+                                                                        {selectedFile &&
+                                                                            <Stack direction={'row'} alignItems={'center'}>
+                                                                                <DescriptionOutlinedIcon color="success" sx={{ fontSize: '30px' }} />
+                                                                                <Typography color="success">{selectedFile.name}</Typography>
+                                                                            </Stack>
+                                                                        }
+                                                                        <Button color="success">Chọn CV</Button>
+                                                                    </Stack>
+                                                                </Stack>
+                                                            </CardCover>
+                                                        </Card>
+                                                    </Box>
+                                                    {typeof errors.selectedFile === 'string' && (
+                                                        <Typography color="danger">{errors.selectedFile}</Typography>
+                                                    )}
+                                                </Stack>
+                                                <Stack gap={1}>
+                                                    <Stack direction={'row'} alignItems={'end'}>
+                                                        <BorderColorOutlinedIcon color="success" sx={{ fontSize: '30px' }} /> &nbsp;
+                                                        <Typography level='title-md'>Thư giới thiệu:</Typography>
+                                                    </Stack>
+                                                    <Typography level="body-sm">Một thư giới thiệu ngắn gọn, chỉn chu sẽ giúp bạn trở nên chuyên nghiệp và gây ấn tượng hơn với nhà tuyển dụng.</Typography>
+                                                    <Field
+                                                        name="coverLetter"
+                                                        as={Textarea}
+                                                        minRows={3}
+                                                        placeholder="Viết giới thiệu ngắn gọn về bản thân (điểm mạnh, điểm yếu) và nêu rõ mong muốn, lý do bạn muốn ứng tuyển cho vị trí này."
+                                                        sx={{
+                                                            borderColor: '#00b14f'
+                                                        }}
+                                                    />
+                                                    {errors.coverLetter && <Typography color="danger">{errors.coverLetter}</Typography>}
+                                                </Stack>
+                                                <Button color="success" disabled={loading} type="submit"> {loading ? 'Nộp hồ sơ ứng tuyển...' : 'Nộp hồ sơ ứng tuyển'}</Button>
+                                            </Stack>
+                                        </Form>
+                                    )}
+                                </Formik>
+                            </DialogContent>
+                        </ModalDialog>
+                    </Modal>
+                )}
+            </Transition>
         </Box>
     );
 }
