@@ -33,3 +33,17 @@ export const registerEmployer = createAsyncThunk<any, any>(
             .catch(error => { });
     }
 );
+
+export const changePassword = createAsyncThunk<any, any>(
+    'authReducers/changePassword',
+    async (info) => {
+        return axiosIns.post('/auth/change-password', info, {
+            includeToken: true,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+            .then(response => { return { response: response.data } })
+            .catch(error => { });
+    }
+);

@@ -18,27 +18,6 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import { keyframes, maxHeight } from '@mui/system';
 import CloseIcon from '@mui/icons-material/Close';
 
-const inAnimation = keyframes`
-  0% {
-    transform: scale(0);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-`;
-
-const outAnimation = keyframes`
-  0% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(0);
-    opacity: 0;
-  }
-`;
 
 const customTheme = extendTheme({
 	fontFamily: {
@@ -99,32 +78,6 @@ export default function Layout1() {
 			<Header />
 			<CssBaseline />
 			<Stack display={'flex'} flexDirection={'row'}>
-				<Box width={'100px'}>
-					<div style={{ position: 'relative' }}>
-
-						<Button variant="outlined" color="neutral" onClick={handleClick}>
-							Show Snackbar
-						</Button>
-						<Snackbar
-							open={open2}
-							sx={{
-								position: 'absolute',
-								left: '105%',
-								top: 0,
-								animation: `${open2 ? inAnimation : outAnimation} ${animationDuration}ms forwards`,
-							}}
-						>
-							I love this animation!
-							<IconButton
-								aria-label="close"
-								onClick={handleClose}
-								sx={{ ml: 1 }} // Thêm khoảng cách bên trái
-							>
-								<CloseIcon fontSize="small" />
-							</IconButton>
-						</Snackbar>
-					</div>
-				</Box>
 				<Box width={'100%'}>
 					<Formik
 						initialValues={{
@@ -255,7 +208,7 @@ export default function Layout1() {
 										</Stack>
 										<Stack flexDirection={'column'} ml={3} mt={1} >
 											<Box display={'flex'} alignItems={'center'}>
-												<MailIcon sx={{ fontSize: '18px', color: '#000', marginBottom: '2px' }} /> &nbsp;
+												<MailIcon sx={{ fontSize: '18px', color: '#FFF', marginBottom: '3px' }} /> &nbsp;
 												<Typography level='body-sm' fontFamily={'"Arima", system-ui'} sx={{ color: '#FFF' }}>
 													Email:
 												</Typography>
@@ -271,7 +224,7 @@ export default function Layout1() {
 												/>
 											</Box>
 											<Box display={'flex'} alignItems={'center'}>
-												<PhoneIcon sx={{ fontSize: '18px', color: '#000', marginBottom: '2px' }} /> &nbsp;
+												<PhoneIcon sx={{ fontSize: '18px', color: '#FFF', marginBottom: '3px' }} /> &nbsp;
 												<Typography level='body-sm' fontFamily={'"Arima", system-ui'} sx={{ color: '#FFF' }}>
 													Sđt:
 												</Typography>
@@ -287,7 +240,7 @@ export default function Layout1() {
 												/>
 											</Box>
 											<Box display={'flex'} alignItems={'center'}>
-												<RoomIcon sx={{ fontSize: '18px', color: '#000', marginBottom: '2px' }} /> &nbsp;
+												<RoomIcon sx={{ fontSize: '18px', color: '#FFF', marginBottom: '3px' }} /> &nbsp;
 												<Typography level='body-sm' fontFamily={'"Arima", system-ui'} sx={{ color: '#FFF' }}>
 													Địa chỉ:
 												</Typography>
@@ -302,8 +255,8 @@ export default function Layout1() {
 													}}
 												/>
 											</Box>
-											<Box display={'flex'} alignItems={'center'}>
-												<CalendarMonthIcon sx={{ fontSize: '18px', color: '#000', marginBottom: '2px' }} /> &nbsp;
+											<Stack direction={'row'} alignItems={'center'}>
+												<CalendarMonthIcon sx={{ fontSize: '18px', color: '#FFF', marginBottom: '3px' }} /> &nbsp;
 												<Typography level='body-sm' fontFamily={'"Arima", system-ui'} sx={{ color: '#FFF' }}>
 													Ngày sinh:
 												</Typography>
@@ -318,7 +271,7 @@ export default function Layout1() {
 														maxWidth: '60%'
 													}}
 												/>
-											</Box>
+											</Stack>
 										</Stack>
 
 										<Stack flexDirection={'row'} mt={1}>

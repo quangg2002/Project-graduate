@@ -34,6 +34,6 @@ public class Employee {
 
     private String gender;
 
-    private String positionWork;
+    private String career;
 
 }

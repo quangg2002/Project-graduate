@@ -12,14 +12,14 @@ spring:
     host: smtp.gmail.com
     port: 587
     username: ngominhquang12a2nl@gmail.com
-    password: mnylpqwpyuztxypm
+    password: ybmgcirgufdpzcob
     properties:
       mail:
         smtp:
           auth: true
           starttls:
             enable: true
-    from: hirex.ptit@gmail.com
+    from: ngominhquang12a2nl@gmail.com
   servlet:
     multipart:
       max-file-size: 20MB

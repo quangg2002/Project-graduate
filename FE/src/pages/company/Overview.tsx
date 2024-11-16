@@ -121,7 +121,20 @@ export default function Overview() {
                 <Link href="#variants" level="body-sm">Xem chi tiết <NavigateNextIcon /></Link>
               </Card>
               <Card>
-                <Typography level="title-sm">Ứng viên nộp cv</Typography>
+              <Box display={'flex'} justifyContent={'space-between'} alignItems={'center'}>
+                  <Typography level="title-sm">Ứng viên nộp cv</Typography>
+                  <Tooltip title="Thêm tin tuyển dụng" variant="outlined">
+                    <IconButton
+                      size="sm"
+                      variant="plain"
+                      color="neutral"
+                      sx={{ alignSelf: "center" }}
+                    >
+                      <ControlPointIcon />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+
                 <Typography level="h3">8</Typography>
                 <Link href="#variants" level="body-sm">Xem chi tiết <NavigateNextIcon /></Link>
               </Card>
@@ -171,7 +184,7 @@ export default function Overview() {
                 </CardContent>
               </Card>
             </Box>
-            <Typography level="h4">Bài viết mới</Typography>
+            <Typography level="h4">Thông tin công ty</Typography>
             
         </Box>
       </Box>

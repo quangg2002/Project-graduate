@@ -52,7 +52,7 @@ import { useDropzone } from "react-dropzone";
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import BorderColorOutlinedIcon from '@mui/icons-material/BorderColorOutlined';
-import { applicationCreate } from '../../services/applicayionApi';
+import { applicationCreate } from '../../services/applicationApi';
 import useAppDispatch from '../../hooks/useAppDispatch';
 import { toast } from 'react-toastify';
 import city from '../../utils/citis.json';
@@ -78,20 +78,17 @@ const validationSchema = Yup.object({
 
 function JobPosting() {
     const [open, setOpen] = useState<boolean>(false)
-    const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [coverLetter, setCoverLetter] = useState('');
     const dispatch = useAppDispatch();
     const [loading, setLoading] = useState(false);
     const [citis, setCitis] = useState([]);
 
     useEffect(() => {
-        // Giả sử dữ liệu đã được import từ file JSON
         setCitis(city);
     }, []);
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
         const file = acceptedFiles[0];
-        setSelectedFile(file);
     }, []);
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -103,27 +100,28 @@ function JobPosting() {
         }
     });
 
-    const handleSubmit = async (values) => {
+    const handleSubmit = async (values, { resetForm }) => {
         setLoading(true);
 
         try {
             const formData = new FormData();
-            formData.append('coverLetter', coverLetter);
-            formData.append('jobId', 1?.toString() || '');
-            if (selectedFile) {
-                formData.append('cvPdf', selectedFile);
+            formData.append('coverLetter', values.coverLetter);
+            formData.append('jobId', 2?.toString() || '');
+            if (values.selectedFile) {
+                formData.append('cvPdf', values.selectedFile);
             }
 
             const result = await dispatch(applicationCreate(formData));
 
             if (result.payload?.response?.success === true) {
-                toast.success('Application submitted successfully!');
-                setCoverLetter('');
-                setSelectedFile(null);
+                toast.success('Ứng tuyển công việc thành công!');
+                resetForm();
+                setOpen(false)
             } else {
                 toast.error('Failed to submit application');
             }
         } catch (error) {
+            console.log(error);
             toast.error('Something went wrong. Please try again.');
         } finally {
             setLoading(false);
@@ -131,7 +129,7 @@ function JobPosting() {
     };
 
     return (
-        <Box bgcolor={'#f4f5f5'}>
+        <Box bgcolor={'#f4f5f5'} flexWrap={'wrap'}>
             <Header />
             <Formik
                 initialValues={{
@@ -234,17 +232,11 @@ function JobPosting() {
                     </Typography>
                 </Breadcrumbs>
                 <Stack
-                    sx={{
-                        display: "grid",
-                        gridTemplateColumns: {
-                            xs: "1fr",
-                            sm: " minmax(350px, 1fr) minmax(200px, 280px) ",
-                            md: " minmax(400px, 1fr) minmax(280px, 400px) ",
-                        },
-                    }}
+                    direction={'row'}
                     gap={2}
+                    flexWrap={'wrap'}
                 >
-                    <Stack gap={2}>
+                    <Stack gap={2} flex={2}>
                         <Card variant="outlined">
                             <Stack spacing={2} sx={{ padding: 2 }}>
                                 <Typography level="h4">
@@ -364,7 +356,7 @@ function JobPosting() {
                             </Stack>
                         </Card>
                     </Stack>
-                    <Stack gap={2}>
+                    <Stack gap={2} flex={1}>
                         <Card variant="outlined">
                             <Stack spacing={1} sx={{ padding: 2 }}>
                                 <Typography level="h4">CÔNG TY CỔ PHẦN GIÁO DỤC HỌC VIỆN ANH NGỮ VIỆT NAM</Typography>
@@ -499,7 +491,7 @@ function JobPosting() {
                                     validationSchema={validationSchema}
                                     onSubmit={handleSubmit}
                                 >
-                                    {({ isSubmitting, setFieldValue, errors, touched }) => (
+                                    {({ isSubmitting, values, setFieldValue, errors, touched }) => (
                                         <Form>
                                             <Stack gap={2}>
                                                 <Stack gap={1}>
@@ -522,7 +514,6 @@ function JobPosting() {
                                                                 onChange={(e) => {
                                                                     const file = e.target.files?.[0];
                                                                     if (file) {
-                                                                        setSelectedFile(file);
                                                                         setFieldValue('selectedFile', file);
                                                                     }
                                                                 }}
@@ -536,10 +527,10 @@ function JobPosting() {
                                                                     <Typography level="body-sm">Hỗ trợ định dạng .doc, .docx, pdf có kích thước dưới 5MB</Typography>
 
                                                                     <Stack direction={'row'} gap={1} alignItems={'center'}>
-                                                                        {selectedFile &&
+                                                                        {values.selectedFile  &&
                                                                             <Stack direction={'row'} alignItems={'center'}>
                                                                                 <DescriptionOutlinedIcon color="success" sx={{ fontSize: '30px' }} />
-                                                                                <Typography color="success">{selectedFile.name}</Typography>
+                                                                                <Typography color="success">{values.selectedFile.name}</Typography>
                                                                             </Stack>
                                                                         }
                                                                         <Button color="success">Chọn CV</Button>

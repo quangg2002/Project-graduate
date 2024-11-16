@@ -37,7 +37,7 @@ export default function Login() {
   const navigate = useNavigate();
   const queryParams = new URLSearchParams(useLocation().search);
   const { isLoading } = useSelector((state: RootState) => state.loadingReducer);
-  const [sessionExp, setSessionExp] = useState(queryParams.get('expired') == null ? false : true);
+  const [sessionExp] = useState(queryParams.get('expired') == null ? false : true);
 
   useEffect(() => {
     sessionExp && toast.info("Phiên đăng nhập của bạn đã kết thúc", { autoClose: false })
@@ -92,7 +92,7 @@ export default function Login() {
           >
             <Box sx={{ gap: 1, display: "flex", alignItems: "center" }}>
               <img src={require('../../assets/images/logocompany.png')} style={{ width: '35px', height: 'auto', marginLeft: 10 }} alt="My Image" />
-              <Typography level="title-lg">Company</Typography>
+              <Typography level="title-lg">FindJob Company</Typography>
             </Box>
           </Box>
           <Box

@@ -117,13 +117,13 @@ public class FavoriteJobService {
             List<FavoriteJobResponse> favoriteJobResponses = favoriteJobs.stream()
                     .map(favJob -> {
                         Job job = jobRepository.findById(favJob.getJobId()).orElse(null);
-                        System.out.println(job);
+                        System.out.println("job: " + favJob.getJobId() + job);
                         if (job == null) {
                             return null;
                         }
-
+                        System.out.println(job.getEmployer());
                         Company company = companyRepository.findById(job.getEmployer()).orElse(null);
-                        System.out.println(company);
+                        System.out.println("company" +company);
                         return new FavoriteJobResponse(
                                 job.getId(),
                                 job.getTitle(),
@@ -131,7 +131,7 @@ public class FavoriteJobService {
                                 job.getRequirements(),
                                 job.getLocation(),
                                 job.getSalary(),
-                                job.getStatus().name(),
+                                job.getStatus() != null ? job.getStatus().name() : null,
                                 company != null ? company.getId() : null,
                                 company != null ? company.getCompanyName() : null,
                                 company != null ? company.getLogo() : null,

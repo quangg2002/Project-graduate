@@ -92,7 +92,6 @@ public class MailServiceImpl implements MailService {
                             </div>
                             <p>Please change this password after logging in for security purposes.</p>
                             <p>If you didn't request this password reset, please contact our support team immediately.</p>
-                            <br>
                             <p>Best regards,<br>Your Application Team</p>
                         </div>
                     </body>

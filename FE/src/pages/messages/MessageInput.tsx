@@ -44,7 +44,7 @@ export default function MessageInput(props: MessageInputProps) {
             <Stack
               direction="row"
               sx={{
-                justifyContent: 'space-between',
+                justifyContent: 'flex-end',
                 alignItems: 'center',
                 flexGrow: 1,
                 py: 1,
@@ -53,7 +53,7 @@ export default function MessageInput(props: MessageInputProps) {
                 borderColor: 'divider',
               }}
             >
-              <div>
+              {/* <div>
                 <IconButton size="sm" variant="plain" color="neutral">
                   <FormatBoldRoundedIcon />
                 </IconButton>
@@ -66,7 +66,7 @@ export default function MessageInput(props: MessageInputProps) {
                 <IconButton size="sm" variant="plain" color="neutral">
                   <FormatListBulletedRoundedIcon />
                 </IconButton>
-              </div>
+              </div> */}
               <Button
                 size="sm"
                 color="primary"

@@ -1,7 +1,6 @@
 import Login from "./pages/authentication/Login";
 import Register from "./pages/authentication/Register";
 import Forgotpass from "./pages/authentication/Forgotpass";
-import MyProfile from "./pages/employee/MyProfile";
 import Getstart from "./pages/Getstart";
 import Navbar from "./components/Header";
 import Addjob from "./pages/company/Addjob";
@@ -35,7 +34,6 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgotpass" element={<Forgotpass />} />
-        <Route path="/myprofile" element={<MyProfile />} />
         <Route path="/getstart" element={<Getstart />} />
         <Route path="/navbar" element={<Navbar />} />
         <Route path="/mes" element={<MyMessages />} />
@@ -52,7 +50,7 @@ function App() {
       </Routes>
       
       <ToastContainer
-        position="top-center"
+        position="top-right"
         autoClose={4000}
         hideProgressBar={false}
         newestOnTop={false}

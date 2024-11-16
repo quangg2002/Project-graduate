@@ -25,9 +25,6 @@ const SignUpSchema = Yup.object().shape({
     username: Yup.string()
         .required('Username là bắt buộc')
         .max(255, 'User không được quá 255 ký tự'),
-    fullname: Yup.string()
-        .max(255, 'Họ và tên không được quá 255 ký tự')
-        .required('Họ và tên là bắt buộc'),
     email: Yup.string()
         .email('Email không hợp lệ')
         .required('Email là bắt buộc'),
@@ -146,7 +143,6 @@ export default function Register() {
                                         const result = await dispatch(
                                             registerEmployee({
                                                 username: values.username,
-                                                fullname: values.fullname,
                                                 email: values.email,
                                                 password: values.password,
                                                 retryPassword: values.retryPassword
@@ -181,14 +177,6 @@ export default function Register() {
                                                         {errors.username}
                                                     </Typography>
                                                 )}
-                                            </FormControl>
-
-                                            <FormControl required>
-                                                <FormLabel>Họ và tên</FormLabel>
-                                                <Field name="fullname" as={Input} />
-                                                <Typography color="danger" level='body-xs'>
-                                                    {errors.fullname}
-                                                </Typography>
                                             </FormControl>
 
                                             <FormControl required>

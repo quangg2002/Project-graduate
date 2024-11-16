@@ -2,7 +2,7 @@ import { useCallback, useState, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import { confirmAlert } from 'react-confirm-alert'; // Import thư viện
 import 'react-confirm-alert/src/react-confirm-alert.css';
-import { Box, Breadcrumbs, Button, Card, CardCover, CssBaseline, CssVarsProvider, Divider, FormControl, FormLabel, Input, Link, Modal, ModalClose, Sheet, Stack, Tab, TabList, TabPanel, Tabs, Typography } from "@mui/joy";
+import { Box, Breadcrumbs, Button, Card, CardActions, CardCover, CardOverflow, Divider, FormControl, FormLabel, IconButton, Input, Link, Modal, ModalClose, Radio, RadioGroup, Sheet, Stack, Tab, TabList, TabPanel, Tabs, Typography } from "@mui/joy";
 import Header from "../../components/Header";
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
@@ -12,9 +12,13 @@ import * as Yup from "yup";
 import useAppDispatch from '../../hooks/useAppDispatch';
 import { toast } from 'react-toastify';
 import { updateEmployee } from '../../services/employeeApi';
+import { changePassword } from '../../services/authApi';
 import { getEmployees } from '../../services/employeeApi';
 import { startLoading, stopLoading } from '../../redux/slice/loadingSlice';
 import { useNavigate } from 'react-router-dom';
+import EyeOutlined from '@ant-design/icons/EyeOutlined';
+import EyeInvisibleOutlined from '@ant-design/icons/EyeInvisibleOutlined';
+import authService from '../../services/authService';
 
 const SignUpSchema = Yup.object().shape({
     fullName: Yup.string()
@@ -22,13 +26,46 @@ const SignUpSchema = Yup.object().shape({
     email: Yup.string()
         .email('Email không hợp lệ'),
     phoneNumber: Yup.string(),
-    workPosition: Yup.string(),
+    gender: Yup.string(),
+    address: Yup.string(),
     career: Yup.string(),
+});
+
+const SignUpSchema2 = Yup.object().shape({
+    currentPassword: Yup.string()
+        .required('Mật khẩu là bắt buộc')
+    ,
+    newPassword: Yup.string()
+        .min(6, 'Mật khẩu phải có ít nhất 6 ký tự')
+        .max(25, 'Mật khẩu không được vượt quá 25 ký tự')
+        //   .matches(/[a-z]/, 'Mật khẩu phải bao gồm chữ thường')
+        //   .matches(/[A-Z]/, 'Mật khẩu phải bao gồm chữ hoa')
+        //   .matches(/\d/, 'Mật khẩu phải bao gồm ký tự số')
+        //   .matches(/[!#@$%^&*)(+=._-]/, 'Mật khẩu phải bao gồm ít nhất một ký tự đặc biệt')
+        .required('Mật khẩu là bắt buộc'),
+    confirmPassword: Yup.string()
+        .oneOf([Yup.ref('newPassword')], 'Mật khẩu không khớp')
+        .required('Nhập lại mật khẩu là bắt buộc'),
 });
 
 
 export default function Info() {
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [passwordVisibility, setPasswordVisibility] = useState({
+        currentPassword: false,
+        newPassword: false,
+        confirmPassword: false,
+    });
+
+    const togglePasswordVisibility = (field: string) => {
+        setPasswordVisibility((prev) => ({
+            ...prev,
+            [field]: !prev[field],
+        }));
+    };
+
+    const ROLE = useState(authService.getRole)
+
     const [employeeData, setEmployeeData] = useState({
         fullName: '',
         gender: '',
@@ -36,6 +73,7 @@ export default function Info() {
         address: '',
         email: '',
         phoneNumber: '',
+        career: '',
     })
 
     const navigate = useNavigate();
@@ -104,6 +142,7 @@ export default function Info() {
         const fetchEmployeeData = async () => {
             try {
                 const action = await dispatch(getEmployees());
+                console.log(action.payload.response?.data)
                 if (getEmployees.fulfilled.match(action)) {
                     const response = action.payload.response?.data;
                     if (response) {
@@ -114,6 +153,7 @@ export default function Info() {
                             address: response.address,
                             email: response.email,
                             phoneNumber: response.phoneNumber,
+                            career: response.career
                         });
                         setPreviewUrl(response.avatar)
                     }
@@ -128,11 +168,10 @@ export default function Info() {
 
 
     return (
-        <CssVarsProvider disableTransitionOnChange>
-            <CssBaseline />
+        <Box bgcolor={'#f0F0F0'} minHeight={'100vh'}>
             <Header />
 
-            <Box component="main" className="MainContent" width={'95%'} alignSelf={'center'} justifySelf={'center'}>
+            <Box component="main" className="MainContent" width={'95%'} alignSelf={'center'} justifySelf={'center'} >
                 <Box display={'flex'} alignItems={'center'} mt={2} mb={2}>
                     <Breadcrumbs
                         size="sm"
@@ -156,9 +195,9 @@ export default function Info() {
                 <Box
                     borderRadius={10}
                     boxShadow={'xl'}
-                    border={'2px solid #F0F0F0'}
+                    border={'2px solid #FFF'}
                     sx={{
-                        bgcolor: "#f0F0F0",
+                        bgcolor: "#FFF",
                         px: { xs: 2, md: 6 },
                         pt: {
                             xs: 'calc(12px + var(--Header-height))',
@@ -218,15 +257,13 @@ export default function Info() {
                                     </Box>
                                 }
                             </Box>
-                            <Typography level="title-md">Work Link</Typography>
-                            <Typography level="title-md">Skin</Typography>
                         </Box>
                         <Box display={'flex'} flexDirection={"column"} gap={2} maxWidth={'100%'}>
                             <Box display={'flex'} justifyContent={'space-between'} alignItems={'center'}>
-                                <Box>
+                                <Stack gap={0.5}>
                                     <Typography level="h3">{employeeData.fullName}</Typography>
-                                    <Typography level="h4" color="primary">Vị trí: BackEnd</Typography>
-                                </Box>
+                                    <Typography level="title-lg" color="primary">Nghề nghiệp: {employeeData.career}</Typography>
+                                </Stack>
                                 <Button variant="soft" color="primary" size="sm" onClick={() => setOpenEdit(true)} startDecorator={<BorderColorIcon sx={{ fontSize: 'sm' }} />}>
                                     <Typography level="body-sm">Chỉnh sửa</Typography>
                                 </Button>
@@ -248,26 +285,35 @@ export default function Info() {
                                     >
                                         Thông tin
                                     </Tab>
-                                    <Tab indicatorPlacement={"bottom"}>
-                                        Kinh Nghiệm
+                                    <Tab
+                                        sx={{
+                                            '&.Mui-selected': {
+                                                color: 'var(--variant-plainColor, rgba(var(--joy-palette-primary-mainChannel) / 1))',
+                                            },
+                                        }}
+                                    >
+                                        Thay đổi mật khẩu
                                     </Tab>
                                 </TabList>
                                 <TabPanel value={0}>
-                                    <Box
-                                        sx={{
-                                            display: "grid",
-                                            gridTemplateColumns: "30% 60%",
-                                            gap: { xs: 4, sm: 8, md: 12 }
-                                        }}
-                                    >
-                                        <Box display={'flex'} flexDirection={'column'} gap={1}>
+                                    <Stack gap={1}>
+                                        <Stack direction={"row"}
+                                            sx={{
+                                                display: "grid",
+                                                gridTemplateColumns: "25% 75%",
+                                            }}
+                                        >
                                             <Typography>Họ và tên: </Typography>
+                                            <Typography color="primary" flex={1}>{employeeData.fullName}</Typography>
+                                        </Stack>
+
+                                        <Stack direction={"row"}
+                                            sx={{
+                                                display: "grid",
+                                                gridTemplateColumns: "25% 75%",
+                                            }}
+                                        >
                                             <Typography>Email: </Typography>
-                                            <Typography>Số điện thoại: </Typography>
-                                            <Typography>Giới tính: </Typography>
-                                        </Box>
-                                        <Box display={'flex'} flexDirection={'column'} gap={1}>
-                                            <Typography color="primary">{employeeData.fullName}</Typography>
                                             <Typography
                                                 color="primary"
                                                 sx={{
@@ -278,10 +324,142 @@ export default function Info() {
                                             >
                                                 {employeeData.email}
                                             </Typography>
+                                        </Stack>
+
+                                        <Stack direction={"row"}
+                                            sx={{
+                                                display: "grid",
+                                                gridTemplateColumns: "25% 75%",
+                                            }}
+                                        >
+                                            <Typography>Số điện thoại: </Typography>
                                             <Typography color="primary">{employeeData.phoneNumber}</Typography>
+                                        </Stack>
+
+                                        <Stack direction={"row"}
+                                            sx={{
+                                                display: "grid",
+                                                gridTemplateColumns: "25% 75%",
+                                            }}
+                                        >
+                                            <Typography>Giới tính: </Typography>
                                             <Typography color="primary">{employeeData.gender}</Typography>
-                                        </Box>
-                                    </Box>
+                                        </Stack>
+
+                                        <Stack direction={"row"}
+                                            sx={{
+                                                display: "grid",
+                                                gridTemplateColumns: "25% 75%",
+                                            }}
+                                        >
+                                            <Typography>Địa chỉ cư trú: </Typography>
+                                            <Typography color="primary">{employeeData.address}</Typography>
+                                        </Stack>
+
+                                    </Stack>
+                                </TabPanel>
+
+                                <TabPanel value={1}>
+
+                                    <Stack sx={{ gap: 1, mt: 2 }}>
+                                        <Formik
+                                            initialValues={{
+                                                currentPassword: '',
+                                                newPassword: '',
+                                                confirmPassword: '',
+                                            }}
+                                            validationSchema={SignUpSchema2}
+                                            onSubmit={async (values, { setSubmitting }) => {
+                                                try {
+                                                    dispatch(startLoading());
+                                                    const result = await dispatch(
+                                                        changePassword({
+                                                            oldPassword: values.currentPassword,
+                                                            newPassword: values.newPassword,
+                                                            confirmPassword: values.confirmPassword,
+                                                        })
+                                                    );
+                                                    dispatch(stopLoading());
+
+                                                    if (result?.payload?.response?.success === true) {
+                                                        toast.success('Thay đổi mật khẩu thành công');
+                                                    } else if (result?.payload?.response?.message === "Auth password old incorrect") {
+                                                        toast.error('Mật khẩu không chính xác');
+                                                    } else if (result?.payload?.response?.message === "Auth password same as old") {
+                                                        toast.error('Mật khẩu mới không được trùng với mật khẩu hiện tại');
+                                                    } else {
+                                                        toast.error('Thay đổi mật khẩu thất bại');
+                                                    }
+
+                                                } catch (error) {
+                                                    toast.error('Đã có lỗi xảy ra.');
+                                                } finally {
+                                                    setSubmitting(false);
+                                                }
+                                            }}
+                                        >
+                                            {({ isSubmitting, errors, touched }) => (
+                                                <Form>
+                                                    <Stack sx={{ gap: 2 }}>
+                                                        <FormControl required>
+                                                            <FormLabel>Mật khẩu hiện tại</FormLabel>
+                                                            <Field
+                                                                name="currentPassword"
+                                                                as={Input}
+                                                                type={passwordVisibility.currentPassword ? 'text' : 'password'}
+                                                                endDecorator={
+                                                                    <IconButton onClick={() => togglePasswordVisibility('currentPassword')}>
+                                                                        {passwordVisibility.currentPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+                                                                    </IconButton>
+                                                                }
+                                                            />
+                                                            <Typography color="danger" sx={{ fontSize: '12px' }}>
+                                                                {errors.currentPassword}
+                                                            </Typography>
+                                                        </FormControl>
+
+                                                        <FormControl required>
+                                                            <FormLabel>Mật khẩu</FormLabel>
+                                                            <Field
+                                                                name="newPassword"
+                                                                as={Input}
+                                                                type={passwordVisibility.newPassword ? 'text' : 'password'}
+                                                                endDecorator={
+                                                                    <IconButton onClick={() => togglePasswordVisibility('newPassword')}>
+                                                                        {passwordVisibility.newPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+                                                                    </IconButton>
+                                                                }
+                                                            />
+                                                            <Typography color="danger" sx={{ fontSize: '12px' }}>
+                                                                {errors.newPassword}
+                                                            </Typography>
+
+                                                        </FormControl>
+
+                                                        <FormControl required>
+                                                            <FormLabel>Nhập lại mật khẩu</FormLabel>
+                                                            <Field
+                                                                name="confirmPassword"
+                                                                as={Input}
+                                                                type={passwordVisibility.confirmPassword ? 'text' : 'password'}
+                                                                endDecorator={
+                                                                    <IconButton onClick={() => togglePasswordVisibility('confirmPassword')}>
+                                                                        {passwordVisibility.confirmPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+                                                                    </IconButton>
+                                                                }
+                                                            />
+                                                            <Typography color="danger" sx={{ fontSize: '12px' }}>
+                                                                {errors.confirmPassword}
+                                                            </Typography>
+                                                        </FormControl>
+                                                        <Button type="submit" size="sm" variant="solid" color='success' disabled={isSubmitting}>
+                                                            Lưu
+                                                        </Button>
+                                                    </Stack>
+                                                </Form>
+                                            )}
+                                        </Formik>
+                                    </Stack>
                                 </TabPanel>
                             </Tabs>
                         </Box>
@@ -311,11 +489,12 @@ export default function Info() {
                     <Box id="modal-desc" mt={2} gap={3}>
                         <Formik
                             initialValues={{
-                                fullName: 'Ngô Minh Quang',
-                                workPosition: '',
-                                email: 'ngominhquang12a2nl@gmail.com',
-                                phoneNumber: '',
-                                career: '',
+                                fullName: employeeData.fullName,
+                                address: employeeData.address,
+                                email: employeeData.email,
+                                phoneNumber: employeeData.phoneNumber,
+                                career: employeeData.career,
+                                gender: employeeData.gender,
                             }}
                             validationSchema={SignUpSchema}
                             onSubmit={async (values, { setSubmitting }) => {
@@ -326,6 +505,10 @@ export default function Info() {
                                     formData.append('fullName', values.fullName);
                                     formData.append('email', values.email);
                                     formData.append('phoneNumber', values.phoneNumber);
+                                    formData.append('gender', values.gender);
+                                    formData.append('career', values.career);
+                                    formData.append('address', values.address);
+
                                     const result = await dispatch(updateEmployee(formData));
 
                                     dispatch(stopLoading());
@@ -333,7 +516,7 @@ export default function Info() {
                                     console.log(result?.payload?.response?.success)
                                     if (result?.payload?.response?.success == true) {
                                         toast.success('Cập nhật thành công');
-                                        navigate('/info')
+                                        window.location.reload();
                                     } else {
                                         toast.error('Cập nhật thất bại');
                                     }
@@ -365,8 +548,22 @@ export default function Info() {
                                         />
                                     </FormControl>
 
-                                    <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} flexWrap={'wrap'} mb={2}>
+                                    <FormControl>
+                                        <FormLabel>Giới tính</FormLabel>
+                                        <Field name="gender">
+                                            {({ field }) => (
+                                                <RadioGroup {...field}>
+                                                    <Stack direction={'row'} gap={4}>
+                                                        <Radio value="Nam" label="Nam" />
+                                                        <Radio value="Nữ" label="Nữ" />
+                                                    </Stack>
+                                                </RadioGroup>
+                                            )}
+                                        </Field>
+                                    </FormControl>
 
+
+                                    <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} flexWrap={'wrap'} mb={2} mt={1}>
                                         <FormControl sx={{ flexGrow: 1 }}>
                                             <FormLabel>Nghề Nghiệp</FormLabel>
                                             <Field
@@ -376,9 +573,9 @@ export default function Info() {
                                             />
                                         </FormControl>
                                         <FormControl sx={{ flexGrow: 1 }}>
-                                            <FormLabel>Vị trí làm việc</FormLabel>
+                                            <FormLabel>Địa chỉ cư trú</FormLabel>
                                             <Field
-                                                name="workPosition"
+                                                name="address"
                                                 as={Input}
                                                 placeholder='Nhập vị trí làm việc'
                                             />
@@ -406,6 +603,6 @@ export default function Info() {
                     </Box>
                 </Sheet>
             </Modal>
-        </CssVarsProvider>
+        </Box>
     );
 }

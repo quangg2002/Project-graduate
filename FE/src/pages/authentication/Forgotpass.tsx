@@ -94,7 +94,7 @@ export default function Forgotpass() {
                     >
                         <Box sx={{ gap: 1, display: "flex", alignItems: "center" }}>
                             <img src={require('../../assets/images/logocompany.png')} style={{ width: '35px', height: 'auto', marginLeft: 10 }} alt="My Image" />
-                            <Typography level="title-lg">Company</Typography>
+                            <Typography level="title-lg">FindJob Company</Typography>
                         </Box>
                         <ColorSchemeToggle />
                     </Box>
@@ -178,19 +178,16 @@ export default function Forgotpass() {
                     top: 0,
                     bottom: 0,
                     left: { xs: 0, md: 0 },
-                    transition:
-                        "background-image var(--Transition-duration), left var(--Transition-duration) !important",
-                    transitionDelay: "calc(var(--Transition-duration) + 0.1s)",
-                    backgroundColor: "background.leve2",
+                    // transition:
+                    //     "background-image var(--Transition-duration), left var(--Transition-duration) !important",
+                    // transitionDelay: "calc(var(--Transition-duration) + 0.1s)",
+                    // backgroundColor: "background.leve2",
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                     backgroundRepeat: "no-repeat",
                     backgroundImage:
-                        "url(https://images.unsplash.com/photo-1527181152855-fc03fc7949c8?auto=format&w=1000&dpr=2)",
-                    [theme.getColorSchemeSelector("dark")]: {
-                        backgroundImage:
-                            "url(https://images.unsplash.com/photo-1572072393749-3ca9c8ea0831?auto=format&w=1000&dpr=2)",
-                    },
+                        "url(https://images.unsplash.com/photo-1572072393749-3ca9c8ea0831?auto=format&w=1000&dpr=2)"
+                    
                 })}
             />
         </CssVarsProvider>

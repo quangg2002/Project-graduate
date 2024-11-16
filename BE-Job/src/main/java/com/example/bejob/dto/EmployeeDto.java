@@ -18,4 +18,5 @@ public class EmployeeDto {
     private String address;
     @IsValidImage(maxSize = 10 * 1024 * 1024)
     private MultipartFile avatar;
+    private String career;
 }

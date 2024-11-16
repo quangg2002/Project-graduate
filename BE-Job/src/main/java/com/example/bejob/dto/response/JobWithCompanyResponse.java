@@ -19,9 +19,13 @@ public class JobWithCompanyResponse {
     private String district;
     private String city;
     private String deadline;
+    private String salary;
+    private String jobType;
+    private String yearExperience;
     private LocalDateTime createdAt;
     private String companyName;
     private String companyLogo;
     private String companyDescription;
+    private String companyAddress;
     private UserInfoDto employer;
 }

@@ -113,6 +113,7 @@ public class EmployeeService {
             }
 
             EmployeeResponse employeeResponse = modelMapper.map(employee, EmployeeResponse.class);
+            employeeResponse.setEmail(user.getEmail());
             employeeResponse.setFullName(user.getFullName());
             employeeResponse.setAvatar(user.getAvatar());
             employeeResponse.setPhoneNumber(user.getPhoneNumber());

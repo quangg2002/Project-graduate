@@ -1,14 +1,8 @@
 package com.example.bejob.service;
 
-import com.example.bejob.entity.Application;
-import com.example.bejob.entity.Employee;
-import com.example.bejob.entity.Job;
-import com.example.bejob.entity.User;
+import com.example.bejob.entity.*;
 import com.example.bejob.enums.ApplicationStatus;
-import com.example.bejob.repository.ApplicationRepository;
-import com.example.bejob.repository.EmployeeRepository;
-import com.example.bejob.repository.JobRepository;
-import com.example.bejob.repository.UserRepository;
+import com.example.bejob.repository.*;
 import com.example.bejob.dto.request.ApplicationRequest;
 import com.example.bejob.dto.response.ApplicationResponse;
 import com.example.bejob.enums.StatusCodeEnum;
@@ -31,6 +25,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ApplicationService {
 
+    private final EmployerRepository employerRepository;
+    private final CompanyRepository companyRepository;
     @Value("${minio.url.public}")
     private String publicUrl;
 
@@ -72,10 +68,22 @@ public class ApplicationService {
                         StatusCodeEnum.JOB4000
                 );
             }
+            System.out.println("job: " + job.get().getEmployer());
+
+
+            Optional <Company> company = companyRepository.findByEmployerId(job.get().getEmployer());
+            if (company.isEmpty()) {
+                return ResponseBuilder.badRequestResponse(
+                        languageService.getMessage("not.found.company"),
+                        StatusCodeEnum.COMPANY0002
+                );
+            }
+            System.out.println("company: " + company.get());
 
             Application application = Application.builder()
                     .jobId(applicationRequest.getJobId())
                     .employeeId(employee.getId())
+                    .companyId(company.get().getId())
                     .coverLetter(applicationRequest.getCoverLetter())
                     .status(ApplicationStatus.PENDING)
                     .build();
@@ -108,6 +116,75 @@ public class ApplicationService {
         }
     }
 
+    public ResponseEntity<ResponseDto<List<ApplicationResponse>>> getApplicationWithCompany(){
+        try{
+            String userName = authenticationService.getUserFromContext();
+
+            Optional<User> optionalUser = userRepository.findByUsername(userName);
+
+            if (optionalUser.isEmpty()) {
+                return ResponseBuilder.badRequestResponse(
+                        languageService.getMessage("auth.signup.user.not.found"),
+                        StatusCodeEnum.AUTH0016
+                );
+            }
+
+            User user = optionalUser.get();
+
+            Employer employer = employerRepository.findByUserId(user.getId());
+            if (employer == null) {
+                return ResponseBuilder.badRequestResponse(
+                        languageService.getMessage("not.found.employer"),
+                        StatusCodeEnum.EMPLOYER4000
+                );
+            }
+
+            Optional<Company> company = companyRepository.findByEmployerId(employer.getId());
+            if (company == null) {
+                return ResponseBuilder.badRequestResponse(
+                        languageService.getMessage("company.not.found"),
+                        StatusCodeEnum.COMPANY0002
+                );
+            }
+
+            List<Application> applications = applicationRepository.findByCompanyId(company.get().getId());
+
+            List<ApplicationResponse> applicationResponses = applications.stream()
+                    .map(application -> {
+                        Job job = jobRepository.findById(application.getJobId())
+                                .orElseThrow(() -> new RuntimeException("Job not found"));
+                        Employee employee = employeeRepository.findById(application.getEmployeeId())
+                                .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+                        return ApplicationResponse.builder()
+                                .id(application.getId())
+                                .jobId(job.getId())
+                                .jobTitle(job.getTitle())
+                                .address(job.getLocation())
+                                .cvPdf(application.getCvPdf())
+                                .employeeId(employee.getId())
+                                .fullName(userRepository.findById(employee.getUserId()).get().getFullName())
+                                .email(userRepository.findById(employee.getUserId()).get().getEmail())
+                                .coverLetter(application.getCoverLetter())
+                                .status(application.getStatus())
+                                .createdAt(application.getCreatedAt())
+                                .build();
+                    })
+                    .collect(Collectors.toList());
+
+            return ResponseBuilder.badRequestResponse(
+                    "get list success",
+                    applicationResponses,
+                    StatusCodeEnum.APPLICATION1000
+            );
+        }
+        catch (Exception e) {
+            return ResponseBuilder.badRequestResponse(
+                    "get list fail",
+                    StatusCodeEnum.APPLICATION0001
+            );
+        }
+    }
 
     public ResponseEntity<ResponseDto<List<ApplicationResponse>>> getAllApplications() {
         List<Application> applications = applicationRepository.findAll();
@@ -127,6 +204,7 @@ public class ApplicationService {
                             .cvPdf(application.getCvPdf())
                             .employeeId(employee.getId())
                             .fullName(userRepository.findById(employee.getUserId()).get().getFullName())
+                            .email(userRepository.findById(employee.getUserId()).get().getEmail())
                             .coverLetter(application.getCoverLetter())
                             .status(application.getStatus())
                             .createdAt(application.getCreatedAt())

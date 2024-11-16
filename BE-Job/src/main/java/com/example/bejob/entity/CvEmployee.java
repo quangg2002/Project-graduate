@@ -13,22 +13,23 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Table(name = "applications")
-public class Application extends Auditable {
+@Table(name = "cv")
+public class CvEmployee extends Auditable{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long jobId;
+    private String nameEmployee;
 
-    private Long employeeId;
+    private String positionWork;
 
-    private Long companyId;
+    private String phoneEmployee;
 
-    @Enumerated(EnumType.STRING)
-    private ApplicationStatus status;
+    private String emailEmployee;
 
-    private String coverLetter;
+    private String addressEmployee;
 
-    private String cvPdf;
+    private String dobEmployee;
+
+    private String avata;
 }

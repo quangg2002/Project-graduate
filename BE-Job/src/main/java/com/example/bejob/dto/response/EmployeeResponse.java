@@ -31,5 +31,5 @@ public class EmployeeResponse {
 
     private String avatar;
 
-    private String positionWork;
+    private String career;
 }

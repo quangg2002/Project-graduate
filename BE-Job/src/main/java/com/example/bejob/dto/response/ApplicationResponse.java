@@ -20,6 +20,7 @@ public class ApplicationResponse {
     private Long employeeId;
     private String cvPdf;
     private String fullName;
+    private String email;
     private String coverLetter;
     private ApplicationStatus status;
     private LocalDateTime createdAt;

@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,6 +28,11 @@ public class ApplicationController {
     @GetMapping()
     public ResponseEntity<ResponseDto<List<ApplicationResponse>>> getAllApplications() {
         return applicationService.getAllApplications();
+    }
+
+    @GetMapping("/with-company")
+    public ResponseEntity<ResponseDto<List<ApplicationResponse>>> getAllApplicationsWithCompany() {
+        return applicationService.getApplicationWithCompany();
     }
 
     @PatchMapping("/{id}/status")

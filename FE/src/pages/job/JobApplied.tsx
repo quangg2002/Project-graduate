@@ -41,16 +41,11 @@ export default function JobApplied() {
                 </Breadcrumbs>
 
                 <Stack
-                    sx={{
-                        display: "grid",
-                        gridTemplateColumns: {
-                            xs: "1fr",
-                            sm: " minmax(350px, 1fr) minmax(250px, 280px) ",
-                            md: " minmax(400px, 1fr) minmax(280px, 400px) ",
-                        },
-                    }}
-                    gap={2}
+                   direction={'row'}
+                   gap={2}
+                   flexWrap={'wrap'}
                 >
+                    <Stack flex={2}>
                     <Card>
                         <Stack gap={2}>
                             <Stack direction={'row'} justifyContent={'space-between'}>
@@ -69,14 +64,12 @@ export default function JobApplied() {
                                         },
                                     }}
                                 >
-                                    <Option value="dog">Dog</Option>
-                                    <Option value="cat">Cat</Option>
-                                    <Option value="fish">Fish</Option>
-                                    <Option value="bird">Bird</Option>
+                                    <Option value="dog">Đã ứng tuyển</Option>
+                                    <Option value="cat">NTD đã xem</Option>
                                 </Select>
                             </Stack>
 
-                            <Card variant="outlined">
+                            <Card variant="outlined" sx={{ bgcolor: '#f2fbf6' }}>
                                 <Stack direction={'row'} gap={2}>
                                     <img src="https://example.com/logo.png" alt="Company Logo" style={{ width: 100, height: 100, border: '1px solid #000', borderRadius: '5px' }} />
                                     <Stack flexGrow={1} gap={2}>
@@ -87,7 +80,7 @@ export default function JobApplied() {
                                             </Stack>
                                             <Typography>BSS Group</Typography>
                                             <Typography>Thời gian ứng tuyển: 13-09-2024</Typography>
-                                            <Stack direction={'row'} justifyContent={'space-between'}>
+                                            <Stack direction={'row'} justifyContent={'space-between'} flexWrap={'wrap'} gap={1}>
                                                 <Typography>CV đã ứng tuyển: <Link underline="always" color="success">CV tải lên</Link></Typography>
                                                 <Stack direction={'row'} gap={1}>
                                                     <Chip
@@ -117,6 +110,9 @@ export default function JobApplied() {
                             </Card>
                         </Stack>
                     </Card>
+                    </Stack>
+
+                    <Stack flex={1}>
                     <Card variant="outlined">
                         <Stack gap={2}>
                             <Typography level="title-lg">Gợi ý việc làm phù hợp</Typography>
@@ -159,6 +155,7 @@ export default function JobApplied() {
                             </Card>
                         </Stack>
                     </Card>
+                    </Stack>
                 </Stack>
             </Box>
         </Box>
