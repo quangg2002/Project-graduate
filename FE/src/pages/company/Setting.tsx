@@ -3,22 +3,34 @@ import { CssVarsProvider } from "@mui/joy/styles";
 import CssBaseline from "@mui/joy/CssBaseline";
 import Header from "../../components/Header";
 import Navigation from "../../components/Navigation";
-import { Tabs, TabList, Tab, TabPanel, Stack, FormControl, FormLabel, Input, IconButton, Typography, Button, Drawer, ModalClose, DialogTitle, Autocomplete, Card, CardCover, Textarea } from '@mui/joy';
+import { Tabs, TabList, Tab, TabPanel, Stack, FormControl, FormLabel, Input, IconButton, Typography, Button, Drawer, ModalClose, DialogTitle, Autocomplete, Card, CardCover, Textarea, Select, MenuItem, Option, Avatar } from '@mui/joy';
 import LockIcon from '@mui/icons-material/Lock';
 import Person2Icon from '@mui/icons-material/Person2';
 import ApartmentIcon from '@mui/icons-material/Apartment';
 import { Field, Form, Formik } from "formik";
 import * as Yup from "yup";
-import useAppDispatch from '../../hooks/useAppDispatch';
-import { toast } from 'react-toastify';
-import { startLoading, stopLoading } from '../../redux/slice/loadingSlice';
-import { changePassword } from '../../services/authApi';
 import { useCallback, useState, useEffect } from "react";
 import EyeOutlined from '@ant-design/icons/EyeOutlined';
 import EyeInvisibleOutlined from '@ant-design/icons/EyeInvisibleOutlined';
+import RoomOutlinedIcon from '@mui/icons-material/RoomOutlined';
 import city from '../../utils/citis.json';
 import districts from '../../utils/districts.json';
+import { toast } from 'react-toastify';
 import { useDropzone } from "react-dropzone";
+import { startLoading, stopLoading } from '../../redux/slice/loadingSlice';
+import useAppDispatch from '../../hooks/useAppDispatch';
+import { changePassword } from '../../services/authApi';
+import { getEmployer } from '../../services/employerApi';
+import { updateEmployer } from '../../services/employerApi';
+import { getListCompany } from '../../services/companyApi';
+import { updateCompany } from '../../services/companyApi';
+import { selectClasses } from '@mui/joy/Select';
+
+interface Company {
+    id: number;
+    companyName: string;
+    logo: string;
+}
 
 const SignUpSchema2 = Yup.object().shape({
     currentPassword: Yup.string()
@@ -40,17 +52,30 @@ const SignUpSchema2 = Yup.object().shape({
 
 export default function Setting() {
 
-    const [selectedCity, setSelectedCity] = useState(null);
-    const [selectedDistrict, setSelectedDistrict] = useState(null);
     const [filteredDistricts, setFilteredDistricts] = useState([]);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [previewUrlAvata, setPreviewUrlAvata] = useState<string | null>(null);
+    const [listCompany, setListCompany] = useState<Company[]>([]);
 
-    const genderOptions = [
-        { label: "Nam", value: "male" },
-        { label: "Nữ", value: "female" },
-    ];
-
+    const [employer, setEmployer] = useState({
+        company: {
+            id: '',
+            companyName: '',
+            description: '',
+            website: '',
+            logo: null,
+            address: '',
+            city: null,
+            district: null,
+            scale: '',
+        },
+        fullName: '',
+        email: '',
+        gender: '',
+        phoneNumber: '',
+        address: '',
+        avatar: null,
+    });
 
     const onDropLogo = useCallback((acceptedFiles: File[]) => {
         const file = acceptedFiles[0];
@@ -88,11 +113,10 @@ export default function Setting() {
 
 
     const handleCityChange = (event, newValue) => {
-        setSelectedCity(newValue);
-        setSelectedDistrict(null);
         if (newValue) {
+            const selectedCity = city.find((option) => option.name === newValue);
             const districtsForCity = districts.filter(
-                (district: any) => district.city_id === newValue.id
+                (district: any) => district.city_id === selectedCity.id
             );
             setFilteredDistricts(districtsForCity);
         } else {
@@ -114,8 +138,129 @@ export default function Setting() {
         }));
     };
 
-    const handleSubmitChangeInfoCity = async (values) => {
+    useEffect(() => {
+        const fetchEmployeeData = async () => {
+            try {
+                const action = await dispatch(getEmployer());
+                if (getEmployer.fulfilled.match(action)) {
+                    const response = action.payload.response?.data;
+                    if (response) {
+                        setEmployer({
+                            fullName: response.fullName,
+                            gender: response.gender,
+                            address: response.address,
+                            email: response.email,
+                            phoneNumber: response.phoneNumber,
+                            avatar: response.avatar,
+                            company: {
+                                id: response.company.id,
+                                companyName: response.company.companyName,
+                                description: response.company.description,
+                                website: response.company.website,
+                                logo: response.company.logo,
+                                address: response.company.address,
+                                city: response.company.city,
+                                district: response.company.district,
+                                scale: response.company.scale,
+                            },
+                        }); 
+                        setPreviewUrlAvata(response.avatar)
+                        setPreviewUrl(response.company.logo)
+                        setFilteredDistricts(districts.filter(
+                            (district: any) => district.city_id === response.company.city)
+                        )
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to fetch employer data:', error);
+            }
+        };
 
+        fetchEmployeeData();
+    }, [dispatch]);
+
+
+    useEffect(() => {
+        const fetchCompanyData = async () => {
+            try {
+                const action = await dispatch(getListCompany());
+                if (getListCompany.fulfilled.match(action)) {
+                    const response = action.payload.response?.data;
+
+                    if (response) {
+                        setListCompany(response.map((cpn: any) => ({ id: cpn.id, companyName: cpn.companyName, logo: cpn.logo })));
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to fetch employer data:', error);
+            }
+        };
+
+        fetchCompanyData();
+    }, [dispatch]);
+
+
+    const handleInfoEmployerChange = async (values, { resetForm }) => {
+        try {
+            dispatch(startLoading());
+
+            const formData = new FormData();
+            formData.append('fullName', values.fullName);
+            formData.append('email', values.email);
+            formData.append('phoneNumber', values.phoneNumber);
+            formData.append('gender', values.gender);
+            formData.append('address', values.address);
+            if (values.avt !== employer.avatar)
+                formData.append('avatar', values.avt);
+            formData.append('company', values.companyId);
+
+            const result = await dispatch(updateEmployer(formData));
+
+            dispatch(stopLoading());
+
+            console.log(result?.payload?.response?.success)
+            if (result?.payload?.response?.success === true) {
+                toast.success('Cập nhật thành công');
+            } else {
+                toast.error('Cập nhật thất bại');
+            }
+
+        } catch (error) {
+            toast.error('Đã có lỗi xảy ra.', error);
+            console.log(error)
+        }
+    }
+
+    const handleSubmitChangeCompany = async (values) => {
+        try {
+            dispatch(startLoading());
+
+            const formData = new FormData();
+            formData.append('companyName', values.companyName);
+            formData.append('address', values.address);
+            formData.append('city', values.city);
+            formData.append('district', values.district);
+            formData.append('website', values.website);
+            formData.append('scale', values.scale);
+            if (values.logo instanceof File)  
+                formData.append('logo', values.logo);
+            formData.append('description', values.description);
+
+            const result = await dispatch(updateCompany(formData));
+
+            dispatch(stopLoading());
+
+            console.log(result?.payload?.response?.success)
+            if (result?.payload?.response?.success === true) {
+                toast.success('Cập nhật thành công');
+            } else {
+                toast.error('Cập nhật thất bại');
+            }
+
+        } catch (error) {
+            toast.error('Đã có lỗi xảy ra.', error);
+            console.log(error)
+        }
     }
 
     return (
@@ -195,7 +340,7 @@ export default function Setting() {
                                         confirmPassword: '',
                                     }}
                                     validationSchema={SignUpSchema2}
-                                    onSubmit={async (values, { setSubmitting }) => {
+                                    onSubmit={async (values, { setSubmitting, resetForm }) => {
                                         try {
                                             dispatch(startLoading());
                                             const result = await dispatch(
@@ -209,6 +354,7 @@ export default function Setting() {
 
                                             if (result?.payload?.response?.success === true) {
                                                 toast.success('Thay đổi mật khẩu thành công');
+                                                resetForm()
                                             } else if (result?.payload?.response?.message === "Auth password old incorrect") {
                                                 toast.error('Mật khẩu không chính xác');
                                             } else if (result?.payload?.response?.message === "Auth password same as old") {
@@ -293,17 +439,15 @@ export default function Setting() {
 
                             <Formik
                                 initialValues={{
-                                    avt: null,
-                                    fullName: '',
-                                    address: '',
-                                    email: '',
-                                    phoneNumber: '',
-                                    gender: '',
-                                    companyId: '',
+                                    avt: employer.avatar,
+                                    fullName: employer.fullName,
+                                    address: employer.address,
+                                    email: employer.email,
+                                    phoneNumber: employer.phoneNumber,
+                                    gender: employer.gender,
+                                    companyId: employer.company.id,
                                 }}
-                                onSubmit={async (values, { setSubmitting }) => {
-
-                                }}
+                                onSubmit={handleInfoEmployerChange}
                             >
                                 {({ isSubmitting, errors, touched, setFieldValue }) => (
                                     <Form>
@@ -365,6 +509,7 @@ export default function Setting() {
                                                         <Field
                                                             name="email"
                                                             as={Input}
+                                                            value={employer.email}
                                                             disabled
                                                         />
                                                     </FormControl>
@@ -374,15 +519,23 @@ export default function Setting() {
                                             <FormControl>
                                                 <FormLabel>Giới tính</FormLabel>
                                                 <Field name="gender">
-                                                    {() => (
-                                                        <Autocomplete
-                                                            options={genderOptions}
-                                                            getOptionLabel={(option: any) => option.label}
-                                                            onChange={(event, newValue: any) =>
-                                                                setFieldValue("gender", newValue?.value || "")
-                                                            }
-
-                                                        />
+                                                    {({ field, form }: any) => (
+                                                        <Select
+                                                            {...field}
+                                                            value={form.values.gender || employer.gender}
+                                                            onChange={(event, newValue) => form.setFieldValue("gender", newValue)}
+                                                            sx={{
+                                                                [`& .${selectClasses.indicator}`]: {
+                                                                    transition: '0.2s',
+                                                                    [`&.${selectClasses.expanded}`]: {
+                                                                        transform: 'rotate(-180deg)',
+                                                                    },
+                                                                },
+                                                            }}
+                                                        >
+                                                            <Option value="male">Nam</Option>
+                                                            <Option value="female">Nữ</Option>
+                                                        </Select>
                                                     )}
                                                 </Field>
                                             </FormControl>
@@ -390,15 +543,27 @@ export default function Setting() {
                                             <FormControl sx={{ flex: 1 }}>
                                                 <FormLabel>Công ty</FormLabel>
                                                 <Field name="companyId">
-                                                    {() => (
-                                                        <Autocomplete
-                                                            options={genderOptions} 
-                                                            getOptionLabel={(option: any) => option.label}
-                                                            onChange={(event, newValue: any) =>
-                                                                setFieldValue("companyId", newValue?.value || "")
-                                                            }
-                                                            defaultValue={[genderOptions[0]]}
-                                                        />
+                                                    {({ field, form }: any) => (
+                                                        <Select
+                                                            {...field}
+                                                            value={form.values.companyId || employer.company.id}
+                                                            onChange={(event, newValue) => form.setFieldValue("companyId", newValue)}
+                                                            sx={{
+                                                                [`& .${selectClasses.indicator}`]: {
+                                                                    transition: '0.2s',
+                                                                    [`&.${selectClasses.expanded}`]: {
+                                                                        transform: 'rotate(-180deg)',
+                                                                    },
+                                                                },
+                                                            }}
+                                                        >
+                                                            {listCompany.map((cpn) => (
+                                                                <Option key={cpn.id} value={cpn.id}>
+                                                                    <Avatar size="sm" src={cpn.logo} />
+                                                                    {cpn.companyName}
+                                                                </Option>
+                                                            ))}
+                                                        </Select>
                                                     )}
                                                 </Field>
                                             </FormControl>
@@ -408,7 +573,7 @@ export default function Setting() {
                                                 <Field
                                                     name="address"
                                                     as={Input}
-                                                    placeholder='Nhập vị trí làm việc'
+                                                    placeholder='Nhập địa chỉ cư trú'
                                                 />
                                             </FormControl>
 
@@ -435,16 +600,16 @@ export default function Setting() {
                         <TabPanel value={2}>
                             <Formik
                                 initialValues={{
-                                    nameCity: '',
-                                    location: '',
-                                    city: '',
-                                    district: '',
-                                    website: '',
-                                    scale: '',
-                                    logo: '',
-                                    description: ''
+                                    companyName: employer.company.companyName,
+                                    address: employer.company.address,
+                                    city: employer.company.city,
+                                    district: employer.company.district,
+                                    website: employer.company.website,
+                                    scale: employer.company.scale.toString(),
+                                    logo: employer.company.logo,
+                                    description: employer.company.description
                                 }}
-                                onSubmit={handleSubmitChangeInfoCity}
+                                onSubmit={handleSubmitChangeCompany}
                             >
                                 {({ isSubmitting, errors, touched, values, setFieldValue }) => (
                                     <Form>
@@ -452,7 +617,7 @@ export default function Setting() {
                                             <FormControl required>
                                                 <FormLabel>Tên công ty</FormLabel>
                                                 <Field
-                                                    name="nameCity"
+                                                    name="companyName"
                                                     as={Input}
                                                     placeholder="Nhập tên công ty"
                                                 />
@@ -461,7 +626,7 @@ export default function Setting() {
                                             <FormControl required>
                                                 <FormLabel>Trụ sở chính</FormLabel>
                                                 <Field
-                                                    name="location"
+                                                    name="address"
                                                     as={Input}
                                                     placeholder="Trụ sở chính"
                                                 />
@@ -472,26 +637,32 @@ export default function Setting() {
                                                     <FormLabel>Tỉnh / Thành phố</FormLabel>
                                                     <Autocomplete
                                                         placeholder="Tỉnh/ Thành phố"
-                                                        options={city}
-                                                        getOptionLabel={(option: any) => option.name}
+                                                        options={city.map((option) => option.name)}
+                                                        freeSolo
+                                                        value={[city.find((item) => item.id === values.city)?.name]}
                                                         onChange={(event, newValue: any) => {
                                                             handleCityChange(event, newValue)
-                                                            setFieldValue("city", newValue ? newValue.id.toString() : "");
+                                                            values.district = ''
+                                                            const selectedCity = city.find((option) => option.name === newValue);
+                                                            setFieldValue("city", selectedCity ? selectedCity.id : "");
                                                         }}
                                                     />
+
                                                 </Stack>
                                                 <Stack flex={1} gap={1}>
                                                     <FormLabel>Quận / Huyện</FormLabel>
                                                     <Autocomplete
                                                         placeholder="Quận Huyện"
-                                                        options={filteredDistricts}
-                                                        getOptionLabel={(option: any) => option.name}
-                                                        value={selectedDistrict}
+                                                        options={filteredDistricts.map((option) => option.name)}
+                                                        value={[districts.find((item) => item.id === values.district)?.name]}
+                                                        freeSolo
                                                         onChange={(event, newValue: any) => {
-                                                            setSelectedDistrict(newValue)
-                                                            setFieldValue("district", newValue ? newValue.id.toString() : "");
+                                                            const selectedDistrict = districts.find((option) => 
+                                                                option.city_id === values.city && option.name === newValue
+                                                            );
+                                                            setFieldValue("district", newValue ? selectedDistrict.id : "");
                                                         }}
-                                                        disabled={!selectedCity}
+                                                        // disabled={!selectedCity}
                                                     />
                                                 </Stack>
                                             </Stack>
@@ -509,16 +680,32 @@ export default function Setting() {
                                                 </Stack>
                                                 <Stack flex={1} gap={1}>
                                                     <FormLabel>Quy mô</FormLabel>
-                                                    <Autocomplete
-                                                        placeholder="Quy mô"
-                                                        options={filteredDistricts}
-                                                        getOptionLabel={(option: any) => option.name}
-                                                        value={selectedDistrict}
-                                                        onChange={(event, newValue: any) => {
-                                                            setSelectedDistrict(newValue)
-                                                            setFieldValue("district", newValue ? newValue.id.toString() : "");
-                                                        }}
-                                                    />
+                                                    <Field name="scale">
+                                                        {({ field, form }: any) => (
+                                                            <Select
+                                                                {...field}
+                                                                value={form.values.scale || employer.company.scale.toString()}
+                                                                onChange={(event, newValue) => {
+                                                                    form.setFieldValue("scale", newValue)
+                                                                }}
+                                                                sx={{
+                                                                    [`& .${selectClasses.indicator}`]: {
+                                                                        transition: '0.2s',
+                                                                        [`&.${selectClasses.expanded}`]: {
+                                                                            transform: 'rotate(-180deg)',
+                                                                        },
+                                                                    },
+                                                                }}
+                                                            >
+                                                                <Option value="1">1-10 nhân viên</Option>
+                                                                <Option value="2">11-50 nhân viên</Option>
+                                                                <Option value="3">51-200 nhân viên</Option>
+                                                                <Option value="4">201-500 nhân viên</Option>
+                                                                <Option value="5">501-1000 nhân viên</Option>
+                                                                <Option value="6">1000+ nhân viên</Option>
+                                                            </Select>
+                                                        )}
+                                                    </Field>
                                                 </Stack>
                                             </Stack>
 
@@ -531,8 +718,8 @@ export default function Setting() {
                                                             onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                                                                 const file = event.currentTarget.files?.[0];
                                                                 if (file) {
-                                                                    setFieldValue('logo', file);
                                                                     setPreviewUrl(URL.createObjectURL(file))
+                                                                    setFieldValue('logo', file);
                                                                 }
                                                             }}
                                                         />

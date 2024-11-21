@@ -187,7 +187,7 @@ public class EmployerService {
         }
 
         try {
-            modelMapper.map(employer, employerUpdateRequest);
+            modelMapper.map(employerUpdateRequest, employer);
 
             if (employerUpdateRequest.getAvatar() != null && !employerUpdateRequest.getAvatar().isEmpty()) {
                 String avatar = fileService.uploadImageFile(employerUpdateRequest.getAvatar(), user.getAvatar(), "AVATAR");

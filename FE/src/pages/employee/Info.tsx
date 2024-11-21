@@ -46,10 +46,13 @@ const SignUpSchema2 = Yup.object().shape({
     confirmPassword: Yup.string()
         .oneOf([Yup.ref('newPassword')], 'Mật khẩu không khớp')
         .required('Nhập lại mật khẩu là bắt buộc'),
-});
-
-
+    });
+    
+    
 export default function Info() {
+    const [openEdit, setOpenEdit] = useState<boolean>(false);
+    const dispatch = useAppDispatch();
+    
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [passwordVisibility, setPasswordVisibility] = useState({
         currentPassword: false,
@@ -147,9 +150,6 @@ export default function Info() {
         }
     });
 
-    const [openEdit, setOpenEdit] = useState<boolean>(false);
-
-    const dispatch = useAppDispatch();
 
     useEffect(() => {
         const fetchEmployeeData = async () => {

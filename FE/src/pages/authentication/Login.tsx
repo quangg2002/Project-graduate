@@ -63,7 +63,7 @@ export default function Login() {
                     navigate('/info');
                 } else {
                     resetForm()
-                    navigate('/company');
+                    navigate('/overview');
                 }
             } else {
                 toast.error('Đăng nhập thất bại. Kiểm tra lại tài khoản mật khẩu của bạn');

@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import Box from "@mui/material/Box";
 import { CssVarsProvider } from "@mui/joy/styles";
 import CssBaseline from "@mui/joy/CssBaseline";
@@ -18,14 +17,56 @@ import TaskIcon from '@mui/icons-material/Task';
 import NoteAddIcon from '@mui/icons-material/NoteAdd';
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
 import InsertLinkIcon from '@mui/icons-material/InsertLink';
+import useAppDispatch from '../../hooks/useAppDispatch';
+import { startLoading, stopLoading } from '../../redux/slice/loadingSlice';
+import { useState, useEffect } from "react";
+import { getCompany } from '../../services/companyApi';
+import city from '../../utils/citis.json';
+import districts from '../../utils/districts.json';
 
 export default function Overview() {
 
+    const dispatch = useAppDispatch();
     const [openAlert, setOpenAlert] = useState(false);
-    const url = "https://www.topcv.vn/cong-ty/cong-ty-mau";
+    const [company, setCompany] = useState({
+        companyName: '',
+        description: '',
+        website: '',
+        logo: '',
+        address: '',
+        city: null,
+        district: null,
+    });
+
+    useEffect(() => {
+        const fetchEmployeeData = async () => {
+            try {
+                dispatch(startLoading)
+                const action = await dispatch(getCompany());
+                dispatch(stopLoading)
+                if (getCompany.fulfilled.match(action)) {
+                    const response = action.payload.response?.data;
+                    if (response)
+                        setCompany({
+                            companyName: response.companyName,
+                            description: response.description,
+                            website: response.website,
+                            logo: response.logo,
+                            address: response.address,
+                            city: response.city,
+                            district: response.district
+                        });
+                }
+            } catch (error) {
+                console.error('Failed to fetch company data:', error);
+            }
+        };
+
+        fetchEmployeeData();
+    }, [dispatch]);
 
     const handleCopy = () => {
-        navigator.clipboard.writeText(url).then(() => {
+        navigator.clipboard.writeText(company.website).then(() => {
             setOpenAlert(true);
             setTimeout(() => setOpenAlert(false), 3000);
         });
@@ -129,7 +170,7 @@ export default function Overview() {
                                     <Typography color='primary' level="h4">Tin tuyển dụng</Typography>
                                 </Stack>
                                 <Stack flex={1}>
-                                    <CampaignIcon color='primary' sx={{ fontSize: '30px' }}/>
+                                    <CampaignIcon color='primary' sx={{ fontSize: '30px' }} />
                                 </Stack>
                             </Stack>
                         </Stack>
@@ -140,7 +181,7 @@ export default function Overview() {
                                     <Typography color='success' level="h4">CV tiếp nhận</Typography>
                                 </Stack>
                                 <Stack flex={1}>
-                                    <TaskIcon color='success' sx={{ fontSize: '30px' }}/>
+                                    <TaskIcon color='success' sx={{ fontSize: '30px' }} />
                                 </Stack>
                             </Stack>
                         </Stack>
@@ -151,7 +192,7 @@ export default function Overview() {
                                     <Typography color='danger' level="h4">CV ứng tuyển mới</Typography>
                                 </Stack>
                                 <Stack flex={1}>
-                                    <LibraryAddIcon sx={{ fontSize: '30px', color: '#C41C1C' }}/>
+                                    <LibraryAddIcon sx={{ fontSize: '30px', color: '#C41C1C' }} />
                                 </Stack>
                             </Stack>
                         </Stack>
@@ -171,11 +212,11 @@ export default function Overview() {
                             >
 
                                 <Stack gap={2}>
-                                    <Typography level="h3">Công ty cổ phần chứng khoán FPT</Typography>
+                                    <Typography level="h3">{company.companyName}</Typography>
                                     <Stack direction={'row'} gap={4}>
                                         <Stack direction={'row'}>
                                             <LanguageIcon sx={{ color: '#000' }} /> &nbsp;
-                                            <Typography level="title-md" >http://www.fpts.com.vn/</Typography>
+                                            <Typography level="title-md" >{company.website}</Typography>
                                         </Stack>
 
                                         <Stack direction={'row'}>
@@ -196,7 +237,7 @@ export default function Overview() {
                                     <CardOverflow sx={{ background: "linear-gradient(90deg, #BFFFA7, #18A5A7)", py: 1 }} >
                                         <Typography level="h4">Giới thiệu công ty</Typography>
                                     </CardOverflow>
-                                    <Typography>Danh sách 1 việc làm đã lưu</Typography>
+                                    <Typography>{company.description}</Typography>
                                 </Card>
                             </Stack>
                             <Stack flex={1}>
@@ -205,7 +246,7 @@ export default function Overview() {
                                         <Typography level="h4">Thông tin liên hệ</Typography>
                                     </CardOverflow>
                                     <Typography level="title-md"><LocationOnIcon sx={{ color: '#00b14f' }} />Địa chỉ công ty</Typography>
-                                    <Typography ml={1}>Phú Phúc, Lý Nhân, Hà Nam</Typography>
+                                    <Typography ml={1}>{company.address}, {districts.at(company.district - 1).name}, {city.at(company.city - 1).name} </Typography>
 
                                     <Typography level="title-md"><NearMeIcon sx={{ color: '#00b14f' }} />Sao chép đường dẫn</Typography>
                                     <Input
@@ -215,7 +256,7 @@ export default function Overview() {
                                                 <ContentCopyIcon />
                                             </IconButton>
                                         }
-                                        value={"https://www.topcv.vn/cong-ty/cong-ty-mau"}
+                                        value={company.website}
                                     />
                                 </Card>
                             </Stack>
@@ -234,8 +275,8 @@ export default function Overview() {
                         }
                         setOpenAlert(false);
                     }}
-                    sx={{justifyContent: 'center'}}
-                    startDecorator={<InsertLinkIcon/>}
+                    sx={{ justifyContent: 'center' }}
+                    startDecorator={<InsertLinkIcon />}
                 >
                     Sao chép thành công
                 </Snackbar>

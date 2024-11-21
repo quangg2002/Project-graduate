@@ -21,6 +21,7 @@ public class Company {
 
     private String companyName;
 
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
     private String website;
@@ -32,4 +33,6 @@ public class Company {
     private Long city;
 
     private Long district;
+
+    private Long scale;
 }

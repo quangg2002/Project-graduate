@@ -41,6 +41,8 @@ public class CompanyService {
 
         String userName = authenticationService.getUserFromContext();
 
+        System.out.println("userName: " + userName);
+
         Optional<User> user = userRepository.findByUsername(userName);
 
         if (user.isEmpty()) {
@@ -98,7 +100,7 @@ public class CompanyService {
         }
 
         Optional<Company> companyOpt = companyRepository.findById(employer.getCompany());
-
+        System.out.println(companyOpt);
         if (companyOpt.isEmpty()) {
             return ResponseBuilder.badRequestResponse(
                     languageService.getMessage("company.not.found"),
@@ -107,6 +109,7 @@ public class CompanyService {
         }
 
         Company company = companyOpt.get();
+        String avt = companyOpt.get().getLogo();
 
         try {
             modelMapper.map(companyRequest, company);
@@ -122,6 +125,9 @@ public class CompanyService {
                 } else {
                     company.setLogo(publicUrl + "/" + logo);
                 }
+            }
+            else {
+                company.setLogo(avt);
             }
 
             companyRepository.save(company);

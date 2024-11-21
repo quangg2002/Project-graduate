@@ -78,14 +78,9 @@ const validationSchema = Yup.object({
 
 function JobPosting() {
     const [open, setOpen] = useState<boolean>(false)
-    const [coverLetter, setCoverLetter] = useState('');
     const dispatch = useAppDispatch();
     const [loading, setLoading] = useState(false);
-    const [citis, setCitis] = useState([]);
-
-    useEffect(() => {
-        setCitis(city);
-    }, []);
+ 
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
         const file = acceptedFiles[0];
@@ -171,7 +166,7 @@ function JobPosting() {
                                             <Option value="" disabled>
                                                 Địa điểm
                                             </Option>
-                                            {citis.map(city => (
+                                            {city.map(city => (
                                                 <Option key={city.id} value={city.name}>
                                                     {city.name}
                                                 </Option>
