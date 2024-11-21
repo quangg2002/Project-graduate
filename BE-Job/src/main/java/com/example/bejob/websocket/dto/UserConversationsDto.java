@@ -1,4 +1,4 @@
-package com.example.bejob.dto;
+package com.example.bejob.websocket.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,6 +10,9 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserConversationsDto {
+    /**
+     * User id chatting with
+     */
     private Long userId;
     private String name;
     private String avtUrl;

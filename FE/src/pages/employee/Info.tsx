@@ -2,7 +2,7 @@ import { useCallback, useState, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import { confirmAlert } from 'react-confirm-alert'; // Import thư viện
 import 'react-confirm-alert/src/react-confirm-alert.css';
-import { Box, Breadcrumbs, Button, Card, CardActions, CardCover, CardOverflow, Divider, FormControl, FormLabel, IconButton, Input, Link, Modal, ModalClose, Radio, RadioGroup, Sheet, Stack, Tab, TabList, TabPanel, Tabs, Typography } from "@mui/joy";
+import { Box, Breadcrumbs, Button, Card, CardCover, Divider, FormControl, FormLabel, IconButton, Input, Link, Modal, ModalClose, Radio, RadioGroup, Sheet, Stack, Tab, TabList, TabPanel, Tabs, Typography } from "@mui/joy";
 import Header from "../../components/Header";
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
@@ -76,55 +76,68 @@ export default function Info() {
         career: '',
     })
 
-    const navigate = useNavigate();
-
     const onDrop = useCallback((acceptedFiles: File[]) => {
         const file = acceptedFiles[0];
 
         confirmAlert({
-            title: 'Xác nhận',
-            message: 'Bạn có chắc chắn muốn cập nhật thông tin cá nhân với hình ảnh mới này không?',
-            buttons: [
-                {
-                    label: 'Có',
-                    onClick: async () => {
-                        const formData = new FormData();
-                        formData.append('avatar', file);
-
-                        const result = await dispatch(updateEmployee(formData));
-                        if (result?.payload?.response?.success === true) {
-                            toast.success('Cập nhật thông tin cá nhân thành công');
-                        } else {
-                            toast.error('Cập nhật thông tin cá nhân thất bại');
-                        }
-
-                        setPreviewUrl(URL.createObjectURL(file));
-                    },
-                    style: {
-                        backgroundColor: '#4caf50',
-                        color: 'white',
-                        border: 'none',
-                        padding: '10px 20px',
-                        borderRadius: '5px',
-                        cursor: 'pointer',
-                    },
-                },
-                {
-                    label: 'Không',
-                    onClick: () => {
-                        console.log('Cập nhật bị hủy bỏ');
-                    },
-                    style: {
-                        backgroundColor: '#f44336',
-                        color: 'white',
-                        border: 'none',
-                        padding: '10px 20px',
-                        borderRadius: '5px',
-                        cursor: 'pointer',
-                    },
-                }
-            ]
-        });
+            customUI: ({ onClose }) => (
+                <div
+                    style={{
+                        width: '400px',
+                        backgroundColor: '#282c34',
+                        color: 'white', 
+                        padding: '20px',
+                        borderRadius: '10px',
+                        textAlign: 'center',
+                        boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+                    }}
+                >
+                    <p style={{ color: '#ffcc00', fontSize: '18px' }}>Xác nhận</p>
+                    <p>Bạn có chắc chắn muốn cập nhật thông tin cá nhân với hình ảnh mới này không?</p>
+                    <br/>
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+                        <button
+                            onClick={async () => {
+                                const formData = new FormData();
+                                formData.append('avatar', file);
+        
+                                const result = await dispatch(updateEmployee(formData));
+                                if (result?.payload?.response?.success === true) {
+                                    setPreviewUrl(URL.createObjectURL(file));
+                                    toast.success('Cập nhật thông tin cá nhân thành công');
+                                } else {
+                                    toast.error('Cập nhật thông tin cá nhân thất bại');
+                                }
+                                onClose();
+                            }}
+                            style={{
+                                backgroundColor: '#4caf50',
+                                color: 'white',
+                                border: 'none',
+                                padding: '10px 20px',
+                                borderRadius: '5px',
+                                cursor: 'pointer',
+                            }}
+                        >
+                            Có
+                        </button>
+                        <button
+                            onClick={onClose}
+                            style={{
+                                backgroundColor: '#f44336',
+                                color: 'white',
+                                border: 'none',
+                                padding: '10px 20px',
+                                borderRadius: '5px',
+                                cursor: 'pointer',
+                            }}
+                        >
+                            Không
+                        </button>
+                    </div>
+                </div>
+            ),
+        });        
     }, []);
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -142,7 +155,6 @@ export default function Info() {
         const fetchEmployeeData = async () => {
             try {
                 const action = await dispatch(getEmployees());
-                console.log(action.payload.response?.data)
                 if (getEmployees.fulfilled.match(action)) {
                     const response = action.payload.response?.data;
                     if (response) {

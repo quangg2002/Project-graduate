@@ -151,7 +151,6 @@ public class AuthenticationService {
     public ResponseEntity<ResponseDto<Object>> changePassword(ChangePasswordRequest request) {
         try {
             String username = getUserFromContext();
-            System.out.println("Username: " +username);
             if (username == null) {
                 return ResponseBuilder.badRequestResponse(
                         languageService.getMessage("auth.unauthorized"),
@@ -160,7 +159,6 @@ public class AuthenticationService {
             }
 
             Optional<User> userOptional = userRepository.findByUsername(username);
-            System.out.println(userOptional);
             if (userOptional.isEmpty()) {
                 return ResponseBuilder.badRequestResponse(
                         languageService.getMessage("auth.user.not.found"),
@@ -190,11 +188,6 @@ public class AuthenticationService {
 
             // 7. Có thể thêm logic gửi email thông báo đổi mật khẩu thành công
 //            sendPasswordChangeNotification(user);
-            String emailContent = "Chào " + user.getUsername() + ",\n\n"
-                    + "Mật khẩu của bạn đã được thay đổi thành công. Nếu bạn không thực hiện hành động này, "
-                    + "vui lòng liên hệ với chúng tôi ngay lập tức.\n\nCảm ơn bạn,\nĐội ngũ hỗ trợ.";
-
-            emailService.sendMail(user.getEmail(),"Notification Change Password Success", emailContent);
 
             return ResponseBuilder.okResponse(
                     languageService.getMessage("auth.password.changed.success"),
@@ -212,7 +205,6 @@ public class AuthenticationService {
 
     public ResponseEntity<ResponseDto<Object>> processForgotPassword(ForgotPasswordRequest request) {
         try {
-            System.out.println(request.getEmail());
             Optional<User> userOptional = userRepository.findByEmail(request.getEmail());
             if (userOptional.isEmpty()) {
                 return ResponseBuilder.badRequestResponse(

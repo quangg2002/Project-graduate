@@ -2,6 +2,7 @@ import { ChatProps, UserProps } from './types';
 
 export const users: UserProps[] = [
   {
+    id: '1',
     name: 'Steve E.',
     username: '@steveEberger',
     avatar: '/static/images/avatar/2.jpg',
@@ -9,6 +10,7 @@ export const users: UserProps[] = [
     gmail: ''
   },
   {
+    id: '2',
     name: 'Katherine Moss',
     username: '@kathy',
     avatar: '/static/images/avatar/3.jpg',
@@ -16,6 +18,7 @@ export const users: UserProps[] = [
     gmail: ''
   },
   {
+    id: '2',
     name: 'Phoenix Baker',
     username: '@phoenix',
     avatar: '/static/images/avatar/1.jpg',
@@ -23,6 +26,7 @@ export const users: UserProps[] = [
     gmail: ''
   },
   {
+    id: '2',
     name: 'Eleanor Pena',
     username: '@eleanor',
     avatar: '/static/images/avatar/4.jpg',
@@ -30,6 +34,7 @@ export const users: UserProps[] = [
     gmail: ''
   },
   {
+    id: '2',
     name: 'Kenny Peterson',
     username: '@kenny',
     avatar: '/static/images/avatar/5.jpg',
@@ -37,6 +42,7 @@ export const users: UserProps[] = [
     gmail: ''
   },
   {
+    id: '2',
     name: 'Al Sanders',
     username: '@al',
     avatar: '/static/images/avatar/6.jpg',
@@ -44,6 +50,7 @@ export const users: UserProps[] = [
     gmail: ''
   },
   {
+    id: '2',
     name: 'Melissa Van Der Berg',
     username: '@melissa',
     avatar: '/static/images/avatar/7.jpg',

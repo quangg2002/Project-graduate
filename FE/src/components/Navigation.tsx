@@ -5,16 +5,14 @@ import List from '@mui/joy/List';
 import ListSubheader from '@mui/joy/ListSubheader';
 import ListItem from '@mui/joy/ListItem';
 import ListItemButton from '@mui/joy/ListItemButton';
-import ListItemDecorator from '@mui/joy/ListItemDecorator';
 import ListItemContent from '@mui/joy/ListItemContent';
 
 import PeopleRoundedIcon from '@mui/icons-material/PeopleRounded';
-import AssignmentIndRoundedIcon from '@mui/icons-material/AssignmentIndRounded';
 import AssignmentRoundedIcon from '@mui/icons-material/AssignmentRounded';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import { Box, Typography } from '@mui/joy';
-import { useColorScheme } from '@mui/joy/styles';
+import SettingsIcon from '@mui/icons-material/Settings';
 
 function Toggler({
     defaultExpanded = false,
@@ -51,7 +49,6 @@ function Toggler({
 }
 
 export default function Navigation() {
-    const { mode } = useColorScheme();
     const location = useLocation();
 
     const underlineStyle = {
@@ -63,7 +60,7 @@ export default function Navigation() {
             height: '1px',
             bottom: 0,
             left: 0,
-            backgroundColor: mode === 'dark' ? 'white' : 'green',
+            backgroundColor: 'green',
             transition: 'width 0.3s ease, opacity 0.3s ease',
         },
         '&:hover::before': {
@@ -94,9 +91,7 @@ export default function Navigation() {
                             href="/overview"
                             sx={underlineStyle}
                         >
-                            <ListItemDecorator>
                                 <HomeRoundedIcon />
-                            </ListItemDecorator>
                             <ListItemContent>
                                 <Typography level="title-md">
                                     Tổng quan
@@ -157,15 +152,27 @@ export default function Navigation() {
                             href="/candidate"
                             sx={underlineStyle}
                         >
-                            <ListItemDecorator>
-                                <PeopleRoundedIcon fontSize="small" />
-                            </ListItemDecorator>
+                                <PeopleRoundedIcon/>
                             <ListItemContent>
-                                <Typography>Ứng viên</Typography>
+                                <Typography level="title-md">Ứng viên</Typography>
                             </ListItemContent>
                             <Chip variant="soft" color="primary" size="sm">
                                 2
                             </Chip>
+                        </ListItemButton>
+                    </ListItem>
+
+                    <ListItem nested>
+                        <ListItemButton 
+                            component="a"
+                            sx={underlineStyle} 
+                            href="/setting"
+                            selected={['/setting'].includes(location.pathname)} 
+                        >
+                            <SettingsIcon />
+                            <ListItemContent>
+                                <Typography level="title-md">Cài đặt tài khoản</Typography>
+                            </ListItemContent>
                         </ListItemButton>
                     </ListItem>
                 </List>

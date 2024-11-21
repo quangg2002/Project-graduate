@@ -39,7 +39,7 @@ logging:
   level:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-
+    org.springframework.web.socket: DEBUG
 jwt:
   expiry-time-secs: 3600
   access-key: c2VjcmV0QGtleS5hcGlfaGFzX2JlZW5fZGVzaWduZWRfYnlfVGF5TFE=
@@ -53,3 +53,4 @@ minio:
     public: ${S3_ENDPOINT:https://s3.deploy-hirexptit.io.vn}
     private: ${S3_ENDPOINT_PRIVATE:https://s3.deploy-hirexptit.io.vn}
   bucket: ${S3_BUCKET:hirex}
+

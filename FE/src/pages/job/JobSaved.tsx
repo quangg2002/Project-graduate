@@ -70,7 +70,7 @@ export default function JobSaved() {
                     <Stack flex={2}>
                         <Card>
                             <CardOverflow sx={{ bgcolor: '#f123', py: 3 }} >
-                                <Typography level="h4">Việc làm đã ứng tuyển</Typography>
+                                <Typography level="h4">Việc làm đã lưu</Typography>
                                 <Typography>Xem lại danh sách những việc làm mà bạn đã lưu trước đó. Ứng tuyển ngay để không bỏ lỡ cơ hội nghề nghiệp dành cho bạn.</Typography>
                             </CardOverflow>
                             <Typography>Danh sách 1 việc làm đã lưu</Typography>
@@ -91,7 +91,7 @@ export default function JobSaved() {
                             <Stack gap={2}>
                                 <Card variant="outlined" sx={{ bgcolor: '#f2fbf6' }}>
                                     <Stack direction={'row'} gap={2}>
-                                        <img src="https://example.com/logo.png" alt="Company Logo" style={{ width: 100, height: 100, border: '1px solid #000', borderRadius: '5px' }} />
+                                        <img src={require('../../assets/images/logocompany.png')} alt="Company Logo" style={{ width: 100, height: 100, border: '1px solid #000', borderRadius: '5px' }} />
                                         <Stack flexGrow={1} gap={1}>
                                             <Stack direction={'row'} justifyContent={'space-between'}>
                                                 <Typography level="title-lg">Fresher Java ( Có Lương Đào Tạo )</Typography>
@@ -134,7 +134,7 @@ export default function JobSaved() {
                                 <Card variant="outlined">
                                     <Stack gap={2}>
                                         <Stack direction={'row'} gap={1}>
-                                            <img src="https://example.com/logo.png" alt="Company Logo" style={{ width: 64, height: 64, border: '1px solid #000', borderRadius: '5px' }} />
+                                            <img src={require('../../assets/images/instagram.png')} alt="Company Logo" style={{ width: 64, height: 64, border: '1px solid #000', borderRadius: '15px' }} />
                                             <Stack flexGrow={1}>
                                                 <Typography level="title-md">Chương Trình Thực Tập Sinh Tiềm Năng 2024</Typography>
                                                 <Typography level="body-sm">Chương Trình Thực Tập Sinh Tiềm Năng 2024</Typography>

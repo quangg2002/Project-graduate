@@ -2,6 +2,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { toast } from "react-toastify";
 import axiosIns from "./axiosIns";
 
+// cai any dau tien la kieu return, cai thu 2 la kieu payload
 export const login = createAsyncThunk<any, { username: string, password: string }>(
     'authReducers/login',
     async (payload) => {
@@ -47,3 +48,14 @@ export const changePassword = createAsyncThunk<any, any>(
             .catch(error => { });
     }
 );
+
+    export const processForgotPassword = createAsyncThunk<any, any>(
+        'authReducers/processForgotPassword',
+        async (email) => {
+            return axiosIns.post('/auth/forgot-password', email, {
+                
+            })
+                .then(response => { return { response: response.data } })
+                .catch(error => { });
+        }
+    );

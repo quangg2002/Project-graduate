@@ -17,7 +17,6 @@ import DialogTitle from "@mui/joy/DialogTitle";
 import CssBaseline from "@mui/joy/CssBaseline";
 import { CssVarsProvider } from "@mui/joy/styles";
 import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
-import HelpRoundedIcon from "@mui/icons-material/HelpRounded";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
 import TeamNav from './Navigation'
@@ -27,7 +26,7 @@ import FolderRoundedIcon from "@mui/icons-material/FolderRounded";
 import { Divider } from "@mui/joy";
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import ForumIcon from '@mui/icons-material/Forum';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
 import BusinessCenterOutlinedIcon from '@mui/icons-material/BusinessCenterOutlined';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
@@ -40,6 +39,7 @@ import FolderOpenOutlinedIcon from '@mui/icons-material/FolderOpenOutlined';
 export default function Header() {
     const [open, setOpen] = React.useState(false);
     const location = useLocation();
+    const navigate = useNavigate();
 
     const [openDropdown, setOpenDropdown] = React.useState(null);
 
@@ -47,7 +47,7 @@ export default function Header() {
 
     const isSelected = (item) => {
         const paths = {
-            'Công việc': ['/info', '/job', '/work'],
+            'Công việc': ['/info', '/jobapplied', '/jobsaved'],
             'Hồ sơ & CV': ['/cv', '/resume'],
             'Danh sách công ty': ['/company'],
         };
@@ -67,7 +67,7 @@ export default function Header() {
     return (
         <CssVarsProvider disableTransitionOnChange>
             <CssBaseline />
-            <Stack
+            {/* <Stack
                 id="tab-bar"
                 direction="row"
                 spacing={1}
@@ -118,7 +118,7 @@ export default function Header() {
                 >
                     Files
                 </Button>
-            </Stack>
+            </Stack> */}
             <Box
                 component="header"
                 className="Header"
@@ -208,7 +208,7 @@ export default function Header() {
                                             }}
                                         >
                                             <MenuItem
-                                                //   selected={isSelected('Công việc')}
+                                                selected={['/findjob'].includes(location.pathname)} 
                                                 variant="soft"
                                             >
                                                 <SearchIcon color="success" />
@@ -216,8 +216,11 @@ export default function Header() {
                                             </MenuItem>
                                             <Divider />
                                             <MenuItem
-                                                //   selected={isAccount}
                                                 variant="soft"
+                                                selected={['/jobapplied'].includes(location.pathname)} 
+                                                onClick={() => {
+                                                    navigate('/jobapplied'); 
+                                                }}
                                             >
                                                 <BusinessCenterOutlinedIcon color="success" />
                                                 <Typography level="title-sm" py={1}>Việc làm đã ứng tuyển</Typography>
@@ -225,8 +228,11 @@ export default function Header() {
                                             </MenuItem>
 
                                             <MenuItem
-                                                //   selected={isAccount}
                                                 variant="soft"
+                                                selected={['/jobsaved'].includes(location.pathname)} 
+                                                onClick={() => {
+                                                    navigate('/jobsaved'); 
+                                                }}
                                             >
                                                 <FavoriteBorderIcon color="success" />
                                                 <Typography level="title-sm" py={1}>Việc làm đã lưu</Typography>
@@ -281,7 +287,7 @@ export default function Header() {
                             <MenuRoundedIcon />
                         </IconButton>
                         <Drawer
-                            sx={{ display: { xs: "inline-flex", sm: "none" } }}
+                            sx={{ display: { xs: "inline-flex", sm: "noninline-flexe", md: "none" } }}
                             open={open}
                             onClose={() => setOpen(false)}
                         >

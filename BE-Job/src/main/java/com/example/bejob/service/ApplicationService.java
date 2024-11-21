@@ -27,6 +27,7 @@ public class ApplicationService {
 
     private final EmployerRepository employerRepository;
     private final CompanyRepository companyRepository;
+    private final SalaryRepository salaryRepository;
     @Value("${minio.url.public}")
     private String publicUrl;
 
@@ -71,7 +72,7 @@ public class ApplicationService {
             System.out.println("job: " + job.get().getEmployer());
 
 
-            Optional <Company> company = companyRepository.findByEmployerId(job.get().getEmployer());
+            Optional<Company> company = companyRepository.findByEmployerId(job.get().getEmployer());
             if (company.isEmpty()) {
                 return ResponseBuilder.badRequestResponse(
                         languageService.getMessage("not.found.company"),
@@ -116,8 +117,8 @@ public class ApplicationService {
         }
     }
 
-    public ResponseEntity<ResponseDto<List<ApplicationResponse>>> getApplicationWithCompany(){
-        try{
+    public ResponseEntity<ResponseDto<List<ApplicationResponse>>> getApplicationWithCompany() {
+        try {
             String userName = authenticationService.getUserFromContext();
 
             Optional<User> optionalUser = userRepository.findByUsername(userName);
@@ -153,6 +154,7 @@ public class ApplicationService {
                     .map(application -> {
                         Job job = jobRepository.findById(application.getJobId())
                                 .orElseThrow(() -> new RuntimeException("Job not found"));
+
                         Employee employee = employeeRepository.findById(application.getEmployeeId())
                                 .orElseThrow(() -> new RuntimeException("Employee not found"));
 
@@ -163,6 +165,8 @@ public class ApplicationService {
                                 .address(job.getLocation())
                                 .cvPdf(application.getCvPdf())
                                 .employeeId(employee.getId())
+                                .companyName(null)
+                                .companyAvata(null)
                                 .fullName(userRepository.findById(employee.getUserId()).get().getFullName())
                                 .email(userRepository.findById(employee.getUserId()).get().getEmail())
                                 .coverLetter(application.getCoverLetter())
@@ -177,8 +181,7 @@ public class ApplicationService {
                     applicationResponses,
                     StatusCodeEnum.APPLICATION1000
             );
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return ResponseBuilder.badRequestResponse(
                     "get list fail",
                     StatusCodeEnum.APPLICATION0001
@@ -187,36 +190,71 @@ public class ApplicationService {
     }
 
     public ResponseEntity<ResponseDto<List<ApplicationResponse>>> getAllApplications() {
-        List<Application> applications = applicationRepository.findAll();
 
-        List<ApplicationResponse> applicationResponses = applications.stream()
-                .map(application -> {
-                    Job job = jobRepository.findById(application.getJobId())
-                            .orElseThrow(() -> new RuntimeException("Job not found"));
-                    Employee employee = employeeRepository.findById(application.getEmployeeId())
-                            .orElseThrow(() -> new RuntimeException("Employee not found"));
+        try {
+            String userName = authenticationService.getUserFromContext();
 
-                    return ApplicationResponse.builder()
-                            .id(application.getId())
-                            .jobId(job.getId())
-                            .jobTitle(job.getTitle())
-                            .address(job.getLocation())
-                            .cvPdf(application.getCvPdf())
-                            .employeeId(employee.getId())
-                            .fullName(userRepository.findById(employee.getUserId()).get().getFullName())
-                            .email(userRepository.findById(employee.getUserId()).get().getEmail())
-                            .coverLetter(application.getCoverLetter())
-                            .status(application.getStatus())
-                            .createdAt(application.getCreatedAt())
-                            .build();
-                })
-                .collect(Collectors.toList());
+            Optional<User> optionalUser = userRepository.findByUsername(userName);
 
-        return ResponseBuilder.badRequestResponse(
-                "get list success",
-                applicationResponses,
-                StatusCodeEnum.APPLICATION1000
-        );
+            if (optionalUser.isEmpty()) {
+                return ResponseBuilder.badRequestResponse(
+                        languageService.getMessage("auth.signup.user.not.found"),
+                        StatusCodeEnum.AUTH0016
+                );
+            }
+
+            User user = optionalUser.get();
+
+            Employee employee = employeeRepository.findByUserId(user.getId());
+            if (employee == null) {
+                return ResponseBuilder.badRequestResponse(
+                        languageService.getMessage("not.found.employee"),
+                        StatusCodeEnum.EMPLOYER4000
+                );
+            }
+
+            List<Application> applications = applicationRepository.findByEmployeeId(employee.getId());
+
+            List<ApplicationResponse> applicationResponses = applications.stream()
+                    .map(application -> {
+                        Job job = jobRepository.findById(application.getJobId())
+                                .orElseThrow(() -> new RuntimeException("Job not found"));
+
+                        Company company = companyRepository.findById(application.getCompanyId())
+                                .orElseThrow(() -> new RuntimeException("Company not found"));
+
+                        Salary salary = salaryRepository.findById(job.getSalary())
+                                .orElseThrow(() -> new RuntimeException("Salary not found"));
+
+                        return ApplicationResponse.builder()
+                                .id(application.getId())
+                                .jobId(job.getId())
+                                .jobTitle(job.getTitle())
+                                .salary(salary.getName())
+                                .address(job.getLocation())
+                                .cvPdf(application.getCvPdf())
+                                .employeeId(employee.getId())
+                                .companyName(company.getCompanyName())
+                                .companyAvata(company.getLogo())
+                                .fullName(userRepository.findById(employee.getUserId()).get().getFullName())
+                                .email(userRepository.findById(employee.getUserId()).get().getEmail())
+                                .coverLetter(application.getCoverLetter())
+                                .status(application.getStatus())
+                                .createdAt(application.getCreatedAt())
+                                .build();
+                    })
+                    .collect(Collectors.toList());
+            return ResponseBuilder.okResponse(
+                    languageService.getMessage("application.create.success"),
+                    applicationResponses,
+                    StatusCodeEnum.APPLICATION1000
+            );
+        } catch (Exception e) {
+            return ResponseBuilder.badRequestResponse(
+                    "FALSE",
+                    StatusCodeEnum.APPLICATION0001
+            );
+        }
     }
 
     public ResponseEntity<ResponseDto<ApplicationResponse>> updateStatus(Long id, ApplicationStatus status) {

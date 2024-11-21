@@ -1,6 +1,8 @@
-package com.example.bejob.repository;
+package com.example.bejob.websocket.repository;
 
 import com.example.bejob.entity.Message;
+import com.example.bejob.websocket.dto.MessageDto;
+import com.example.bejob.websocket.dto.UserConversationsDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

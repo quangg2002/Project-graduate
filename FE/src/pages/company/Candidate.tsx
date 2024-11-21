@@ -540,8 +540,8 @@ export default function Candidate() {
             }}
           >
             <FormControl sx={{ flex: 1 }} size="sm">
-              <FormLabel>Tìm kiếm theo tên ứng viên</FormLabel>
-              <Input size="sm" placeholder="Nhập tên ứng viên" startDecorator={<SearchIcon />} />
+              <FormLabel>Tìm kiếm theo tên việc đăng tuyển</FormLabel>
+              <Input size="sm" placeholder="Nhập tên công việc" startDecorator={<SearchIcon />} />
             </FormControl>
             <FormControl size="sm">
               <FormLabel>Trạng thái</FormLabel>
@@ -554,15 +554,6 @@ export default function Candidate() {
                 <Option value="pending">Phê duyệt</Option>
                 <Option value="refunded">Đang chờ</Option>
                 <Option value="cancelled">Từ chối</Option>
-              </Select>
-            </FormControl>
-            <FormControl size="sm">
-              <FormLabel>Category</FormLabel>
-              <Select size="sm" placeholder="All">
-                <Option value="all">All</Option>
-                <Option value="refund">Refund</Option>
-                <Option value="purchase">Purchase</Option>
-                <Option value="debit">Debit</Option>
               </Select>
             </FormControl>
             <FormControl size="sm">
@@ -643,9 +634,9 @@ export default function Candidate() {
                       Ứng viên
                     </Link>
                   </th>
-                  <th style={{ width: 140, padding: '12px 12px' }}>Status</th>
-                  <th style={{ width: 100, padding: '12px 6px' }}>Date</th>
-                  <th style={{ width: 140, padding: '12px 6px' }}> </th>
+                  <th style={{ width: 140, padding: '12px 6px' }}>Trạng thái</th>
+                  <th style={{ width: 100, padding: '12px 0px' }}>Ngày ứng tuyển</th>
+                  <th style={{ width: 140, padding: '0px 0px' }}> </th>
                 </tr>
               </thead>
               <tbody>

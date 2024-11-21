@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { CssVarsProvider } from '@mui/joy/styles';
 import GlobalStyles from '@mui/joy/GlobalStyles';
 import CssBaseline from '@mui/joy/CssBaseline';
@@ -17,9 +17,13 @@ import EyeOutlined from '@ant-design/icons/EyeOutlined';
 import EyeInvisibleOutlined from '@ant-design/icons/EyeInvisibleOutlined';
 import { startLoading, stopLoading } from '../../redux/slice/loadingSlice';
 import { registerEmployee } from '../../services/authApi';
+import { registerEmployer } from '../../services/authApi';
 import { toast } from 'react-toastify';
 import useAppDispatch from '../../hooks/useAppDispatch';
 import { useNavigate } from 'react-router-dom';
+import bg from '../../assets/images/bg-login.jpg';
+import { confirmAlert } from 'react-confirm-alert';
+import 'react-confirm-alert/src/react-confirm-alert.css';
 
 const SignUpSchema = Yup.object().shape({
     username: Yup.string()
@@ -49,6 +53,110 @@ export default function Register() {
     const [showPassword, setShowPassword] = useState(false);
     const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
+    const handleSubmit = async (values, { resetForm }) => {
+        try {
+            dispatch(startLoading());
+
+            confirmAlert({
+                customUI: ({ onClose }) => (
+                    <div
+                        style={{
+                            width: '400px',
+                            backgroundColor: '#282c34',
+                            color: 'white',
+                            padding: '20px',
+                            borderRadius: '10px',
+                            textAlign: 'center',
+                            boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+                        }}
+                    >
+                        <p>Bạn muốn đăng ký tài khoản với tư cách</p>
+                        <br />
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
+                            <button
+                                onClick={async () => {
+                                    try {
+                                        const result = await dispatch(
+                                            registerEmployer({
+                                                username: values.username,
+                                                email: values.email,
+                                                password: values.password,
+                                                retryPassword: values.retryPassword,
+                                            })
+                                        );
+
+                                        if (result?.payload?.response?.success === true) {
+                                            toast.success('Đăng ký thành công');
+                                            resetForm()
+                                            navigate("/login");
+                                        } else {
+                                            toast.error('Đăng ký thất bại');
+                                        }
+                                    } catch (error) {
+                                        toast.error('Đã có lỗi xảy ra.');
+                                    } finally {
+                                        onClose();
+                                        dispatch(stopLoading());
+                                    }
+                                }}
+                                style={{
+                                    backgroundColor: '#4caf50',
+                                    color: 'white',
+                                    border: 'none',
+                                    padding: '10px 20px',
+                                    borderRadius: '5px',
+                                    cursor: 'pointer',
+                                }}
+                            >
+                                Nhà tuyển dụng
+                            </button>
+                            <button
+                                onClick={async () => {
+                                    try {
+                                        const result = await dispatch(
+                                            registerEmployee({
+                                                username: values.username,
+                                                email: values.email,
+                                                password: values.password,
+                                                retryPassword: values.retryPassword,
+                                            })
+                                        );
+
+                                        if (result?.payload?.response?.success === true) {
+                                            toast.success('Đăng ký thành công');
+                                            resetForm()
+                                            navigate("/login");
+                                        } else {
+                                            toast.error('Đăng ký thất bại');
+                                        }
+                                    } catch (error) {
+                                        toast.error('Đã có lỗi xảy ra.');
+                                    } finally {
+                                        onClose();
+                                        dispatch(stopLoading());
+                                    }
+                                }}
+                                style={{
+                                    backgroundColor: '#f44336',
+                                    color: 'white',
+                                    border: 'none',
+                                    padding: '10px 20px',
+                                    borderRadius: '5px',
+                                    cursor: 'pointer',
+                                }}
+                            >
+                                Người tìm việc
+                            </button>
+                        </div>
+                    </div>
+                ),
+            });
+        } 
+        catch (error) {
+            toast.error('Đã có lỗi xảy ra.');
+        }
+    };
+
     return (
         <CssVarsProvider disableTransitionOnChange>
             <CssBaseline />
@@ -62,7 +170,7 @@ export default function Register() {
             />
             <Box
                 sx={(theme) => ({
-                    width: { xs: '100%', md: '100%' },
+                    width: { xs: '100%', md: '50%' },
                     transition: 'width var(--Transition-duration)',
                     transitionDelay: 'calc(var(--Transition-duration) + 0.1s)',
                     position: 'relative',
@@ -91,7 +199,7 @@ export default function Register() {
                     >
                         <Box sx={{ gap: 1, display: "flex", alignItems: "center" }}>
                             <img src={require('../../assets/images/logocompany.png')} style={{ width: '35px', height: 'auto', marginLeft: 10 }} alt="My Image" />
-                            <Typography level="title-lg">Company</Typography>
+                            <Typography level="title-lg">FindJob Company</Typography>
                         </Box>
                     </Box>
                     <Box
@@ -104,25 +212,18 @@ export default function Register() {
                             maxWidth: '100%',
                             mx: 'auto',
                             borderRadius: 'sm',
-                            '& form': {
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: 2,
-                            },
-                            [`& .MuiFormLabel-asterisk`]: {
-                                visibility: 'hidden',
-                            },
+                            mt: 4,
                         }}
                     >
                         <Stack sx={{ gap: 4 }}>
                             <Stack sx={{ gap: 1 }}>
                                 <Typography component="h1" level="h3">
-                                    Sign up
+                                    Đăng ký
                                 </Typography>
                                 <Typography level="body-sm">
-                                    Have a account?{' '}
+                                    Bạn đã có tài khoản?  &nbsp;
                                     <Link href="/login" level="title-sm">
-                                        Sign in!
+                                        Đăng nhập ngay!
                                     </Link>
                                 </Typography>
                             </Stack>
@@ -137,34 +238,7 @@ export default function Register() {
                                     retryPassword: '',
                                 }}
                                 validationSchema={SignUpSchema}
-                                onSubmit={async (values, { setSubmitting }) => {
-                                    try {
-                                        dispatch(startLoading());
-                                        const result = await dispatch(
-                                            registerEmployee({
-                                                username: values.username,
-                                                email: values.email,
-                                                password: values.password,
-                                                retryPassword: values.retryPassword
-                                            })
-                                        );
-                                        dispatch(stopLoading());
-
-                                        console.log(result?.payload?.response?.success)
-
-                                        if (result?.payload?.response?.success == true) {
-                                            navigate("/login");
-                                            toast.success('Đăng ký thành công');
-                                        } else {
-                                            toast.error('Đăng ký thất bại');
-                                        }
-
-                                    } catch (error) {
-                                        toast.error('Đã có lỗi xảy ra.');
-                                    } finally {
-                                        setSubmitting(false);
-                                    }
-                                }}
+                                onSubmit={handleSubmit}
                             >
                                 {({ isSubmitting, errors, touched }) => (
                                     <Form>
@@ -182,9 +256,11 @@ export default function Register() {
                                             <FormControl required>
                                                 <FormLabel>Email</FormLabel>
                                                 <Field name="email" as={Input} type="email" />
-                                                <Typography color="danger" level='body-xs'>
-                                                    {errors.email}
-                                                </Typography>
+                                                {touched.email &&
+                                                    <Typography color="danger" level='body-xs'>
+                                                        {errors.email}
+                                                    </Typography>
+                                                }
                                             </FormControl>
 
                                             <FormControl required>
@@ -199,9 +275,11 @@ export default function Register() {
                                                         </IconButton>
                                                     }
                                                 />
-                                                <Typography color="danger" level='body-xs'>
-                                                    {errors.password}
-                                                </Typography>
+                                                {touched.password &&
+                                                    <Typography color="danger" level='body-xs'>
+                                                        {errors.password}
+                                                    </Typography>
+                                                }
                                             </FormControl>
 
                                             <FormControl required>
@@ -246,7 +324,7 @@ export default function Register() {
                     right: 0,
                     top: 0,
                     bottom: 0,
-                    left: { xs: 0, md: 0 },
+                    left: { xs: 0, md: '50vw' },
                     transition:
                         'background-image var(--Transition-duration), left var(--Transition-duration) !important',
                     transitionDelay: 'calc(var(--Transition-duration) + 0.1s)',
@@ -254,12 +332,7 @@ export default function Register() {
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     backgroundRepeat: 'no-repeat',
-                    backgroundImage:
-                        'url(https://images.unsplash.com/photo-1527181152855-fc03fc7949c8?auto=format&w=1000&dpr=2)',
-                    [theme.getColorSchemeSelector('dark')]: {
-                        backgroundImage:
-                            'url(https://images.unsplash.com/photo-1572072393749-3ca9c8ea0831?auto=format&w=1000&dpr=2)',
-                    },
+                    backgroundImage: `url(${bg})`
                 })}
             />
         </CssVarsProvider>

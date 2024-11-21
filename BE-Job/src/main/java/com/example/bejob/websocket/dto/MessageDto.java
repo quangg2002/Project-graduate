@@ -1,4 +1,4 @@
-package com.example.bejob.dto;
+package com.example.bejob.websocket.dto;
 
 import com.example.bejob.enums.MessageType;
 import com.example.bejob.enums.Status;

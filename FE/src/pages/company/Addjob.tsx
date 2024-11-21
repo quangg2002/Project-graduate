@@ -29,10 +29,7 @@ import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import Input from '@mui/joy/Input';
 import city from '../../utils/citis.json';
 import districts from '../../utils/districts.json';
-import dayjs, { Dayjs } from 'dayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DateCalendar } from '@mui/x-date-pickers/DateCalendar'
+
 
 
 export default function Addjob() {

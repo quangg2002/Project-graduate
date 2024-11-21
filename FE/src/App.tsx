@@ -18,6 +18,8 @@ import { CssVarsProvider, extendTheme } from "@mui/joy/styles";
 import JobPosting from "./pages/job/JobPosting";
 import JobApplied from "./pages/job/JobApplied";
 import JobSaved from "./pages/job/JobSaved";
+import ViewPdf from "./pages/cv/VIewPdf";
+import Setting from "./pages/company/Setting";
 
 const customTheme = extendTheme({
   fontFamily: {
@@ -47,6 +49,8 @@ function App() {
         <Route path="/jobposting" element={<JobPosting />} />
         <Route path="/jobapplied" element={<JobApplied />} />
         <Route path="/jobsaved" element={<JobSaved />} />
+        <Route path="/view-cv" element={<ViewPdf />}/>
+        <Route path="/setting" element={<Setting/>}/>
       </Routes>
       
       <ToastContainer

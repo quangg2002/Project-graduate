@@ -7,6 +7,7 @@ import List from '@mui/joy/List';
 // import EditNoteRoundedIcon from '@mui/';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
+import EditNoteRoundedIcon from '@mui/icons-material/EditNoteRounded';
 import ChatListItem from './ChatListItem';
 import { ChatProps, UserProps } from './types';
 import { toggleMessagesPane } from './utils';
@@ -23,6 +24,7 @@ export default function ChatsPane(props: ChatsPaneProps) {
   const [chats, setChats] = useState<ChatProps[]>(props.chats);
 
   const sampleUser: UserProps = {
+    id: '1',
     name: 'John Doe',
     username: 'johndoe',
     avatar: 'https://via.placeholder.com/150',
@@ -91,7 +93,7 @@ export default function ChatsPane(props: ChatsPaneProps) {
           onClick={handleAddChat} // Trigger adding chat
           sx={{ display: { xs: 'none', sm: 'unset' } }}
         >
-          {/* <EditNoteRoundedIcon /> */}
+          <EditNoteRoundedIcon />
         </IconButton>
         <IconButton
           variant="plain"

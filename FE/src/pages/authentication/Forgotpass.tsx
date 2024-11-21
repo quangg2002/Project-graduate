@@ -1,59 +1,46 @@
-import * as React from "react";
-import { CssVarsProvider, extendTheme, useColorScheme } from "@mui/joy/styles";
+import { CssVarsProvider } from "@mui/joy/styles";
 import GlobalStyles from "@mui/joy/GlobalStyles";
 import CssBaseline from "@mui/joy/CssBaseline";
 import Box from "@mui/joy/Box";
 import Button from "@mui/joy/Button";
-import Checkbox from "@mui/joy/Checkbox";
 import FormControl from "@mui/joy/FormControl";
 import FormLabel from "@mui/joy/FormLabel";
-import IconButton, { IconButtonProps } from "@mui/joy/IconButton";
 import Link from "@mui/joy/Link";
 import Input from "@mui/joy/Input";
 import Typography from "@mui/joy/Typography";
 import Stack from "@mui/joy/Stack";
-import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded";
-import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded";
-import BadgeRoundedIcon from "@mui/icons-material/BadgeRounded";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
-import { useEffect, useState } from 'react';
-import EyeOutlined from '@ant-design/icons/EyeOutlined';
-import EyeInvisibleOutlined from '@ant-design/icons/EyeInvisibleOutlined';
-
-function ColorSchemeToggle(props: IconButtonProps) {
-    const { onClick, ...other } = props;
-    const { mode, setMode } = useColorScheme();
-    const [mounted, setMounted] = React.useState(false);
-
-    React.useEffect(() => setMounted(true), []);
-
-    return (
-        <IconButton
-            aria-label="toggle light/dark mode"
-            size="sm"
-            variant="outlined"
-            disabled={!mounted}
-            onClick={(event: any) => {
-                setMode(mode === "light" ? "dark" : "light");
-                onClick?.(event);
-            }}
-            {...other}
-        >
-            {mode === "light" ? <DarkModeRoundedIcon /> : <LightModeRoundedIcon />}
-        </IconButton>
-    );
-}
-
-const customTheme = extendTheme();
+import bg from '../../assets/images/bg-login.jpg';
+import useAppDispatch from '../../hooks/useAppDispatch';
+import { toast } from 'react-toastify';
+import { processForgotPassword } from "../../services/authApi"
+import { startLoading, stopLoading } from '../../redux/slice/loadingSlice';
 
 const SignInSchema = Yup.object().shape({
     email: Yup.string().email("Invalid email").required("Email is required"),
 });
 
 export default function Forgotpass() {
+    const dispatch = useAppDispatch();
+
+    const handleSubmit = async (values) => {
+        try {
+            console.log(values)
+            dispatch(startLoading());
+            const result = await dispatch(processForgotPassword({ email: values.email }))
+            dispatch(stopLoading())
+
+            if(result?.payload?.response?.success) toast.success("Mật khẩu đã được gửi về gmail của bạn. Vui lòng kiểm tra gmail")
+            else toast.error("Gmail không tồn tại.")
+        }
+        catch (error) {
+            toast.error('Đã có lỗi xảy ra.');
+        }
+    }
+
     return (
-        <CssVarsProvider theme={customTheme} disableTransitionOnChange>
+        <CssVarsProvider disableTransitionOnChange>
             <CssBaseline />
             <GlobalStyles
                 styles={{
@@ -96,7 +83,6 @@ export default function Forgotpass() {
                             <img src={require('../../assets/images/logocompany.png')} style={{ width: '35px', height: 'auto', marginLeft: 10 }} alt="My Image" />
                             <Typography level="title-lg">FindJob Company</Typography>
                         </Box>
-                        <ColorSchemeToggle />
                     </Box>
                     <Box
                         component="main"
@@ -127,9 +113,9 @@ export default function Forgotpass() {
                                     Quên mật khẩu
                                 </Typography>
                                 <Typography level="body-sm">
-                                    Have a account?{" "}
-                                    <Link href="#replace-with-a-link" level="title-sm">
-                                        Sign in!
+                                    Bạn đã có tài khoản?  &nbsp;
+                                    <Link href="/login" level="title-sm">
+                                        Đăng nhập ngay!
                                     </Link>
                                 </Typography>
                             </Stack>
@@ -137,23 +123,19 @@ export default function Forgotpass() {
                         <Formik
                             initialValues={{
                                 email: "",
-                                persistent: false,
                             }}
                             validationSchema={SignInSchema}
-                            onSubmit={(values, { setSubmitting }) => {
-                                alert(JSON.stringify(values, null, 2));
-                                setSubmitting(false);
-                            }}
+                            onSubmit={handleSubmit}
                         >
                             {({ isSubmitting, errors }) => (
                                 <Form>
                                     <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 2 }}>
-                                        <FormControl required sx={{width: '100%'}}>
-                                            <FormLabel>Nhập địa chỉ email</FormLabel>
+                                        <FormControl required sx={{ width: '100%' }}>
+                                            <FormLabel><Typography level="title-md">Nhập địa chỉ email</Typography></FormLabel>
                                             <Field name="email" as={Input} type="email" fullWidth />
                                         </FormControl>
                                         <Button type="submit" disabled={isSubmitting}>
-                                            Gửi
+                                            {isSubmitting ? 'Gửi....' : 'Gửi'}
                                         </Button>
                                     </Box>
                                     <Typography color="danger" sx={{ fontSize: '12px' }}>
@@ -178,16 +160,14 @@ export default function Forgotpass() {
                     top: 0,
                     bottom: 0,
                     left: { xs: 0, md: 0 },
-                    // transition:
-                    //     "background-image var(--Transition-duration), left var(--Transition-duration) !important",
-                    // transitionDelay: "calc(var(--Transition-duration) + 0.1s)",
-                    // backgroundColor: "background.leve2",
+                    transition:
+                        "background-image var(--Transition-duration), left var(--Transition-duration) !important",
+                    transitionDelay: "calc(var(--Transition-duration) + 0.1s)",
+                    backgroundColor: "background.leve2",
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                     backgroundRepeat: "no-repeat",
-                    backgroundImage:
-                        "url(https://images.unsplash.com/photo-1572072393749-3ca9c8ea0831?auto=format&w=1000&dpr=2)"
-                    
+                    backgroundImage: `url(${bg})`
                 })}
             />
         </CssVarsProvider>

@@ -3,6 +3,7 @@ package com.example.bejob.security.config;
 import com.example.bejob.security.service.UserService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -28,8 +29,8 @@ public class SecurityConfig {
 
     private final UserService userService;
     private final PreFilter preFilter;
-    private final String[] WHITELIST = {"/auth/**", "/employee/create", "/employer/create", "/job/**", "/application/**", "/company/all", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/auto-fill/**"};
-    private final String[] SYSTEM_WHITELIST = {"/actuator/**", "/v3/**", "/webjars/**", "/swagger-ui*/*swagger-initializer.js", "/swagger-ui*/**"};
+    private final String[] WHITELIST = {"/auth/**", "/employee/create", "/employer/create", "/job/**", "/application/**", "/company/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/auto-fill/**", "/notifications/**", "/comments/**", "/replies/**"};
+    private final String[] SYSTEM_WHITELIST = {"/ws/**","/actuator/**", "/v3/**", "/webjars/**", "/swagger-ui*/*swagger-initializer.js", "/swagger-ui*/**"};
     private static final String[] SECURED_URLs_EMPLOYEE = {"/skill/**", "/education/**", "/experience/**", "/career-goal/**", "/employee/**"};
     private static final String[] SECURED_URLs_EMPLOYER = {"/employer/**"};
 
@@ -37,6 +38,7 @@ public class SecurityConfig {
     public CorsFilter corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
         config.addAllowedOriginPattern("*");
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
@@ -48,6 +50,9 @@ public class SecurityConfig {
     public PasswordEncoder getPasswordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
+    @Autowired
+    TokenInvalidAuthenEntryPoint tokenInvalidAuthenEntryPoint;
 
     //Thiết lập API
     @Bean
@@ -64,8 +69,8 @@ public class SecurityConfig {
                 )
                 .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
                 .authenticationProvider(authenticationProvider())
+//                .httpBasic(basic -> basic.authenticationEntryPoint(tokenInvalidAuthenEntryPoint))
                 .addFilterBefore(preFilter, UsernamePasswordAuthenticationFilter.class);
-
         return http.build();
     }
 
