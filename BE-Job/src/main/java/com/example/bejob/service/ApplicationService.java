@@ -9,6 +9,7 @@ import com.example.bejob.enums.StatusCodeEnum;
 import com.example.bejob.model.ResponseBuilder;
 import com.example.bejob.model.ResponseDto;
 import com.example.bejob.security.service.AuthenticationService;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,7 +17,9 @@ import org.springframework.expression.ExpressionException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -31,6 +34,7 @@ public class ApplicationService {
     @Value("${minio.url.public}")
     private String publicUrl;
 
+    private final NotificationService notificationService;
     private final ApplicationRepository applicationRepository;
     private final JobRepository jobRepository;
     private final EmployeeRepository employeeRepository;
@@ -38,6 +42,7 @@ public class ApplicationService {
     private final AuthenticationService authenticationService;
     private final UserRepository userRepository;
     private final FileService fileService;
+    private final MailService mailService;
 
     public ResponseEntity<ResponseDto<Object>> createApplication(ApplicationRequest applicationRequest) {
         try {
@@ -165,8 +170,8 @@ public class ApplicationService {
                                 .address(job.getLocation())
                                 .cvPdf(application.getCvPdf())
                                 .employeeId(employee.getId())
-                                .companyName(null)
-                                .companyAvata(null)
+                                .companyName(company.get().getCompanyName())
+                                .companyAvata(company.get().getLogo())
                                 .fullName(userRepository.findById(employee.getUserId()).get().getFullName())
                                 .email(userRepository.findById(employee.getUserId()).get().getEmail())
                                 .coverLetter(application.getCoverLetter())
@@ -257,32 +262,64 @@ public class ApplicationService {
         }
     }
 
-    public ResponseEntity<ResponseDto<ApplicationResponse>> updateStatus(Long id, ApplicationStatus status) {
+    public ResponseEntity<ResponseDto<ApplicationResponse>> updateStatus(Long id, ApplicationStatus status) throws MessagingException {
         // Cập nhật status
         Application application = applicationRepository.findById(id)
                 .orElseThrow(() -> new ExpressionException("Application not found with id: " + id));
         application.setStatus(status);
         applicationRepository.save(application);
 
-        // Lấy thông tin job và employee
-        Job job = jobRepository.findById(application.getJobId())
-                .orElseThrow(() -> new RuntimeException("Job not found"));
-        Employee employee = employeeRepository.findById(application.getEmployeeId())
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
+        Optional<Employee> employee = employeeRepository.findById(application.getEmployeeId());
+        if (employee.isEmpty()) {
+            return ResponseBuilder.badRequestResponse(
+                    languageService.getMessage("not.found.employee"),
+                    StatusCodeEnum.EMPLOYER4000
+            );
+        }
 
-        // Map sang response
+        notificationService.createNotification(employee.get().getUserId(), application.getJobId(), String.valueOf(application.getStatus()));
+
+        Optional<Job> jobOptional = jobRepository.findById(application.getJobId());
+        if (jobOptional.isEmpty()) {
+            return ResponseBuilder.badRequestResponse(
+                    languageService.getMessage("not.found.job"),
+                    StatusCodeEnum.JOB4000
+            );
+        }
+
+        Job job = jobOptional.get();
+
+        Optional<Employer> employer = employerRepository.findById(job.getEmployer());
+        if (employer.isEmpty()) {
+            return ResponseBuilder.badRequestResponse(
+                    languageService.getMessage("not.found.employer"),
+                    StatusCodeEnum.EMPLOYER4000
+            );
+        }
+
+        User user = userRepository.findById(employee.get().getUserId()).get();
+
         ApplicationResponse applicationResponse = ApplicationResponse.builder()
                 .id(application.getId())
                 .jobId(job.getId())
                 .jobTitle(job.getTitle())
                 .address(job.getLocation())
-                .employeeId(employee.getId())
+                .employeeId(employee.get().getId())
                 .cvPdf(application.getCvPdf())
-                .fullName(userRepository.findById(employee.getUserId()).get().getFullName())
+                .cvPdf(application.getCvPdf())
+                .fullName(user.getFullName())
                 .coverLetter(application.getCoverLetter())
                 .status(application.getStatus())
                 .createdAt(application.getCreatedAt())
                 .build();
+
+        Map<String, Object> templateModel = new HashMap<>();
+        templateModel.put("employeeName", user.getFullName());
+        templateModel.put("jobTitle", job.getTitle());
+        templateModel.put("employerName", user.getFullName());
+        templateModel.put("status", application.getStatus());
+
+        mailService.sendJobApplicationEmail(user.getEmail(), job.getTitle(), templateModel);
 
         return ResponseBuilder.badRequestResponse(
                 "Update status successfully",
@@ -291,4 +328,18 @@ public class ApplicationService {
         );
     }
 
+    public ResponseEntity<ResponseDto<Object>> delete(Long id) {
+        try{
+            applicationRepository.deleteById(id);
+            return ResponseBuilder.badRequestResponse(
+                    "Update status successfully",
+                    StatusCodeEnum.APPLICATION1000
+            );
+        }catch (Exception e) {
+            return ResponseBuilder.badRequestResponse(
+                    "Update status successfully",
+                    StatusCodeEnum.APPLICATION1000
+            );
+        }
+    }
 }

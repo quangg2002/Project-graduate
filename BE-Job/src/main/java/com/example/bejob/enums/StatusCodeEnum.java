@@ -138,7 +138,15 @@ public enum StatusCodeEnum {
     USERINFO0000("USERINFO0000"),
     // MESSAGE
     MESSAGE1000("MESSAGE1000"),
-    MESSAGE0000("MESSAGE0000");
+    MESSAGE0000("MESSAGE0000"),
+
+    // NOTIFICATION
+    NOTIFICATION1000("Mark notification success"),
+    NOTIFICATION0000("Mark notification failed"),
+    NOTIFICATION1001("Get notification success"),
+    NOTIFICATION0001("Get notification failed"),
+    NOTIFICATION1002("Get notification success"),
+    NOTIFICATION0002("Get notification failed");
 
     public final String value;
 

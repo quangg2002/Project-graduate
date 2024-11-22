@@ -1,14 +1,11 @@
 package com.example.bejob.entity;
 
 import com.example.bejob.base.Auditable;
-import com.example.bejob.base.HashMapConverter;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-
-import java.util.HashMap;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
@@ -23,9 +20,9 @@ public class Notification extends Auditable {
     @Column(nullable = false)
     private Long toUserId;
 
-    @Column(nullable = false)
-    private Long patternId;
+    private String title;
 
-    @Convert(converter = HashMapConverter.class)
-    private HashMap<String, String> lstParams = new HashMap<>();
+    private String content;
+
+    private boolean read = false;
 }
