@@ -4,7 +4,6 @@ import Typography from "@mui/joy/Typography";
 import IconButton from "@mui/joy/IconButton";
 import Stack from "@mui/joy/Stack";
 import Avatar from "@mui/joy/Avatar";
-import Button from "@mui/joy/Button";
 import Tooltip from "@mui/joy/Tooltip";
 import Dropdown from "@mui/joy/Dropdown";
 import Menu from "@mui/joy/Menu";
@@ -20,9 +19,6 @@ import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
 import TeamNav from './Navigation'
-import EmailRoundedIcon from "@mui/icons-material/EmailRounded";
-import PeopleAltRoundedIcon from "@mui/icons-material/PeopleAltRounded";
-import FolderRoundedIcon from "@mui/icons-material/FolderRounded";
 import { Divider } from "@mui/joy";
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import ForumIcon from '@mui/icons-material/Forum';
@@ -34,6 +30,7 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import TaskOutlinedIcon from '@mui/icons-material/TaskOutlined';
 import NoteAddOutlinedIcon from '@mui/icons-material/NoteAddOutlined';
 import FolderOpenOutlinedIcon from '@mui/icons-material/FolderOpenOutlined';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
 
 export default function Header() {
@@ -208,7 +205,7 @@ export default function Header() {
                                             }}
                                         >
                                             <MenuItem
-                                                selected={['/findjob'].includes(location.pathname)} 
+                                                selected={['/findjob'].includes(location.pathname)}
                                                 variant="soft"
                                             >
                                                 <SearchIcon color="success" />
@@ -217,9 +214,9 @@ export default function Header() {
                                             <Divider />
                                             <MenuItem
                                                 variant="soft"
-                                                selected={['/jobapplied'].includes(location.pathname)} 
+                                                selected={['/jobapplied'].includes(location.pathname)}
                                                 onClick={() => {
-                                                    navigate('/jobapplied'); 
+                                                    navigate('/jobapplied');
                                                 }}
                                             >
                                                 <BusinessCenterOutlinedIcon color="success" />
@@ -229,9 +226,9 @@ export default function Header() {
 
                                             <MenuItem
                                                 variant="soft"
-                                                selected={['/jobsaved'].includes(location.pathname)} 
+                                                selected={['/jobsaved'].includes(location.pathname)}
                                                 onClick={() => {
-                                                    navigate('/jobsaved'); 
+                                                    navigate('/jobsaved');
                                                 }}
                                             >
                                                 <FavoriteBorderIcon color="success" />
@@ -311,6 +308,7 @@ export default function Header() {
                                     maxHeight: "32px",
                                     borderRadius: "9999999px",
                                 }}
+
                             >
                                 <Tooltip title="Thông báo" variant="outlined">
                                     <IconButton
@@ -322,6 +320,52 @@ export default function Header() {
                                     </IconButton>
                                 </Tooltip>
                             </MenuButton>
+                            <Menu
+                                sx={{
+                                    zIndex: "99999",
+                                    maxHeight: '400px',
+                                    minWidth: '300px',
+                                    maxWidth: '300px',
+                                    p: 1,
+                                    gap: 1,
+                                    "--ListItem-radius": "var(--joy-radius-sm)",
+                                }}
+                                placement="bottom-end"
+                            >
+                                <Stack direction={'row'} justifyContent={'space-between'} alignItems={'center'}>
+                                    <Typography level="title-md">Thông báo</Typography>
+                                    <Tooltip title="Đánh dấu tất cả đã đọc" variant="outlined" color="success" sx={{zIndex: '999999999999999'}}>
+                                        <IconButton
+                                            size="sm"
+                                            sx={{ borderRadius: '50%' }}
+                                        >
+                                            <CheckCircleOutlineIcon color="success" />
+                                        </IconButton>
+                                    </Tooltip>
+                                </Stack>
+                                <Divider/>
+                                <MenuItem>
+                                    <Stack direction={'row'} alignItems={'center'} gap={2}>
+                                        <Avatar/>
+                                        <Stack>
+                                            <Typography level="title-sm">Công ty đã xác nhận thư xin việc của bạn</Typography>
+                                            <Typography level="body-xs">2 ago</Typography>
+                                        </Stack>
+                                        <Typography level="body-xs">3:00AM</Typography>
+                                    </Stack>
+                                </MenuItem>
+                                <MenuItem selected>
+                                    <Stack direction={'row'} alignItems={'center'} gap={2}>
+                                        <Avatar/>
+                                        <Stack>
+                                            <Typography level="title-sm">Công ty đã xác nhận thư xin việc của bạn</Typography>
+                                            <Typography level="body-xs">2 ago</Typography>
+                                        </Stack>
+                                        <Typography level="body-xs">3:00AM</Typography>
+                                    </Stack>
+                                </MenuItem>
+                                
+                            </Menu>
                         </Dropdown>
 
                         <Dropdown>
