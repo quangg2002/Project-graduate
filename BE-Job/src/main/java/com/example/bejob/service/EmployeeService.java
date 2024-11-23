@@ -155,8 +155,8 @@ public class EmployeeService {
                             StatusCodeEnum.EMPLOYEE4000
                     );
                 }
-    
-                modelMapper.map(employeeDto, employee);
+                if(employeeDto.getAvatar() ==null)
+                    modelMapper.map(employeeDto, employee);
     
                 if (employeeDto.getAvatar() != null && !employeeDto.getAvatar().isEmpty()) {
                     String avatar = fileService.uploadImageFile(employeeDto.getAvatar(), user.getAvatar(), "AVATAR");
@@ -170,9 +170,11 @@ public class EmployeeService {
                         user.setAvatar(publicUrl + "/" + avatar);
                     }
                 }
-                user.setFullName(employeeDto.getFullName());
-                user.setPhoneNumber(employeeDto.getPhoneNumber());
-                userRepository.save(user);
+                if(employeeDto.getAvatar() ==null) {
+                    user.setFullName(employeeDto.getFullName());
+                    user.setPhoneNumber(employeeDto.getPhoneNumber());
+                    userRepository.save(user);
+                }
     
                 employeeRepository.save(employee);
     
