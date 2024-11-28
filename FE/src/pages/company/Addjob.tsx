@@ -29,10 +29,14 @@ import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import Input from '@mui/joy/Input';
 import city from '../../utils/citis.json';
 import districts from '../../utils/districts.json';
+import { Form, Formik } from "formik";
 
 
 
 export default function Addjob() {
+
+    const [today] = useState(() => new Date().toISOString().split("T")[0]);
+
     const peopleData = [
         {
             name: "Andrew Smith",
@@ -56,11 +60,11 @@ export default function Addjob() {
         },
     ];
 
-    
+
     const [selectedOptions, setSelectedOptions] = useState<any[]>([]);
 
     const handleChange = (event: any, value: any[]) => {
-      setSelectedOptions(value); 
+        setSelectedOptions(value);
     };
 
     const [selectedCity, setSelectedCity] = useState(null);
@@ -171,341 +175,359 @@ export default function Addjob() {
                     <Typography level="h3">
                         Thêm bài đăng tuyển
                     </Typography>
-                    <Box
-                        sx={{
-                            display: "grid",
-                            gridTemplateColumns: {
-                                md: "2fr 1fr",
-                            },
-                            flexWrap: 'wrap-reverse',
-                            gap: 2
+                    <Formik
+                        initialValues={{}}
+                        onSubmit={() => {
+
                         }}
                     >
                         <Box
-                            sx={[
-                                {
-                                    bgcolor: "background.surface",
-                                    border: "1px solid",
-                                    borderColor: "divider",
-                                    borderRadius: 'sm',
-                                    p: 2,
-                                    boxShadow: 'md'
+                            sx={{
+                                display: "grid",
+                                gridTemplateColumns: {
+                                    md: "2fr 1fr",
                                 },
-                            ]}
+                                flexWrap: 'wrap-reverse',
+                                gap: 2
+                            }}
                         >
-                            <Box
-                                sx={{
-                                    p: 2,
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "space-between",
-                                }}
-                            >
-                                <Typography
-                                    level="title-lg"
-                                    textColor="text.secondary"
-                                    component="h1"
+                            <Form>
+                                <Box
+                                    sx={[
+                                        {
+                                            bgcolor: "background.surface",
+                                            border: "1px solid",
+                                            borderColor: "divider",
+                                            borderRadius: 'sm',
+                                            p: 2,
+                                            boxShadow: 'md'
+                                        },
+                                    ]}
                                 >
-                                    Job
-                                </Typography>
-                                <Button color="success">
-                                    Đăng tuyển
-                                </Button>
-                            </Box>
-
-                            <AccordionGroup
-                                sx={{
-                                    [`& .${accordionDetailsClasses.content}`]: {
-                                        px: 2,
-                                    },
-                                    [`& .${accordionSummaryClasses.button}`]: {
-                                        px: 2,
-                                    },
-                                }}
-                            >
-                                <Accordion defaultExpanded>
-                                    <AccordionSummary>
-                                        <Typography level="title-md">Tiêu đề</Typography>
-                                    </AccordionSummary>
-                                    <AccordionDetails >
-                                        <Input size="sm" placeholder="Tên việc làm tuyển dụng"></Input>
-                                    </AccordionDetails>
-                                </Accordion>
-                                <Accordion defaultExpanded>
-                                    <AccordionSummary>
-                                        <Typography level="title-md">Địa chỉ</Typography>
-                                    </AccordionSummary>
-                                    <AccordionDetails>
-                                        <Stack gap={2} mb={1}>
-                                            <Stack direction={'row'} gap={2}>
-                                                <Stack flexGrow={1}>
-                                                    <Autocomplete
-                                                        size="sm"
-                                                        placeholder="Tỉnh/ Thành phố"
-                                                        options={city}
-                                                        getOptionLabel={(option: any) => option.name}
-                                                        onChange={handleCityChange}
-                                                    />
-                                                </Stack>
-                                                <Stack flexGrow={1}>
-                                                    <Autocomplete
-                                                        size="sm"
-                                                        placeholder="Quận Huyện"
-                                                        options={filteredDistricts}
-                                                        getOptionLabel={(option: any) => option.name}
-                                                        value={selectedDistrict}
-                                                        onChange={(event, newValue) => setSelectedDistrict(newValue)}
-                                                        disabled={!selectedCity}
-                                                    />
-                                                </Stack>
-                                            </Stack>
-                                            <Input size="sm" placeholder="Địa chỉ cụ thể"></Input>
-                                        </Stack>
-                                    </AccordionDetails>
-                                </Accordion>
-
-                                <Accordion defaultExpanded>
-                                    <AccordionSummary>
-                                        <Typography level="title-md">Ví trí tuyển dụng & Kĩ năng cần có</Typography>
-                                    </AccordionSummary>
-                                    <AccordionDetails>
-                                        <Box sx={{ my: 2 }}>
-                                            <Autocomplete
-                                                multiple
-                                                size="sm"
-                                                placeholder="Position, skills, etc…"
-                                                options={[
-                                                    {
-                                                        category: 'Position',
-                                                        title: 'Frontend engineer',
-                                                    },
-                                                    {
-                                                        category: 'Position',
-                                                        title: 'Backend engineer',
-                                                    },
-                                                    {
-                                                        category: 'Position',
-                                                        title: 'Product manager',
-                                                    },
-                                                    {
-                                                        category: 'Skill',
-                                                        title: 'JavaScript',
-                                                    },
-                                                    {
-                                                        category: 'Skill',
-                                                        title: 'TypeScript',
-                                                    },
-                                                    {
-                                                        category: 'Skill',
-                                                        title: 'Project management',
-                                                    },
-                                                ]}
-                                                groupBy={(option) => option.category}
-                                                onChange={handleChange} 
-                                                getOptionLabel={(option: any) => option.title}
-                                            />
-                                        </Box>
-                                    </AccordionDetails>
-                                </Accordion>
-                                <Accordion defaultExpanded>
-                                    <AccordionSummary>
-                                        <Typography level="title-md">Kinh nghiệm làm việc</Typography>
-                                    </AccordionSummary>
-                                    <AccordionDetails>
-                                        <Box sx={{ my: 2 }}>
-                                            <Slider
-                                                size="sm"
-                                                valueLabelFormat={(value) => `${value} years`}
-                                                defaultValue={[5, 10]}
-                                                step={1}
-                                                min={0}
-                                                max={30}
-                                                valueLabelDisplay="on"
-                                            />
-                                        </Box>
-                                    </AccordionDetails>
-                                </Accordion>
-
-                                <Accordion defaultExpanded>
-                                    <AccordionSummary>
-                                        <Typography level="title-md">Loại hình làm việc</Typography>
-                                    </AccordionSummary>
-                                    <AccordionDetails>
-                                        <Box sx={{ my: 2 }}>
-                                            <Autocomplete
-                                                size="sm"
-                                                placeholder="Loại hình làm việc"
-                                                options={[
-                                                    "English",
-                                                    "French",
-                                                    "German",
-                                                    "Portuguese",
-                                                    "Spanish",
-                                                ]}
-                                                getOptionLabel={(option) => option}
-                                                filterSelectedOptions
-                                            />
-                                        </Box>
-                                    </AccordionDetails>
-                                </Accordion>
-                                <Accordion defaultExpanded>
-                                    <AccordionSummary>
-                                        <Typography level="title-md">Hạn nộp hồ sơ & Mức lương</Typography>
-                                    </AccordionSummary>
-                                    <AccordionDetails>
-                                        <Stack direction={'row'} gap={2} mb={1}>
-                                            <Stack flexGrow={1}>
-                                                <Input size="sm" placeholder="Số lượng tuyển dụng"></Input>
-
-                                            </Stack>
-                                            <Stack flexGrow={1}>
-                                                <Input size="sm" placeholder="Số lượng tuyển dụng"></Input>
-                                            </Stack>
-                                        </Stack>
-                                    </AccordionDetails>
-                                </Accordion>
-
-                                <Accordion defaultExpanded>
-                                    <AccordionSummary>
-                                        <Typography level="title-md">Cấp bậc</Typography>
-                                    </AccordionSummary>
-                                    <AccordionDetails>
-                                        <Box sx={{ my: 2 }}>
-                                            <RadioGroup name="education" defaultValue="any">
-                                                <Radio label="Any" value="any" size="sm" />
-                                                <Radio label="High School" value="high-school" size="sm" />
-                                                <Radio label="College" value="college" size="sm" />
-                                                <Radio
-                                                    label="Post-graduate"
-                                                    value="post-graduate"
-                                                    size="sm"
-                                                />
-                                            </RadioGroup>
-                                        </Box>
-                                    </AccordionDetails>
-                                </Accordion>
-
-                                <Accordion defaultExpanded>
-                                    <AccordionSummary>
-                                        <Typography level="title-md">Ngôn ngữ</Typography>
-                                    </AccordionSummary>
-                                    <AccordionDetails>
-                                        <Box sx={{ my: 2 }}>
-                                            <Autocomplete
-                                                size="sm"
-                                                multiple
-                                                placeholder="Select languages"
-                                                options={[
-                                                    "English",
-                                                    "French",
-                                                    "German",
-                                                    "Portuguese",
-                                                    "Spanish",
-                                                ]}
-                                                getOptionLabel={(option) => option}
-                                                filterSelectedOptions
-                                            />
-                                        </Box>
-                                    </AccordionDetails>
-                                </Accordion>
-
-                                <Accordion defaultExpanded>
-                                    <AccordionSummary>
-                                        <Typography level="title-md">Mô tả</Typography>
-                                    </AccordionSummary>
-                                    <AccordionDetails>
-                                        <Textarea
-                                            size="sm"
-                                            minRows={3}
-                                            placeholder="Mô tả việc làm"
-                                        />
-                                    </AccordionDetails>
-                                </Accordion>
-                            </AccordionGroup>
-                        </Box>
-                        <Box>
-                            {peopleData.map((person, index) => (
-                                <Sheet
-                                    key={index}
-                                    component="li"
-                                    sx={{
-                                        borderRadius: 'sm',
-                                        p: 2,
-                                        listStyle: 'none',
-                                        bgcolor: "background.surface",
-                                        border: "1px solid",
-                                        borderColor: "divider",
-                                        boxShadow: 'md'
-                                    }}
-                                >
-                                    <Box sx={{ display: 'flex', gap: 2 }}>
-                                        <Avatar
-                                            variant="outlined"
-                                            src={person.avatar2x}
-                                            srcSet={`${person.avatar2x} 2x`}
-                                            sx={{ borderRadius: '50%' }}
-                                        />
-                                        <div>
-                                            <Typography level="title-md">{person.name}</Typography>
-                                            <Typography level="body-xs">{person.position}</Typography>
-                                        </div>
-                                    </Box>
-                                    <Divider component="div" sx={{ my: 2 }} />
-                                    <List sx={{ '--ListItemDecorator-size': '40px', gap: 2 }}>
-                                        {person.companyData.map((company, companyIndex) => (
-                                            <ListItem key={companyIndex} sx={{ alignItems: 'flex-start' }}>
-                                                <ListItemDecorator
-                                                    sx={{
-                                                        '&::before': {
-                                                            content: '""',
-                                                            position: 'absolute',
-                                                            height: '100%',
-                                                            width: '1px',
-                                                            bgcolor: 'divider',
-                                                            left: 'calc(var(--ListItem-paddingLeft) + 12px)',
-                                                            top: '50%',
-                                                        },
-                                                    }}
-                                                >
-                                                    <Avatar
-                                                        src={company.logo}
-                                                        sx={{ '--Avatar-size': '24px' }}
-                                                    />
-                                                </ListItemDecorator>
-                                                <ListItemContent>
-                                                    <Typography level="title-sm">{company.role}</Typography>
-                                                    <Typography level="body-xs">{company.name}</Typography>
-                                                </ListItemContent>
-                                                <Typography level="body-xs">{company.years}</Typography>
-                                            </ListItem>
-                                        ))}
-                                    </List>
-                                    <Button
-
-                                        variant="plain"
-                                        endDecorator={<KeyboardArrowRightRoundedIcon fontSize="small" />}
-                                        sx={{ px: 1, mt: 1 }}
+                                    <Box
+                                        sx={{
+                                            p: 2,
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "space-between",
+                                        }}
                                     >
-                                        Expand
-                                    </Button>
-                                    <Divider component="div" sx={{ my: 2 }} />
-                                    <Typography level="title-sm">Skills tags:</Typography>
-                                    <Box sx={{ mt: 1.5, display: 'flex', gap: 1 }}>
-                                        {person.skills.map((skill, skillIndex) => (
-                                            <Chip
-                                                key={skillIndex}
-                                                variant="outlined"
-                                                color="neutral"
-
-                                            >
-                                                {skill}
-                                            </Chip>
-                                        ))}
+                                        <Typography
+                                            level="title-lg"
+                                            textColor="text.secondary"
+                                            component="h1"
+                                        >
+                                            Job
+                                        </Typography>
+                                        <Button color="success">
+                                            Đăng tuyển
+                                        </Button>
                                     </Box>
-                                </Sheet>
-                            ))}
+
+                                    <AccordionGroup
+                                        sx={{
+                                            [`& .${accordionDetailsClasses.content}`]: {
+                                                px: 2,
+                                            },
+                                            [`& .${accordionSummaryClasses.button}`]: {
+                                                px: 2,
+                                            },
+                                        }}
+                                    >
+                                        <Accordion defaultExpanded>
+                                            <AccordionSummary>
+                                                <Typography level="title-md">Tiêu đề</Typography>
+                                            </AccordionSummary>
+                                            <AccordionDetails >
+                                                <Input size="sm" placeholder="Tên việc làm tuyển dụng"></Input>
+                                            </AccordionDetails>
+                                        </Accordion>
+                                        <Accordion defaultExpanded>
+                                            <AccordionSummary>
+                                                <Typography level="title-md">Địa chỉ</Typography>
+                                            </AccordionSummary>
+                                            <AccordionDetails>
+                                                <Stack gap={2} mb={1}>
+                                                    <Stack direction={'row'} gap={2}>
+                                                        <Stack flexGrow={1}>
+                                                            <Autocomplete
+                                                                size="sm"
+                                                                placeholder="Tỉnh/ Thành phố"
+                                                                options={city}
+                                                                getOptionLabel={(option: any) => option.name}
+                                                                onChange={handleCityChange}
+                                                            />
+                                                        </Stack>
+                                                        <Stack flexGrow={1}>
+                                                            <Autocomplete
+                                                                size="sm"
+                                                                placeholder="Quận Huyện"
+                                                                options={filteredDistricts}
+                                                                getOptionLabel={(option: any) => option.name}
+                                                                value={selectedDistrict}
+                                                                onChange={(event, newValue) => setSelectedDistrict(newValue)}
+                                                                disabled={!selectedCity}
+                                                            />
+                                                        </Stack>
+                                                    </Stack>
+                                                    <Input size="sm" placeholder="Địa chỉ cụ thể"></Input>
+                                                </Stack>
+                                            </AccordionDetails>
+                                        </Accordion>
+
+                                        <Accordion defaultExpanded>
+                                            <AccordionSummary>
+                                                <Typography level="title-md">Ví trí tuyển dụng & Kĩ năng cần có</Typography>
+                                            </AccordionSummary>
+                                            <AccordionDetails>
+                                                <Box sx={{ my: 2 }}>
+                                                    <Autocomplete
+                                                        multiple
+                                                        size="sm"
+                                                        placeholder="Position, skills, etc…"
+                                                        options={[
+                                                            {
+                                                                category: 'Position',
+                                                                title: 'Frontend engineer',
+                                                            },
+                                                            {
+                                                                category: 'Position',
+                                                                title: 'Backend engineer',
+                                                            },
+                                                            {
+                                                                category: 'Position',
+                                                                title: 'Product manager',
+                                                            },
+                                                            {
+                                                                category: 'Skill',
+                                                                title: 'JavaScript',
+                                                            },
+                                                            {
+                                                                category: 'Skill',
+                                                                title: 'TypeScript',
+                                                            },
+                                                            {
+                                                                category: 'Skill',
+                                                                title: 'Project management',
+                                                            },
+                                                        ]}
+                                                        groupBy={(option) => option.category}
+                                                        onChange={handleChange}
+                                                        getOptionLabel={(option: any) => option.title}
+                                                    />
+                                                </Box>
+                                            </AccordionDetails>
+                                        </Accordion>
+                                        <Accordion defaultExpanded>
+                                            <AccordionSummary>
+                                                <Typography level="title-md">Mức lương</Typography>
+                                            </AccordionSummary>
+                                            <AccordionDetails>
+                                                <Box sx={{ my: 2 }}>
+                                                    <Slider
+                                                        size="sm"
+                                                        valueLabelFormat={(value) => `${value} triệu`}
+                                                        defaultValue={[5, 10]}
+                                                        step={1}
+                                                        min={0}
+                                                        max={30}
+                                                        valueLabelDisplay="on"
+                                                    />
+                                                </Box>
+                                            </AccordionDetails>
+                                        </Accordion>
+
+                                        <Accordion defaultExpanded>
+                                            <AccordionSummary>
+                                                <Typography level="title-md">Loại hình làm việc</Typography>
+                                            </AccordionSummary>
+                                            <AccordionDetails>
+                                                <Box sx={{ my: 2 }}>
+                                                    <Autocomplete
+                                                        size="sm"
+                                                        placeholder="Loại hình làm việc"
+                                                        options={[
+                                                            "English",
+                                                            "French",
+                                                            "German",
+                                                            "Portuguese",
+                                                            "Spanish",
+                                                        ]}
+                                                        getOptionLabel={(option) => option}
+                                                        filterSelectedOptions
+                                                    />
+                                                </Box>
+                                            </AccordionDetails>
+                                        </Accordion>
+                                        <Accordion defaultExpanded>
+                                            <AccordionSummary>
+                                                <Typography level="title-md">Hạn nộp hồ sơ & Số lượng</Typography>
+                                            </AccordionSummary>
+                                            <AccordionDetails>
+                                                <Stack direction={'row'} gap={2} mb={1}>
+                                                    <Stack flexGrow={1}>
+                                                        <Input
+                                                            type="date"
+                                                            size="sm"
+                                                            placeholder="Hạn nộp hồ sơ"
+                                                            slotProps={{
+                                                                input: {
+                                                                    min: today
+                                                                },
+                                                            }}
+                                                        />
+
+                                                    </Stack>
+                                                    <Stack flexGrow={1}>
+                                                        <Input size="sm" type="number" placeholder="Số lượng tuyển dụng"></Input>
+                                                    </Stack>
+                                                </Stack>
+                                            </AccordionDetails>
+                                        </Accordion>
+
+                                        <Accordion defaultExpanded>
+                                            <AccordionSummary>
+                                                <Typography level="title-md">Cấp bậc</Typography>
+                                            </AccordionSummary>
+                                            <AccordionDetails>
+                                                <Box sx={{ my: 2 }}>
+                                                    <RadioGroup name="education" defaultValue="any">
+                                                        <Radio label="Any" value="any" size="sm" />
+                                                        <Radio label="High School" value="high-school" size="sm" />
+                                                        <Radio label="College" value="college" size="sm" />
+                                                        <Radio
+                                                            label="Post-graduate"
+                                                            value="post-graduate"
+                                                            size="sm"
+                                                        />
+                                                    </RadioGroup>
+                                                </Box>
+                                            </AccordionDetails>
+                                        </Accordion>
+
+                                        <Accordion defaultExpanded>
+                                            <AccordionSummary>
+                                                <Typography level="title-md">Ngôn ngữ</Typography>
+                                            </AccordionSummary>
+                                            <AccordionDetails>
+                                                <Box sx={{ my: 2 }}>
+                                                    <Autocomplete
+                                                        size="sm"
+                                                        multiple
+                                                        placeholder="Select languages"
+                                                        options={[
+                                                            "English",
+                                                            "French",
+                                                            "German",
+                                                            "Portuguese",
+                                                            "Spanish",
+                                                        ]}
+                                                        getOptionLabel={(option) => option}
+                                                        filterSelectedOptions
+                                                    />
+                                                </Box>
+                                            </AccordionDetails>
+                                        </Accordion>
+
+                                        <Accordion defaultExpanded>
+                                            <AccordionSummary>
+                                                <Typography level="title-md">Mô tả</Typography>
+                                            </AccordionSummary>
+                                            <AccordionDetails>
+                                                <Textarea
+                                                    size="sm"
+                                                    minRows={3}
+                                                    placeholder="Mô tả việc làm"
+                                                />
+                                            </AccordionDetails>
+                                        </Accordion>
+                                    </AccordionGroup>
+                                </Box>
+                            </Form>
+                            <Box>
+                                {peopleData.map((person, index) => (
+                                    <Sheet
+                                        key={index}
+                                        component="li"
+                                        sx={{
+                                            borderRadius: 'sm',
+                                            p: 2,
+                                            listStyle: 'none',
+                                            bgcolor: "background.surface",
+                                            border: "1px solid",
+                                            borderColor: "divider",
+                                            boxShadow: 'md'
+                                        }}
+                                    >
+                                        <Box sx={{ display: 'flex', gap: 2 }}>
+                                            <Avatar
+                                                variant="outlined"
+                                                src={person.avatar2x}
+                                                srcSet={`${person.avatar2x} 2x`}
+                                                sx={{ borderRadius: '50%' }}
+                                            />
+                                            <div>
+                                                <Typography level="title-md">{person.name}</Typography>
+                                                <Typography level="body-xs">{person.position}</Typography>
+                                            </div>
+                                        </Box>
+                                        <Divider component="div" sx={{ my: 2 }} />
+                                        <List sx={{ '--ListItemDecorator-size': '40px', gap: 2 }}>
+                                            {person.companyData.map((company, companyIndex) => (
+                                                <ListItem key={companyIndex} sx={{ alignItems: 'flex-start' }}>
+                                                    <ListItemDecorator
+                                                        sx={{
+                                                            '&::before': {
+                                                                content: '""',
+                                                                position: 'absolute',
+                                                                height: '100%',
+                                                                width: '1px',
+                                                                bgcolor: 'divider',
+                                                                left: 'calc(var(--ListItem-paddingLeft) + 12px)',
+                                                                top: '50%',
+                                                            },
+                                                        }}
+                                                    >
+                                                        <Avatar
+                                                            src={company.logo}
+                                                            sx={{ '--Avatar-size': '24px' }}
+                                                        />
+                                                    </ListItemDecorator>
+                                                    <ListItemContent>
+                                                        <Typography level="title-sm">{company.role}</Typography>
+                                                        <Typography level="body-xs">{company.name}</Typography>
+                                                    </ListItemContent>
+                                                    <Typography level="body-xs">{company.years}</Typography>
+                                                </ListItem>
+                                            ))}
+                                        </List>
+                                        <Button
+
+                                            variant="plain"
+                                            endDecorator={<KeyboardArrowRightRoundedIcon fontSize="small" />}
+                                            sx={{ px: 1, mt: 1 }}
+                                        >
+                                            Expand
+                                        </Button>
+                                        <Divider component="div" sx={{ my: 2 }} />
+                                        <Typography level="title-sm">Skills tags:</Typography>
+                                        <Box sx={{ mt: 1.5, display: 'flex', gap: 1 }}>
+                                            {person.skills.map((skill, skillIndex) => (
+                                                <Chip
+                                                    key={skillIndex}
+                                                    variant="outlined"
+                                                    color="neutral"
+
+                                                >
+                                                    {skill}
+                                                </Chip>
+                                            ))}
+                                        </Box>
+                                    </Sheet>
+                                ))}
+                            </Box>
                         </Box>
-                    </Box>
+                    </Formik>
                 </Box>
             </Box>
         </CssVarsProvider>

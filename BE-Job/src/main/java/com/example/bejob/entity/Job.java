@@ -19,29 +19,44 @@ public class Job extends Auditable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long employer;
+
+    @Column(columnDefinition = "TEXT")
     private String title;
+
+    @Column(columnDefinition = "TEXT")
     private String description;
+
+    @Column(columnDefinition = "TEXT")
+    private String benefit;
+
+    @Column(columnDefinition = "TEXT")
     private String requirements;
+
+    @Column(columnDefinition = "TEXT")
     private String location;
 
     private Long yearExperience;
 
-    private Long salary;
+    private Long cityId;
 
-    private Long tech;
+    private Long districtId;
 
-    private Long city;
+    private Long positionId;
 
-    private Long district;
+    private Long jobTypeId;
 
-    private Long position;
+    private Long contractTypeId;
 
-    private Long jobType;
+    private Long industryId;
 
-    private Long contractType;
+    private Long educationLevelId;
 
-    // han nop ho so
     private String deadline;
+
+    @Column(columnDefinition = "TEXT")
+    private String workingTime;
+
+    private String quantity;
 
     @Enumerated(EnumType.STRING)
     private JobStatus status;
