@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CssVarsProvider, extendTheme } from "@mui/joy/styles";
-import CssBaseline from "@mui/joy/CssBaseline";
-import { AspectRatio, Avatar, Box, Button, CardCover, Divider, IconButton, Input, ModalClose, Snackbar, Stack, Textarea, Tooltip, Typography } from "@mui/joy";
+import { useNavigate } from 'react-router-dom';
+import { Avatar, Box, Button, Divider, IconButton, Input, ModalClose, Snackbar, Stack, Textarea, Tooltip, Typography } from "@mui/joy";
 import Header from "../../components/Header";
 import * as Yup from "yup";
 import { Field, Form, Formik } from 'formik';
@@ -15,9 +15,11 @@ import MailIcon from '@mui/icons-material/Mail';
 import PhoneIcon from '@mui/icons-material/Phone';
 import RoomIcon from '@mui/icons-material/Room';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import { keyframes, maxHeight } from '@mui/system';
-import CloseIcon from '@mui/icons-material/Close';
-
+import RemoveRedEyeOutlinedIcon from '@mui/icons-material/RemoveRedEyeOutlined';
+import ArrowDownwardOutlinedIcon from '@mui/icons-material/ArrowDownwardOutlined';
+import SaveIcon from '@mui/icons-material/Save';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import RecommendIcon from '@mui/icons-material/Recommend';
 
 const customTheme = extendTheme({
 	fontFamily: {
@@ -56,28 +58,38 @@ const inputStyles = {
 }
 
 export default function Layout1() {
+
 	const [open, setOpen] = useState<boolean>(false);
-
-	const [open2, setOpen2] = React.useState(false);
-
-	const animationDuration = 600;
-
-	const handleClick = () => {
-		setOpen2(true);
-	};
-
-	const handleClose = (event: React.SyntheticEvent | null, reason?: string) => {
-		if (reason === 'clickaway') {
-			return;
-		}
-		setOpen2(false);
-	};
 
 	return (
 		<CssVarsProvider disableTransitionOnChange theme={customTheme}>
 			<Header />
-			<CssBaseline />
-			<Stack display={'flex'} flexDirection={'row'}>
+			<Stack direction={'row'} p={2} justifyContent={'space-between'}>
+				<Input placeholder='CV chưa đặt tên' />
+				<Stack direction={'row'} gap={2}>
+					<Button
+						style={{ backgroundColor: '#00b14f' }}
+						startDecorator={<RemoveRedEyeOutlinedIcon />}
+						onClick={() => window.open('http://localhost:8080/public/cv/gen?layout=2', '_blank')}
+					>
+						Xem trước
+					</Button>
+					<Button
+						style={{ backgroundColor: '#00b14f' }}
+						startDecorator={<ArrowDownwardOutlinedIcon />}
+					>
+						Lưu và tải xuống
+					</Button>
+					<Button
+						style={{ backgroundColor: '#00b14f' }}
+						startDecorator={<SaveIcon />}
+					>
+						Lưu lại
+					</Button>
+				</Stack>
+			</Stack>
+			<Divider />
+			<Stack display={'flex'} flexDirection={'row'} mt={1}>
 				<Box width={'100%'}>
 					<Formik
 						initialValues={{
@@ -88,13 +100,28 @@ export default function Layout1() {
 							diachi: "",
 							ngaysinh: "",
 							muctieu: "",
+							chungchi: [{
+								name: ''
+							}],
+							sothich: [{
+								name: ''
+							}],
 							hocvan: [{
 								name: '',
 								vitri: '',
 								start: '',
 								end: '',
 								mota: '',
+							}],
+							duan: [{
+								name: '',
+								start: '',
+								end: '',
+								soluong: '',
+								github: '',
+								mota: '',
 							}]
+
 						}}
 						validationSchema={FormCv}
 						onSubmit={(values, { setSubmitting }) => {
@@ -117,11 +144,12 @@ export default function Layout1() {
 											md: "35% 65%",
 										},
 										boxShadow: 'lg',
+										mb: 2,
 										border: '1px solid darkgray'
 									}}
 								>
 
-									<Box bgcolor={"#2b2b2b"}>
+									<Box bgcolor={"#2b2b2b"} pb={1}>
 										<Box
 											display={'flex'}
 											flexDirection={"column"}
@@ -165,40 +193,29 @@ export default function Layout1() {
 												placeholder="Nhập họ và tên"
 											/>
 
-											<Box
+
+											<Field
+												name="vitri"
+												as={Input}
+												startDecorator={
+													<Typography
+														fontSize={'19px'}
+														fontWeight={'600'}
+														fontFamily={'"Arima", system-ui'}
+														sx={{ color: '#f75d59' }}
+													>
+														Vị trí:
+													</Typography>
+												}
 												sx={{
-													display: 'flex',
-													alignItems: 'center',
-													justifyContent: 'center',
-													alignSelf: 'center',
-													maxWidth: '100%'
+													...inputStyles,
+													fontSize: '19px',
+													fontWeight: '600',
+													color: '#f75d59',
+													maxWidth: '65%',
+													padding: '2px',
 												}}
-											>
-												<Typography
-													fontSize={'19px'}
-													fontWeight={'600'}
-													fontFamily={'"Arima", system-ui'}
-													sx={{ color: '#f75d59' }}
-												>
-													Vị trí:
-												</Typography>
-												<Field
-													name="vitri"
-													as={Input}
-													sx={{
-														...inputStyles,
-														fontSize: '19px',
-														fontWeight: '600',
-														color: '#f75d59',
-														maxWidth: '60%',
-														padding: '2px',
-														"& .MuiInput-input": {
-															textAlign: 'center',
-															width: 'auto',
-														},
-													}}
-												/>
-											</Box>
+											/>
 										</Box>
 										<Stack flexDirection={'row'}>
 											<Box sx={{ backgroundColor: '#FFFFFF' }} p={'1px'} >&nbsp;&nbsp;&nbsp;&nbsp;</Box>
@@ -273,16 +290,178 @@ export default function Layout1() {
 												/>
 											</Stack>
 										</Stack>
+										{values.hocvan.length !== 0 && (
+											<Stack gap={2}>
+												<Box
+													sx={{
+														position: 'relative',
+														cursor: 'pointer',
+														'&:hover': {
+															'& .plus-sign': {
+																opacity: 1,
+															},
+														},
+													}}
+												>
+													<Stack direction={'row'} mt={1}>
+														<Box sx={{ backgroundColor: '#FFFFFF' }} p={'1px'} >&nbsp;&nbsp;&nbsp;&nbsp;</Box>
+														<Box sx={{ backgroundColor: '#f75d59', borderBottomRightRadius: 11, borderTopRightRadius: 11 }} alignContent={'center'} p={'1px'}>
+															<Typography sx={{ color: '#FFFFFF', fontSize: '13px' }} fontFamily={'"Arima", system-ui'} mt={"1px"}>&nbsp;&nbsp;CHỨNG CHỈ&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</Typography>
+														</Box>
+													</Stack>
 
-										<Stack flexDirection={'row'} mt={1}>
-											<Box sx={{ backgroundColor: '#FFFFFF' }} p={'1px'} >&nbsp;&nbsp;&nbsp;&nbsp;</Box>
-											<Box sx={{ backgroundColor: '#f75d59', borderBottomRightRadius: 11, borderTopRightRadius: 11 }} alignContent={'center'} p={'1px'}>
-												<Typography sx={{ color: '#FFFFFF', fontSize: '13px' }} fontFamily={'"Arima", system-ui'} mt={"1px"}>&nbsp;&nbsp;CHỨNG CHỈ&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</Typography>
-											</Box>
-										</Stack>
+													<Tooltip title="Thêm" placement="right" arrow>
+														<Typography
+															className="plus-sign"
+															sx={{
+																position: 'absolute',
+																top: '50%',
+																left: '95%',
+																transform: 'translate(-50%, -50%)',
+																fontSize: '24px',
+																color: '#f75d59',
+																opacity: 0,
+																transition: 'opacity 0.3s',
+															}}
+															onClick={() => setFieldValue("chungchi", [...values.chungchi, { name: '' }])}
+														>
+															+
+														</Typography>
+													</Tooltip>
 
+													<Tooltip title="Xoá chứng chỉ cuối cùng" arrow>
+														<Typography
+															className="plus-sign"
+															sx={{
+																position: 'absolute',
+																top: '50%',
+																left: '90%',
+																transform: 'translate(-50%, -50%)',
+																fontSize: '24px',
+																color: '#f75d59',
+																opacity: 0,
+																transition: 'opacity 0.3s',
+															}}
+															onClick={() => {
+																const updatedChungchi = [...values.chungchi];
+																updatedChungchi.pop();
+																setFieldValue("chungchi", updatedChungchi);
+															}}
+														>
+															-
+														</Typography>
+													</Tooltip>
+												</Box>
+												{values.chungchi.map((chungchi, index) => (
+													<Stack direction={'row'} ml={3} alignItems={'center'}>
+														<CheckCircleIcon sx={{ color: '#f75d59', fontSize: '20px' }} />
+														<Field
+															name={`chungchi.${index}.name`}
+															as={Input}
+															sx={{
+																fontSize: '15px',
+																color: '#FFF',
+																fontFamily: '"Arima", system-ui',
+																padding: '2px',
+																border: 'none',
+																outline: 'none',
+																boxShadow: 'none',
+																backgroundColor: 'transparent',
+															}}
+															size='xs'
+															placeholder="tên chứng chỉ"
+														/>
+													</Stack>
+												))}
+											</Stack>
+										)}
+
+										{values.sothich.length !== 0 && (
+											<Stack gap={2}>
+												<Box
+													sx={{
+														position: 'relative',
+														cursor: 'pointer',
+														'&:hover': {
+															'& .plus-sign': {
+																opacity: 1,
+															},
+														},
+													}}
+												>
+													<Stack direction={'row'} mt={1}>
+														<Box sx={{ backgroundColor: '#FFFFFF' }} p={'1px'} >&nbsp;&nbsp;&nbsp;&nbsp;</Box>
+														<Box sx={{ backgroundColor: '#f75d59', borderBottomRightRadius: 11, borderTopRightRadius: 11 }} alignContent={'center'} p={'1px'}>
+															<Typography sx={{ color: '#FFFFFF', fontSize: '13px' }} fontFamily={'"Arima", system-ui'} mt={"1px"}>&nbsp;&nbsp;SỞ THÍCH&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</Typography>
+														</Box>
+													</Stack>
+
+													<Tooltip title="Thêm" placement="right" arrow>
+														<Typography
+															className="plus-sign"
+															sx={{
+																position: 'absolute',
+																top: '50%',
+																left: '95%',
+																transform: 'translate(-50%, -50%)',
+																fontSize: '24px',
+																color: '#f75d59',
+																opacity: 0,
+																transition: 'opacity 0.3s',
+															}}
+															onClick={() => setFieldValue("sothich", [...values.sothich, { name: '' }])}
+														>
+															+
+														</Typography>
+													</Tooltip>
+
+													<Tooltip title="Xoá sở thích cuối cùng" arrow>
+														<Typography
+															className="plus-sign"
+															sx={{
+																position: 'absolute',
+																top: '50%',
+																left: '90%',
+																transform: 'translate(-50%, -50%)',
+																fontSize: '24px',
+																color: '#f75d59',
+																opacity: 0,
+																transition: 'opacity 0.3s',
+															}}
+															onClick={() => {
+																const updatedSothich = [...values.sothich];
+																updatedSothich.pop();
+																setFieldValue("sothich", updatedSothich);
+															}}
+														>
+															-
+														</Typography>
+													</Tooltip>
+												</Box>
+												{values.sothich.map((sothich, index) => (
+													<Stack direction={'row'} ml={3} alignItems={'center'}>
+														<RecommendIcon sx={{ color: '#f75d59', fontSize: '20px' }} />
+														<Field
+															name={`sothich.${index}.name`}
+															as={Input}
+															sx={{
+																fontSize: '15px',
+																color: '#FFF',
+																fontFamily: '"Arima", system-ui',
+																padding: '2px',
+																border: 'none',
+																outline: 'none',
+																boxShadow: 'none',
+																backgroundColor: 'transparent',
+															}}
+															size='xs'
+															placeholder="sở thích của bạn"
+														/>
+													</Stack>
+												))}
+											</Stack>
+										)}
 									</Box>
-
 									<Box bgcolor={"common.white"} flexDirection={'column'} m={2}>
 										<Typography
 											level='h4'
@@ -360,6 +539,29 @@ export default function Layout1() {
 													+
 												</Typography>
 											</Tooltip>
+
+											<Tooltip title="Xoá học vấn cuối cùng " arrow>
+												<Typography
+													className="plus-sign"
+													sx={{
+														position: 'absolute',
+														top: '50%',
+														left: '90%',
+														transform: 'translate(-50%, -50%)',
+														fontSize: '24px',
+														color: '#f75d59',
+														opacity: 0,
+														transition: 'opacity 0.3s',
+													}}
+													onClick={() => {
+														const updatedHocvan = [...values.hocvan];
+														updatedHocvan.pop();
+														setFieldValue("hocvan", updatedHocvan);
+													}}
+												>
+													-
+												</Typography>
+											</Tooltip>
 										</Box>
 										<Divider
 											sx={{
@@ -370,7 +572,7 @@ export default function Layout1() {
 											}}
 										/>
 										{values.hocvan.map((hocvan, index) => (
-											<Box display={'grid'} flexDirection={'row'} gridTemplateColumns={'10px 1fr'}>
+											<Stack direction={'row'}>
 												<Box alignItems={'center'} justifyItems={'center'} mr={1}>
 													<Box width={12} height={12} borderRadius={'50%'} sx={{ backgroundColor: '#f75d59' }} />
 													<Divider
@@ -523,7 +725,7 @@ export default function Layout1() {
 														/>
 													</Box>
 												</Box>
-											</Box>
+											</Stack>
 										))}
 
 										<Box
@@ -561,9 +763,32 @@ export default function Layout1() {
 														opacity: 0,
 														transition: 'opacity 0.3s',
 													}}
-													onClick={() => setFieldValue("hocvan", [...values.hocvan, { name: '', vitri: '', start: '', end: '', mota: '' }])}
+													onClick={() => setFieldValue("duan", [...values.hocvan, { name: '', vitri: '', start: '', end: '', mota: '' }])}
 												>
 													+
+												</Typography>
+											</Tooltip>
+
+											<Tooltip title="Xoá dư án cuối cùng " arrow>
+												<Typography
+													className="plus-sign"
+													sx={{
+														position: 'absolute',
+														top: '50%',
+														left: '90%',
+														transform: 'translate(-50%, -50%)',
+														fontSize: '24px',
+														color: '#f75d59',
+														opacity: 0,
+														transition: 'opacity 0.3s',
+													}}
+													onClick={() => {
+														const updatedDuan = [...values.duan];
+														updatedDuan.pop();
+														setFieldValue("duan", updatedDuan);
+													}}
+												>
+													-
 												</Typography>
 											</Tooltip>
 										</Box>
@@ -575,6 +800,188 @@ export default function Layout1() {
 												mb: 2
 											}}
 										/>
+										{values.duan.map((duan, index) => (
+											<Stack direction={'row'}>
+												<Box alignItems={'center'} justifyItems={'center'} mr={1}>
+													<Box width={12} height={12} borderRadius={'50%'} sx={{ backgroundColor: '#f75d59' }} />
+													<Divider
+														sx={{
+															backgroundColor: '#f75d59',
+															padding: '1px',
+															height: '85%'
+														}}
+														orientation="vertical"
+													/>
+												</Box>
+												<Box key={index}>
+													<Field
+														name={`duan.${index}.name`}
+														as={Input}
+														sx={{
+															fontSize: '16px',
+															fontWeight: '600',
+															color: '#000',
+															fontFamily: '"Arima", system-ui',
+															padding: '2px',
+															border: 'none',
+															outline: 'none',
+															boxShadow: 'none',
+															backgroundColor: 'transparent',
+
+														}}
+														size='xs'
+														fullWidth
+														placeholder="Tên dự án"
+													/>
+
+													<Stack direction={'row'}>
+														<Typography
+															sx={{
+																color: '#000',
+																fontFamily: '"Arima", system-ui',
+															}}
+														>
+															Thời gian:
+														</Typography>
+														<Field
+															name={`duan.${index}.start`}
+															as={Input}
+															sx={{
+																fontSize: '15px',
+																color: '#000',
+																fontFamily: '"Arima", system-ui',
+																padding: '2px',
+																border: 'none',
+																outline: 'none',
+																boxShadow: 'none',
+																backgroundColor: 'transparent',
+																width: '20%',
+																"& .MuiInput-input": {
+																	textAlign: 'center',
+																},
+															}}
+															size='xs'
+															placeholder="Bắt đầu"
+														/>
+														<Typography
+															sx={{
+																fontSize: '15px',
+																color: '#000',
+																fontFamily: '"Arima", system-ui',
+																ml: 1,
+																mr: 1
+															}}
+														>
+															-
+														</Typography>
+														<Field
+															name={`duan.${index}.end`}
+															as={Input}
+															sx={{
+																fontSize: '15px',
+																color: '#000',
+																fontFamily: '"Arima", system-ui',
+																padding: '2px',
+																border: 'none',
+																outline: 'none',
+																boxShadow: 'none',
+																backgroundColor: 'transparent',
+																width: '20%',
+																"& .MuiInput-input": {
+																	textAlign: 'center',
+																},
+															}}
+															size='xs'
+															placeholder="Kết thúc"
+														/>
+													</Stack>
+
+													<Stack direction={'row'}>
+														<Typography
+															sx={{
+																color: '#000',
+																fontFamily: '"Arima", system-ui',
+															}}
+														>
+															Số lượng người tham gia:
+														</Typography>
+														<Field
+															name={`duan.${index}.soluong`}
+															as={Input}
+															sx={{
+																fontSize: '15px',
+																color: '#000',
+																fontFamily: '"Arima", system-ui',
+																padding: '2px',
+																border: 'none',
+																outline: 'none',
+																boxShadow: 'none',
+																backgroundColor: 'transparent',
+															}}
+															size='xs'
+															placeholder="Số lượng người tham gia"
+														/>
+													</Stack>
+
+													<Stack direction={'row'}>
+														<Typography
+															sx={{
+																color: '#000',
+																fontFamily: '"Arima", system-ui',
+															}}
+														>
+															Github:
+														</Typography>
+														<Field
+															name={`duan.${index}.github`}
+															as={Input}
+															sx={{
+																fontSize: '15px',
+																color: '#000',
+																fontFamily: '"Arima", system-ui',
+																padding: '2px',
+																border: 'none',
+																outline: 'none',
+																boxShadow: 'none',
+																backgroundColor: 'transparent',
+															}}
+															size='xs'
+															fullWidth
+															placeholder="https://github.com/example"
+														/>
+													</Stack>
+
+													<Stack direction={'row'}>
+														<Typography
+															sx={{
+																color: '#000',
+																fontFamily: '"Arima", system-ui',
+															}}
+														>
+															Mô tả:
+														</Typography>
+														<Field
+															name={`duan.${index}.mota`}
+															as={Textarea}
+															sx={{
+																fontSize: '15px',
+																color: '#000',
+																fontFamily: '"Arima", system-ui',
+																padding: '2px',
+																border: 'none',
+																outline: 'none',
+																boxShadow: 'none',
+																backgroundColor: 'transparent',
+															}}
+															size='xs'
+															fullWidth
+															placeholder="mô tả dự án"
+														/>
+													</Stack>
+												</Box>
+											</Stack>
+										))}
+
 									</Box>
 								</Box>
 							</Form>
