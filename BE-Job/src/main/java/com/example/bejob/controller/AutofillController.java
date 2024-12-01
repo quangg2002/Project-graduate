@@ -25,13 +25,11 @@ public class AutofillController {
     }
 
     @GetMapping("/district")
-    public ResponseEntity<ResponseDto<List<DistrictResponse>>> autofillDistrict(@RequestParam(required = false) String name, @RequestParam(required = false) Long cityIds) {
+    public ResponseEntity<ResponseDto<List<DistrictResponse>>> autofillDistrict(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) Long cityIds
+    ) {
         return autofillService.autofillDistrict(name, cityIds);
-    }
-
-    @GetMapping("/salary")
-    public ResponseEntity<ResponseDto<List<Salary>>> autofillSalary() {
-        return autofillService.autofillSalary();
     }
 
     @GetMapping("/job-type")
@@ -39,9 +37,9 @@ public class AutofillController {
         return autofillService.autofillJobType();
     }
 
-    @GetMapping("/tech")
-    public ResponseEntity<ResponseDto<List<Tech>>> autofillTech() {
-        return autofillService.autofillTech();
+    @GetMapping("/industry")
+    public ResponseEntity<ResponseDto<List<Industry>>> autofillIndustry() {
+        return autofillService.autofillIndustry();
     }
 
     @GetMapping("/year-experience")
@@ -64,4 +62,13 @@ public class AutofillController {
         return autofillService.autofillCompany();
     }
 
+    @GetMapping("/education")
+    public ResponseEntity<ResponseDto<List<EducationLevel>>> autofillEducationLevel() {
+        return autofillService.autofillEducationLevel();
+    }
+
+    @GetMapping("/skill")
+    public ResponseEntity<ResponseDto<List<Skill>>> autofillSkill(@RequestParam(required = false) String name) {
+        return autofillService.autofillSkill(name);
+    }
 }

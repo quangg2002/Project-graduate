@@ -9,7 +9,6 @@ import com.example.bejob.repository.*;
 import com.example.bejob.security.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +24,6 @@ public class FavoriteJobService {
 
     private final UserRepository userRepository;
     private final LanguageService languageService;
-    private final ModelMapper modelMapper;
     private final EmployeeRepository employeeRepository;
     private final FavoriteJobRepository favoriteJobRepository;
     private final JobRepository jobRepository;
@@ -131,14 +129,13 @@ public class FavoriteJobService {
                                 job.getRequirements(),
                                 job.getLocation(),
                                 job.getSalary(),
-                                job.getStatus() != null ? job.getStatus().name() : null,
                                 company != null ? company.getId() : null,
                                 company != null ? company.getCompanyName() : null,
                                 company != null ? company.getLogo() : null,
                                 company != null ? company.getAddress() : null
                         );
                     })
-                    .filter(Objects::nonNull) // Loại bỏ các mục null trong danh sách
+                    .filter(Objects::nonNull)
                     .collect(Collectors.toList());
 
             return ResponseBuilder.okResponse(

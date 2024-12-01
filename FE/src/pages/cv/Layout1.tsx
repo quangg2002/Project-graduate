@@ -1,16 +1,11 @@
-import React, { useState } from 'react';
-import { CssVarsProvider, extendTheme } from "@mui/joy/styles";
-import { useNavigate } from 'react-router-dom';
-import { Avatar, Box, Button, Divider, IconButton, Input, ModalClose, Snackbar, Stack, Textarea, Tooltip, Typography } from "@mui/joy";
+import { useCallback, useState, useEffect } from "react";
+import { useDropzone } from "react-dropzone";
+import { CssVarsProvider } from "@mui/joy/styles";
+import { Avatar, Box, Button, Divider, IconButton, Input, Stack, Textarea, Tooltip, Typography } from "@mui/joy";
 import Header from "../../components/Header";
 import * as Yup from "yup";
 import { Field, Form, Formik } from 'formik';
 import EditRoundedIcon from '@mui/icons-material/EditRounded'
-import { Transition } from 'react-transition-group';
-import Modal from '@mui/joy/Modal';
-import ModalDialog from '@mui/joy/ModalDialog';
-import DialogTitle from '@mui/joy/DialogTitle';
-import DialogContent from '@mui/joy/DialogContent';
 import MailIcon from '@mui/icons-material/Mail';
 import PhoneIcon from '@mui/icons-material/Phone';
 import RoomIcon from '@mui/icons-material/Room';
@@ -20,29 +15,29 @@ import ArrowDownwardOutlinedIcon from '@mui/icons-material/ArrowDownwardOutlined
 import SaveIcon from '@mui/icons-material/Save';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import RecommendIcon from '@mui/icons-material/Recommend';
-
-const customTheme = extendTheme({
-	fontFamily: {
-		display: '"Arima", system-ui',
-		// body: '"Arima", system-ui',
-	},
-});
+import useAppDispatch from '../../hooks/useAppDispatch';
+import { startLoading, stopLoading } from '../../redux/slice/loadingSlice';
+import { genCv } from '../../services/cvApi';
+import { getCv } from '../../services/cvApi';
+import { updateCv } from '../../services/cvApi';
+import { updateAvatarCv } from '../../services/cvApi';
+import { toast } from 'react-toastify';
 
 const FormCv = Yup.object().shape({
 	name: Yup.string(),
-	vitri: Yup.string(),
+	universityName: Yup.string(),
 	email: Yup.string().email('Email không hợp lệ'),
-	sdt: Yup.string(),
-	diachi: Yup.string(),
-	ngaysinh: Yup.string(),
-	muctieu: Yup.string(),
-	hocvan: Yup.array().of(
+	phone: Yup.string(),
+	address: Yup.string(),
+	dob: Yup.string(),
+	target: Yup.string(),
+	educations: Yup.array().of(
 		Yup.object().shape({
 			name: Yup.string(),
-			vitri: Yup.string(),
-			start: Yup.string(),
-			end: Yup.string(),
-			mota: Yup.string(),
+			universityName: Yup.string(),
+			startDate: Yup.string(),
+			endDate: Yup.string(),
+			description: Yup.string(),
 		})
 	)
 });
@@ -55,83 +50,302 @@ const inputStyles = {
 	backgroundColor: 'transparent',
 	outline: 'none',
 	boxShadow: 'none',
+	fontSize: '13px',
+	padding: '2px',
+	marginTop: '1px'
+}
+
+const sharedSx = {
+	fontSize: '15px',
+	color: '#000',
+	fontFamily: '"Arima", system-ui',
+	padding: '2px',
+	border: 'none',
+	outline: 'none',
+	boxShadow: 'none',
+	backgroundColor: 'transparent',
+};
+
+const formikSx = {
+	position: 'absolute',
+	top: '50%',
+	left: '95%',
+	transform: 'translate(-50%, -50%)',
+	fontSize: '24px',
+	color: '#f75d59',
+	opacity: 0,
+	transition: 'opacity 0.3s',
+}
+
+const typographySx = {
+	color: '#000',
+	fontFamily: '"Arima", system-ui',
+}
+
+const boxSX = {
+	position: 'relative',
+	cursor: 'pointer',
+	'&:hover': {
+		'& .plus-sign': {
+			opacity: 1,
+		},
+	},
+}
+
+const dividerSx = {
+	backgroundColor: '#f75d59',
+	padding: '1px',
+	mt: 1,
+	mb: 2
 }
 
 export default function Layout1() {
+	const [previewUrlAvata, setPreviewUrlAvata] = useState<string | null>(null);
+	const dispatch = useAppDispatch();
+	const [infoCv, setInfoCv] = useState({
+		name: '',
+		nameCv: '',
+		position: '',
+		email: '',
+		phone: '',
+		address: '',
+		avatar: null,
+		dob: '',
+		target: '',
+		certificates: [{
+			name: '',
+		}],
+		hobbies: [{
+			name: '',
+		}],
+		educations: [{
+			expertise: '',
+			universityName: '',
+			startDate: '',
+			endDate: '',
+			description: '',
+		}],
+		projects: [{
+			name: '',
+			startDate: '',
+			endDate: '',
+			quantity: '',
+			github: '',
+			description: '',
+		}]
+	});
 
-	const [open, setOpen] = useState<boolean>(false);
+	const onDrop = useCallback((acceptedFiles: File[]) => {
+		const file = acceptedFiles[0];
+		setPreviewUrlAvata(URL.createObjectURL(file))
+	}, []);
+
+	const { getRootProps, getInputProps, isDragActive } = useDropzone({
+		onDrop,
+		accept: {
+			'image/*': ['.jpg', '.jpeg', '.png', '.gif']
+		}
+	});
+
+	const handleClick = async () => {
+		const result = await dispatch(genCv("1"));
+
+		if (genCv.fulfilled.match(result)) {
+			const blob = result.payload.response;
+
+			if (blob instanceof Blob) {
+				const pdfURL = URL.createObjectURL(blob);
+				window.open(pdfURL);
+			} else {
+				console.error("Result is not a valid Blob");
+			}
+		} else {
+			console.error("Failed to fetch PDF");
+		}
+	};
+
+	const handleDowload = async (nameCv) => {
+		const result = await dispatch(genCv("1"));
+
+		if (genCv.fulfilled.match(result)) {
+			const blob = result.payload.response;
+
+			if (blob instanceof Blob) {
+				const url = URL.createObjectURL(blob);
+
+				const link = document.createElement("a");
+				link.href = url;
+				link.download = nameCv;
+				document.body.appendChild(link);
+
+				link.click();
+				document.body.removeChild(link);
+				URL.revokeObjectURL(url);
+			} else {
+				console.error("Result is not a valid Blob");
+			}
+		} else {
+			console.error("Failed to fetch PDF");
+		}
+	};
+
+	useEffect(() => {
+		const fetchData = async () => {
+			try {
+				dispatch(startLoading)
+				const result = await dispatch(getCv("1"));
+				if (getCv.fulfilled.match(result)) {
+					const response = result.payload.response;
+					if (response) {
+						setInfoCv({
+							name: response.name,
+							nameCv: response.nameCv,
+							position: response.position,
+							email: response.email,
+							phone: response.phone,
+							address: response.address,
+							avatar: response.avatar,
+							dob: response.dob,
+							target: response.target,
+							certificates: response.certificates || [],
+							hobbies: response.hobbies || [],
+							educations: response.educations || [],
+							projects: response.projects || [],
+						});
+						setPreviewUrlAvata(response.avatar)
+					}
+				}
+				dispatch(stopLoading)
+			}
+			catch (error) {
+				console.error("Error fetching data:", error);
+			}
+		}
+		fetchData();
+	}, [dispatch]);
+
+	useEffect(() => {
+		console.log("InfoCv before setting:", infoCv);
+	}, [infoCv]);
+
+	if (!infoCv || Object.keys(infoCv).length === 0) {
+		return <div>Loading...</div>;
+	}
 
 	return (
-		<CssVarsProvider disableTransitionOnChange theme={customTheme}>
+		<CssVarsProvider disableTransitionOnChange>
 			<Header />
-			<Stack direction={'row'} p={2} justifyContent={'space-between'}>
-				<Input placeholder='CV chưa đặt tên' />
-				<Stack direction={'row'} gap={2}>
-					<Button
-						style={{ backgroundColor: '#00b14f' }}
-						startDecorator={<RemoveRedEyeOutlinedIcon />}
-						onClick={() => window.open('http://localhost:8080/public/cv/gen?layout=2', '_blank')}
-					>
-						Xem trước
-					</Button>
-					<Button
-						style={{ backgroundColor: '#00b14f' }}
-						startDecorator={<ArrowDownwardOutlinedIcon />}
-					>
-						Lưu và tải xuống
-					</Button>
-					<Button
-						style={{ backgroundColor: '#00b14f' }}
-						startDecorator={<SaveIcon />}
-					>
-						Lưu lại
-					</Button>
-				</Stack>
-			</Stack>
-			<Divider />
-			<Stack display={'flex'} flexDirection={'row'} mt={1}>
+
+			<Stack display={'flex'} flexDirection={'row'}>
 				<Box width={'100%'}>
 					<Formik
+						enableReinitialize
 						initialValues={{
-							name: "",
-							vitri: "",
-							email: "",
-							sdt: "",
-							diachi: "",
-							ngaysinh: "",
-							muctieu: "",
-							chungchi: [{
-								name: ''
+							name: infoCv.name,
+							nameCv: infoCv.nameCv,
+							position: infoCv.position || "",
+							email: infoCv.email || "",
+							phone: infoCv.phone || "",
+							address: infoCv.address || "",
+							avatar: infoCv.avatar || "",
+							dob: infoCv.dob || "",
+							target: infoCv.target || "",
+							certificates: infoCv.certificates?.map(cert => ({
+								name: cert.name || "",
+							})) || [{ name: "" }],
+							hobbies: infoCv.hobbies?.map(hobby => ({
+								name: hobby.name || "",
+							})) || [{ name: "" }],
+							educations: infoCv.educations?.map(education => ({
+								expertise: education.expertise || "",
+								universityName: education.universityName || "",
+								startDate: education.startDate || "",
+								endDate: education.endDate || "",
+								description: education.description || "",
+							})) || [{
+								name: "",
+								universityName: "",
+								startDate: "",
+								endDate: "",
+								description: "",
 							}],
-							sothich: [{
-								name: ''
+							projects: infoCv.projects?.map(project => ({
+								name: project.name || "",
+								startDate: project.startDate || "",
+								endDate: project.endDate || "",
+								quantity: project.quantity || "",
+								github: project.github || "",
+								description: project.description || "",
+							})) || [{
+								name: "",
+								startDate: "",
+								endDate: "",
+								quantity: "",
+								github: "",
+								description: "",
 							}],
-							hocvan: [{
-								name: '',
-								vitri: '',
-								start: '',
-								end: '',
-								mota: '',
-							}],
-							duan: [{
-								name: '',
-								start: '',
-								end: '',
-								soluong: '',
-								github: '',
-								mota: '',
-							}]
-
 						}}
-						validationSchema={FormCv}
-						onSubmit={(values, { setSubmitting }) => {
-							console.log(values)
-							alert(JSON.stringify(values, null, 2));
-							setSubmitting(false);
+						// validationSchema={FormCv}
+						onSubmit={async (values, { setSubmitting }) => {
+							try {
+								dispatch(startLoading());
+								const result = await dispatch(updateCv(values));
+								dispatch(stopLoading());
+
+								dispatch(startLoading)
+								const formData = new FormData()
+								if (values.avatar instanceof File) {
+									formData.append("avatar", values.avatar)
+								}
+								const resultAvatar = await dispatch(updateAvatarCv(formData))
+								dispatch(stopLoading)
+
+								if (result?.payload?.response?.success && resultAvatar?.payload?.response?.success) {
+									toast.success('Cập nhật thông tin CV thành công')
+								} else {
+									toast.error('Cập nhật thông tin CV không thành công');
+								}
+							} catch (error) {
+								toast.error('Đã có lỗi xảy ra.');
+							} finally {
+								setSubmitting(false);
+							}
 						}}
 					>
 						{({ isSubmitting, errors, touched, values, setFieldValue }) => (
 							<Form>
+								<Stack direction={'row'} p={2} justifyContent={'space-between'}>
+									<Field
+										name="nameCv"
+										as={Input}
+										placeholder="Cv chưa đặt tên"
+									/>
+
+									<Stack direction={'row'} gap={2}>
+										<Button
+											style={{ backgroundColor: '#00b14f' }}
+											startDecorator={<RemoveRedEyeOutlinedIcon />}
+											onClick={() => handleClick()}
+										>
+											Xem trước
+										</Button>
+										<Button
+											style={{ backgroundColor: '#00b14f' }}
+											startDecorator={<ArrowDownwardOutlinedIcon />}
+											onClick={() => handleDowload(values.nameCv)}
+										>
+											Tải xuống
+										</Button>
+										<Button
+											style={{ backgroundColor: '#00b14f' }}
+											startDecorator={<SaveIcon />}
+											type='submit'
+										>
+											Lưu lại
+										</Button>
+									</Stack>
+								</Stack>
+								<Divider />
 								<Box
 									sx={{
 										justifySelf: 'center',
@@ -145,6 +359,7 @@ export default function Layout1() {
 										},
 										boxShadow: 'lg',
 										mb: 2,
+										mt: 1,
 										border: '1px solid darkgray'
 									}}
 								>
@@ -156,24 +371,61 @@ export default function Layout1() {
 											justifyContent={'center'}
 											alignItems={'center'}
 											margin={2}
-										// gap={2}
 										>
 											<Box position={'relative'} mb={2}>
-												<Avatar src="https://i.pinimg.com/564x/eb/57/6f/eb576ff023487bcb1fa3ad61ee7b23ee.jpg" sx={{ width: '160px', height: '160px' }} />
+												<Box {...getRootProps()} sx={{ position: 'relative' }}>
+													<input
+														{...getInputProps()}
+														onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+															const file = event.currentTarget.files?.[0];
+															if (file) {
+																setPreviewUrlAvata(URL.createObjectURL(file));
+																setFieldValue('avatar', file);
+															}
+														}}
+													/>
+													<Avatar
+														sx={{
+															height: '180px',
+															width: '180px',
+															overflow: 'hidden',
+															cursor: 'pointer',
+														}}
+													>
+														{previewUrlAvata ? (
+															<img
+																src={previewUrlAvata}
+																alt="Preview"
+																style={{
+																	objectFit: 'cover',
+																	width: '100%',
+																	height: '100%',
+																}}
+															/>
+														) : (
+															<Typography
+																level="body-xs"
+																textAlign="center"
+																sx={{ color: '#999', padding: 1 }}
+															>
+																Kéo thả hình ảnh vào đây hoặc click để chọn file
+															</Typography>
+														)}
+													</Avatar>
+												</Box>
 
 												<IconButton
+													{...getRootProps()}
 													aria-label="upload new picture"
 													size="sm"
-													variant="outlined"
+													variant="solid"
 													sx={{
 														position: 'absolute',
 														zIndex: 2,
 														borderRadius: '50%',
 														right: 20,
 														bottom: 5,
-														// boxShadow: 'sm',
 													}}
-													onClick={() => setOpen(true)}
 												>
 													<EditRoundedIcon />
 												</IconButton>
@@ -195,7 +447,7 @@ export default function Layout1() {
 
 
 											<Field
-												name="vitri"
+												name="position"
 												as={Input}
 												startDecorator={
 													<Typography
@@ -213,7 +465,6 @@ export default function Layout1() {
 													fontWeight: '600',
 													color: '#f75d59',
 													maxWidth: '65%',
-													padding: '2px',
 												}}
 											/>
 										</Box>
@@ -232,12 +483,7 @@ export default function Layout1() {
 												<Field
 													name="email"
 													as={Input}
-													sx={{
-														...inputStyles,
-														fontSize: '13px',
-														padding: '2px',
-														marginTop: '1px'
-													}}
+													sx={inputStyles}
 												/>
 											</Box>
 											<Box display={'flex'} alignItems={'center'}>
@@ -246,14 +492,9 @@ export default function Layout1() {
 													Sđt:
 												</Typography>
 												<Field
-													name="sdt"
+													name="phone"
 													as={Input}
-													sx={{
-														...inputStyles,
-														fontSize: '13px',
-														padding: '2px',
-														marginTop: '1px'
-													}}
+													sx={inputStyles}
 												/>
 											</Box>
 											<Box display={'flex'} alignItems={'center'}>
@@ -262,14 +503,9 @@ export default function Layout1() {
 													Địa chỉ:
 												</Typography>
 												<Field
-													name="diachi"
+													name="address"
 													as={Input}
-													sx={{
-														...inputStyles,
-														fontSize: '13px',
-														padding: '2px',
-														marginTop: '1px'
-													}}
+													sx={inputStyles}
 												/>
 											</Box>
 											<Stack direction={'row'} alignItems={'center'}>
@@ -278,31 +514,15 @@ export default function Layout1() {
 													Ngày sinh:
 												</Typography>
 												<Field
-													name="ngaysinh"
+													name="dob"
 													as={Input}
-													sx={{
-														...inputStyles,
-														fontSize: '13px',
-														padding: '2px',
-														marginTop: '1px',
-														maxWidth: '60%'
-													}}
+													sx={inputStyles}
 												/>
 											</Stack>
 										</Stack>
-										{values.hocvan.length !== 0 && (
-											<Stack gap={2}>
-												<Box
-													sx={{
-														position: 'relative',
-														cursor: 'pointer',
-														'&:hover': {
-															'& .plus-sign': {
-																opacity: 1,
-															},
-														},
-													}}
-												>
+										{values.certificates.length !== 0 && (
+											<Stack gap={1}>
+												<Box sx={boxSX}>
 													<Stack direction={'row'} mt={1}>
 														<Box sx={{ backgroundColor: '#FFFFFF' }} p={'1px'} >&nbsp;&nbsp;&nbsp;&nbsp;</Box>
 														<Box sx={{ backgroundColor: '#f75d59', borderBottomRightRadius: 11, borderTopRightRadius: 11 }} alignContent={'center'} p={'1px'}>
@@ -313,17 +533,8 @@ export default function Layout1() {
 													<Tooltip title="Thêm" placement="right" arrow>
 														<Typography
 															className="plus-sign"
-															sx={{
-																position: 'absolute',
-																top: '50%',
-																left: '95%',
-																transform: 'translate(-50%, -50%)',
-																fontSize: '24px',
-																color: '#f75d59',
-																opacity: 0,
-																transition: 'opacity 0.3s',
-															}}
-															onClick={() => setFieldValue("chungchi", [...values.chungchi, { name: '' }])}
+															sx={formikSx}
+															onClick={() => setFieldValue("certificates", [...values.certificates, { name: '' }])}
 														>
 															+
 														</Typography>
@@ -332,43 +543,26 @@ export default function Layout1() {
 													<Tooltip title="Xoá chứng chỉ cuối cùng" arrow>
 														<Typography
 															className="plus-sign"
-															sx={{
-																position: 'absolute',
-																top: '50%',
-																left: '90%',
-																transform: 'translate(-50%, -50%)',
-																fontSize: '24px',
-																color: '#f75d59',
-																opacity: 0,
-																transition: 'opacity 0.3s',
-															}}
+															sx={{ ...formikSx, top: '50%', left: '90%', }}
 															onClick={() => {
-																const updatedChungchi = [...values.chungchi];
+																const updatedChungchi = [...values.certificates];
 																updatedChungchi.pop();
-																setFieldValue("chungchi", updatedChungchi);
+																setFieldValue("certificates", updatedChungchi);
 															}}
 														>
 															-
 														</Typography>
 													</Tooltip>
 												</Box>
-												{values.chungchi.map((chungchi, index) => (
-													<Stack direction={'row'} ml={3} alignItems={'center'}>
-														<CheckCircleIcon sx={{ color: '#f75d59', fontSize: '20px' }} />
+												{values.certificates.map((certificates, index) => (
+													<Stack direction={'row'} ml={3} alignItems={'start'}>
+														<CheckCircleIcon sx={{ color: '#f75d59', fontSize: '19px' }} /> &nbsp;
 														<Field
-															name={`chungchi.${index}.name`}
-															as={Input}
-															sx={{
-																fontSize: '15px',
-																color: '#FFF',
-																fontFamily: '"Arima", system-ui',
-																padding: '2px',
-																border: 'none',
-																outline: 'none',
-																boxShadow: 'none',
-																backgroundColor: 'transparent',
-															}}
+															name={`certificates.${index}.name`}
+															as={Textarea}
+															sx={{ ...inputStyles, width: '80%' }}
 															size='xs'
+															fullWidth
 															placeholder="tên chứng chỉ"
 														/>
 													</Stack>
@@ -376,19 +570,9 @@ export default function Layout1() {
 											</Stack>
 										)}
 
-										{values.sothich.length !== 0 && (
-											<Stack gap={2}>
-												<Box
-													sx={{
-														position: 'relative',
-														cursor: 'pointer',
-														'&:hover': {
-															'& .plus-sign': {
-																opacity: 1,
-															},
-														},
-													}}
-												>
+										{values.hobbies.length !== 0 && (
+											<Stack gap={1}>
+												<Box sx={boxSX}>
 													<Stack direction={'row'} mt={1}>
 														<Box sx={{ backgroundColor: '#FFFFFF' }} p={'1px'} >&nbsp;&nbsp;&nbsp;&nbsp;</Box>
 														<Box sx={{ backgroundColor: '#f75d59', borderBottomRightRadius: 11, borderTopRightRadius: 11 }} alignContent={'center'} p={'1px'}>
@@ -399,17 +583,8 @@ export default function Layout1() {
 													<Tooltip title="Thêm" placement="right" arrow>
 														<Typography
 															className="plus-sign"
-															sx={{
-																position: 'absolute',
-																top: '50%',
-																left: '95%',
-																transform: 'translate(-50%, -50%)',
-																fontSize: '24px',
-																color: '#f75d59',
-																opacity: 0,
-																transition: 'opacity 0.3s',
-															}}
-															onClick={() => setFieldValue("sothich", [...values.sothich, { name: '' }])}
+															sx={formikSx}
+															onClick={() => setFieldValue("hobbies", [...values.hobbies, { name: '' }])}
 														>
 															+
 														</Typography>
@@ -418,42 +593,23 @@ export default function Layout1() {
 													<Tooltip title="Xoá sở thích cuối cùng" arrow>
 														<Typography
 															className="plus-sign"
-															sx={{
-																position: 'absolute',
-																top: '50%',
-																left: '90%',
-																transform: 'translate(-50%, -50%)',
-																fontSize: '24px',
-																color: '#f75d59',
-																opacity: 0,
-																transition: 'opacity 0.3s',
-															}}
+															sx={{ ...formikSx, top: '50%', left: '90%', }}
 															onClick={() => {
-																const updatedSothich = [...values.sothich];
+																const updatedSothich = [...values.hobbies];
 																updatedSothich.pop();
-																setFieldValue("sothich", updatedSothich);
+																setFieldValue("hobbies", updatedSothich);
 															}}
 														>
 															-
 														</Typography>
 													</Tooltip>
 												</Box>
-												{values.sothich.map((sothich, index) => (
-													<Stack direction={'row'} ml={3} alignItems={'center'}>
-														<RecommendIcon sx={{ color: '#f75d59', fontSize: '20px' }} />
+												{values.hobbies.map((hobbies, index) => (
+													<Stack ml={3}>
 														<Field
-															name={`sothich.${index}.name`}
-															as={Input}
-															sx={{
-																fontSize: '15px',
-																color: '#FFF',
-																fontFamily: '"Arima", system-ui',
-																padding: '2px',
-																border: 'none',
-																outline: 'none',
-																boxShadow: 'none',
-																backgroundColor: 'transparent',
-															}}
+															name={`hobbies.${index}.name`}
+															as={Textarea}
+															sx={{ ...inputStyles, width: '80%' }}
 															size='xs'
 															placeholder="sở thích của bạn"
 														/>
@@ -473,43 +629,16 @@ export default function Layout1() {
 										>
 											Mục Tiêu Nghề Nghiệp
 										</Typography>
-										<Divider
-											sx={{
-												backgroundColor: '#f75d59',
-												padding: '1px',
-												mt: 1,
-												mb: 1
-											}}
-										/>
+										<Divider sx={dividerSx}/>
 
 										<Field
-											name="muctieu"
+											name="target"
 											as={Textarea}
-											sx={{
-												fontSize: '16px',
-												padding: '2px',
-												marginTop: '1px',
-												border: 'none',
-												outline: 'none',
-												boxShadow: 'none',
-												fontFamily: '"Arima", system-ui',
-												color: '#000',
-												backgroundColor: 'transparent',
-											}}
+											sx={{...sharedSx, fontSize: '16px', marginTop: '1px'}}
 											fullWidth
 											placeholder="Mục tiêu nghề nghiệp"
 										/>
-										<Box
-											sx={{
-												position: 'relative',
-												cursor: 'pointer',
-												'&:hover': {
-													'& .plus-sign': {
-														opacity: 1,
-													},
-												},
-											}}
-										>
+										<Box sx={boxSX}>
 											<Typography
 												level='h4'
 												fontFamily={'"Arima", system-ui'}
@@ -524,17 +653,8 @@ export default function Layout1() {
 											<Tooltip title="Thêm" placement="right" arrow>
 												<Typography
 													className="plus-sign"
-													sx={{
-														position: 'absolute',
-														top: '50%',
-														left: '98%',
-														transform: 'translate(-50%, -50%)',
-														fontSize: '24px',
-														color: '#f75d59',
-														opacity: 0,
-														transition: 'opacity 0.3s',
-													}}
-													onClick={() => setFieldValue("hocvan", [...values.hocvan, { name: '', vitri: '', start: '', end: '', mota: '' }])}
+													sx={{...formikSx, left: '98%'}}
+													onClick={() => setFieldValue("educations", [...values.educations, { name: '', universityName: '', startDate: '', endDate: '', description: '' }])}
 												>
 													+
 												</Typography>
@@ -543,35 +663,19 @@ export default function Layout1() {
 											<Tooltip title="Xoá học vấn cuối cùng " arrow>
 												<Typography
 													className="plus-sign"
-													sx={{
-														position: 'absolute',
-														top: '50%',
-														left: '90%',
-														transform: 'translate(-50%, -50%)',
-														fontSize: '24px',
-														color: '#f75d59',
-														opacity: 0,
-														transition: 'opacity 0.3s',
-													}}
+													sx={{...formikSx, left: '90%'}}
 													onClick={() => {
-														const updatedHocvan = [...values.hocvan];
+														const updatedHocvan = [...values.educations];
 														updatedHocvan.pop();
-														setFieldValue("hocvan", updatedHocvan);
+														setFieldValue("educations", updatedHocvan);
 													}}
 												>
 													-
 												</Typography>
 											</Tooltip>
 										</Box>
-										<Divider
-											sx={{
-												backgroundColor: '#f75d59',
-												padding: '1px',
-												mt: 1,
-												mb: 2
-											}}
-										/>
-										{values.hocvan.map((hocvan, index) => (
+										<Divider sx={dividerSx}/>
+										{values.educations.map((educations, index) => (
 											<Stack direction={'row'}>
 												<Box alignItems={'center'} justifyItems={'center'} mr={1}>
 													<Box width={12} height={12} borderRadius={'50%'} sx={{ backgroundColor: '#f75d59' }} />
@@ -587,19 +691,12 @@ export default function Layout1() {
 												</Box>
 												<Box key={index}>
 													<Field
-														name={`hocvan.${index}.name`}
+														name={`educations.${index}.expertise`}
 														as={Input}
 														sx={{
-															fontSize: '16px',
+															...sharedSx,
+															fontSize: '17px',
 															fontWeight: '600',
-															color: '#000',
-															fontFamily: '"Arima", system-ui',
-															padding: '2px',
-															border: 'none',
-															outline: 'none',
-															boxShadow: 'none',
-															backgroundColor: 'transparent',
-
 														}}
 														size='xs'
 														fullWidth
@@ -615,19 +712,9 @@ export default function Layout1() {
 															Trường:
 														</Typography>
 														<Field
-															name={`hocvan.${index}.vitri`}
+															name={`educations.${index}.universityName`}
 															as={Input}
-															sx={{
-																fontSize: '15px',
-																color: '#000',
-																fontFamily: '"Arima", system-ui',
-																padding: '2px',
-																border: 'none',
-																outline: 'none',
-																boxShadow: 'none',
-																backgroundColor: 'transparent',
-
-															}}
+															sx={sharedSx}
 															size='xs'
 															fullWidth
 															placeholder="Ngành học/môn học"
@@ -644,17 +731,10 @@ export default function Layout1() {
 															Thời gian:
 														</Typography>
 														<Field
-															name={`hocvan.${index}.start`}
+															name={`educations.${index}.startDate`}
 															as={Input}
 															sx={{
-																fontSize: '15px',
-																color: '#000',
-																fontFamily: '"Arima", system-ui',
-																padding: '2px',
-																border: 'none',
-																outline: 'none',
-																boxShadow: 'none',
-																backgroundColor: 'transparent',
+																...sharedSx,
 																width: '20%',
 																"& .MuiInput-input": {
 																	textAlign: 'center',
@@ -666,8 +746,7 @@ export default function Layout1() {
 														<Typography
 															sx={{
 																fontSize: '15px',
-																color: '#000',
-																fontFamily: '"Arima", system-ui',
+																...typographySx,
 																ml: 1,
 																mr: 1
 															}}
@@ -675,17 +754,10 @@ export default function Layout1() {
 															-
 														</Typography>
 														<Field
-															name={`hocvan.${index}.end`}
+															name={`educations.${index}.endDate`}
 															as={Input}
 															sx={{
-																fontSize: '15px',
-																color: '#000',
-																fontFamily: '"Arima", system-ui',
-																padding: '2px',
-																border: 'none',
-																outline: 'none',
-																boxShadow: 'none',
-																backgroundColor: 'transparent',
+																...sharedSx,
 																width: '20%',
 																"& .MuiInput-input": {
 																	textAlign: 'center',
@@ -696,49 +768,17 @@ export default function Layout1() {
 														/>
 													</Box>
 
-													<Box display={'flex'} flexDirection={'row'}>
-														<Typography
-															sx={{
-																color: '#000',
-																fontFamily: '"Arima", system-ui',
-															}}
-														>
-															Thành tích:
-														</Typography>
-														<Field
-															name={`hocvan.${index}.mota`}
-															as={Textarea}
-															sx={{
-																fontSize: '15px',
-																color: '#000',
-																fontFamily: '"Arima", system-ui',
-																padding: '2px',
-																border: 'none',
-																outline: 'none',
-																boxShadow: 'none',
-																backgroundColor: 'transparent',
-																width: '80%'
-															}}
-															size='xs'
-															fullWidth
-															placeholder="Mô tả thành tích trong quá trình học"
-														/>
-													</Box>
+													<Field
+														name={`educations.${index}.description`}
+														as={Textarea}
+														sx={sharedSx}
+														placeholder="Mô tả thành tích trong quá trình học"
+													/>
 												</Box>
 											</Stack>
 										))}
 
-										<Box
-											sx={{
-												position: 'relative',
-												cursor: 'pointer',
-												'&:hover': {
-													'& .plus-sign': {
-														opacity: 1,
-													},
-												},
-											}}
-										>
+										<Box sx={boxSX}>
 											<Typography
 												level='h4'
 												fontFamily={'"Arima", system-ui'}
@@ -753,17 +793,8 @@ export default function Layout1() {
 											<Tooltip title="Thêm" placement="right" arrow>
 												<Typography
 													className="plus-sign"
-													sx={{
-														position: 'absolute',
-														top: '50%',
-														left: '98%',
-														transform: 'translate(-50%, -50%)',
-														fontSize: '24px',
-														color: '#f75d59',
-														opacity: 0,
-														transition: 'opacity 0.3s',
-													}}
-													onClick={() => setFieldValue("duan", [...values.hocvan, { name: '', vitri: '', start: '', end: '', mota: '' }])}
+													sx={{...formikSx, left: '98%'}}
+													onClick={() => setFieldValue("projects", [...values.projects, { name: '', universityName: '', startDate: '', endDate: '', description: '' }])}
 												>
 													+
 												</Typography>
@@ -772,35 +803,19 @@ export default function Layout1() {
 											<Tooltip title="Xoá dư án cuối cùng " arrow>
 												<Typography
 													className="plus-sign"
-													sx={{
-														position: 'absolute',
-														top: '50%',
-														left: '90%',
-														transform: 'translate(-50%, -50%)',
-														fontSize: '24px',
-														color: '#f75d59',
-														opacity: 0,
-														transition: 'opacity 0.3s',
-													}}
+													sx={{...formikSx, left: '90%'}}
 													onClick={() => {
-														const updatedDuan = [...values.duan];
+														const updatedDuan = [...values.projects];
 														updatedDuan.pop();
-														setFieldValue("duan", updatedDuan);
+														setFieldValue("projects", updatedDuan);
 													}}
 												>
 													-
 												</Typography>
 											</Tooltip>
 										</Box>
-										<Divider
-											sx={{
-												backgroundColor: '#f75d59',
-												padding: '1px',
-												mt: 1,
-												mb: 2
-											}}
-										/>
-										{values.duan.map((duan, index) => (
+										<Divider sx={dividerSx}/>
+										{values.projects.map((projects, index) => (
 											<Stack direction={'row'}>
 												<Box alignItems={'center'} justifyItems={'center'} mr={1}>
 													<Box width={12} height={12} borderRadius={'50%'} sx={{ backgroundColor: '#f75d59' }} />
@@ -815,19 +830,12 @@ export default function Layout1() {
 												</Box>
 												<Box key={index}>
 													<Field
-														name={`duan.${index}.name`}
+														name={`projects.${index}.name`}
 														as={Input}
 														sx={{
-															fontSize: '16px',
+															...sharedSx,
+															fontSize: '18px',
 															fontWeight: '600',
-															color: '#000',
-															fontFamily: '"Arima", system-ui',
-															padding: '2px',
-															border: 'none',
-															outline: 'none',
-															boxShadow: 'none',
-															backgroundColor: 'transparent',
-
 														}}
 														size='xs'
 														fullWidth
@@ -835,26 +843,12 @@ export default function Layout1() {
 													/>
 
 													<Stack direction={'row'}>
-														<Typography
-															sx={{
-																color: '#000',
-																fontFamily: '"Arima", system-ui',
-															}}
-														>
-															Thời gian:
-														</Typography>
+														<Typography sx={typographySx}>Thời gian:</Typography>
 														<Field
-															name={`duan.${index}.start`}
+															name={`projects.${index}.startDate`}
 															as={Input}
 															sx={{
-																fontSize: '15px',
-																color: '#000',
-																fontFamily: '"Arima", system-ui',
-																padding: '2px',
-																border: 'none',
-																outline: 'none',
-																boxShadow: 'none',
-																backgroundColor: 'transparent',
+																...sharedSx,
 																width: '20%',
 																"& .MuiInput-input": {
 																	textAlign: 'center',
@@ -866,8 +860,7 @@ export default function Layout1() {
 														<Typography
 															sx={{
 																fontSize: '15px',
-																color: '#000',
-																fontFamily: '"Arima", system-ui',
+																...typographySx,
 																ml: 1,
 																mr: 1
 															}}
@@ -875,166 +868,57 @@ export default function Layout1() {
 															-
 														</Typography>
 														<Field
-															name={`duan.${index}.end`}
+															name={`projects.${index}.endDate`}
 															as={Input}
-															sx={{
-																fontSize: '15px',
-																color: '#000',
-																fontFamily: '"Arima", system-ui',
-																padding: '2px',
-																border: 'none',
-																outline: 'none',
-																boxShadow: 'none',
-																backgroundColor: 'transparent',
-																width: '20%',
-																"& .MuiInput-input": {
-																	textAlign: 'center',
-																},
-															}}
+															sx={sharedSx}
 															size='xs'
 															placeholder="Kết thúc"
 														/>
 													</Stack>
 
 													<Stack direction={'row'}>
-														<Typography
-															sx={{
-																color: '#000',
-																fontFamily: '"Arima", system-ui',
-															}}
-														>
+														<Typography sx={typographySx}>
 															Số lượng người tham gia:
 														</Typography>
 														<Field
-															name={`duan.${index}.soluong`}
+															name={`projects.${index}.quantity`}
 															as={Input}
-															sx={{
-																fontSize: '15px',
-																color: '#000',
-																fontFamily: '"Arima", system-ui',
-																padding: '2px',
-																border: 'none',
-																outline: 'none',
-																boxShadow: 'none',
-																backgroundColor: 'transparent',
-															}}
+															sx={sharedSx}
 															size='xs'
 															placeholder="Số lượng người tham gia"
 														/>
 													</Stack>
 
 													<Stack direction={'row'}>
-														<Typography
-															sx={{
-																color: '#000',
-																fontFamily: '"Arima", system-ui',
-															}}
-														>
+														<Typography sx={typographySx}>
 															Github:
 														</Typography>
 														<Field
-															name={`duan.${index}.github`}
+															name={`projects.${index}.github`}
 															as={Input}
-															sx={{
-																fontSize: '15px',
-																color: '#000',
-																fontFamily: '"Arima", system-ui',
-																padding: '2px',
-																border: 'none',
-																outline: 'none',
-																boxShadow: 'none',
-																backgroundColor: 'transparent',
-															}}
+															sx={sharedSx}
 															size='xs'
 															fullWidth
 															placeholder="https://github.com/example"
 														/>
 													</Stack>
 
-													<Stack direction={'row'}>
-														<Typography
-															sx={{
-																color: '#000',
-																fontFamily: '"Arima", system-ui',
-															}}
-														>
-															Mô tả:
-														</Typography>
-														<Field
-															name={`duan.${index}.mota`}
-															as={Textarea}
-															sx={{
-																fontSize: '15px',
-																color: '#000',
-																fontFamily: '"Arima", system-ui',
-																padding: '2px',
-																border: 'none',
-																outline: 'none',
-																boxShadow: 'none',
-																backgroundColor: 'transparent',
-															}}
-															size='xs'
-															fullWidth
-															placeholder="mô tả dự án"
-														/>
-													</Stack>
+													<Field
+														name={`projects.${index}.description`}
+														as={Textarea}
+														sx={sharedSx}
+														placeholder="mô tả dự án cụa bạn"
+													/>
 												</Box>
 											</Stack>
 										))}
-
 									</Box>
 								</Box>
 							</Form>
 						)}
 					</Formik>
-
 				</Box>
 			</Stack>
-			<Transition in={open} timeout={400}>
-				{(state: string) => (
-					<Modal
-						keepMounted
-						open={!['exited', 'exiting'].includes(state)}
-						onClose={() => setOpen(false)}
-						slotProps={{
-							backdrop: {
-								sx: {
-									opacity: 0,
-									backdropFilter: 'none',
-									transition: `opacity 400ms, backdrop-filter 400ms`,
-									...{
-										entering: { opacity: 1, backdropFilter: 'blur(8px)' },
-										entered: { opacity: 1, backdropFilter: 'blur(8px)' },
-									}[state],
-								},
-							},
-						}}
-						sx={[
-							state === 'exited'
-								? { visibility: 'hidden' }
-								: { visibility: 'visible' },
-						]}
-					>
-						<ModalDialog
-							sx={{
-								opacity: 0,
-								transition: `opacity 300ms`,
-								...{
-									entering: { opacity: 1 },
-									entered: { opacity: 1 },
-								}[state],
-							}}
-						>
-							<ModalClose />
-							<DialogTitle>Cập nhật ảnh đại diện</DialogTitle>
-							<Divider />
-							<DialogContent>
-
-							</DialogContent>
-						</ModalDialog>
-					</Modal>
-				)}
-			</Transition>
 		</CssVarsProvider>
 	);
 }

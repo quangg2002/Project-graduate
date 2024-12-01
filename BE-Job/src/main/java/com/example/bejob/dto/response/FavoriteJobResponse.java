@@ -14,7 +14,6 @@ public class FavoriteJobResponse {
     private String requirements;
     private String location;
     private Long salary;
-    private String status;
 
     // Thông tin về công ty
     private Long companyId;

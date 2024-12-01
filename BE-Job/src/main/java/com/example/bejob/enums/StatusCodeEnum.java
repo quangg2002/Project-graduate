@@ -133,6 +133,10 @@ public enum StatusCodeEnum {
     COMPANY0000("COMPANY0000"), //Autofill company failed
     SALARY1000("SALARY1000"), //Autofill salary success
     SALARY0000("SALARY0000"), //Autofill salary failed
+    INDUSTRY1000("INDUSTRY1000"), //Autofill industry success
+    INDUSTRY0000("INDUSTRY0000"), //Autofill industry failed
+    EDUCATIONLEVEL1000("EDUCATIONLEVEL1000"), //Autofill education level success
+    EDUCATIONLEVEL0000("EDUCATIONLEVEL0000"), //Autofill education level failed
     // USER-INFO
     USERINFO1000("USERINFO1000"),
     USERINFO0000("USERINFO0000"),
@@ -146,7 +150,11 @@ public enum StatusCodeEnum {
     NOTIFICATION1001("Get notification success"),
     NOTIFICATION0001("Get notification failed"),
     NOTIFICATION1002("Get notification success"),
-    NOTIFICATION0002("Get notification failed");
+    NOTIFICATION0002("Get notification failed"),
+
+    //
+    SUCCESS("Thanh cong"),
+    FAIlS("ThatBai");
 
     public final String value;
 

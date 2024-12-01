@@ -17,12 +17,5 @@ public class Skill {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long employeeId;
-
-    private Long techId;
-
-    private String level;
-
-    private String description;
-
+    private String name;
 }

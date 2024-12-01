@@ -1,6 +1,5 @@
 package com.example.bejob.entity;
 
-import com.example.bejob.base.Auditable;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,8 +11,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Table(name = "cv")
-public class CvEmployee extends Auditable{
+@Table(name = "project")
+public class Project {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -22,30 +21,16 @@ public class CvEmployee extends Auditable{
 
     private Long employeeId;
 
-    private String nameCv;
-
     private String name;
 
-    private String position;
+    private String startDate;
 
-    private String phone;
+    private String endDate;
 
-    private String email;
+    private String quantity;
 
-    private String address;
-
-    private String dob;
-
-    private String avatar;
+    private String github;
 
     @Column(columnDefinition = "TEXT")
-    private String target;
-
-    private Long education;
-
-    private Long certificate;
-
-    private Long hobby;
-
-    private Long project;
+    private  String description;
 }

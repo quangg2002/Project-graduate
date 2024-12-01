@@ -638,7 +638,6 @@ export default function Setting() {
                                                     <Autocomplete
                                                         placeholder="Tỉnh/ Thành phố"
                                                         options={city.map((option) => option.name)}
-                                                        freeSolo
                                                         value={[city.find((item) => item.id === values.city)?.name]}
                                                         onChange={(event, newValue: any) => {
                                                             handleCityChange(event, newValue)
@@ -655,7 +654,6 @@ export default function Setting() {
                                                         placeholder="Quận Huyện"
                                                         options={filteredDistricts.map((option) => option.name)}
                                                         value={[districts.find((item) => item.id === values.district)?.name]}
-                                                        freeSolo
                                                         onChange={(event, newValue: any) => {
                                                             const selectedDistrict = districts.find((option) => 
                                                                 option.city_id === values.city && option.name === newValue

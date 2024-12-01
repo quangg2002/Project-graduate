@@ -49,6 +49,7 @@
 
         .sidebar h2 {
             margin-bottom: 10px;
+            margin-top: 10px;
         }
 
         .sidebar h3 {
@@ -129,7 +130,7 @@
     <div class="sidebar">
         <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 20px;">
             <img src="https://i.pinimg.com/564x/eb/57/6f/eb576ff023487bcb1fa3ad61ee7b23ee.jpg" alt="">
-            <h2>Ngô Minh Quang</h2>
+            <h2 th:text="${cv.name}"></h2>
             <h3>Vị trí: Devoloper Nextjs</h3>
         </div>
         <div style="display: flex; margin-bottom: 5px; ">
@@ -259,7 +260,7 @@
             </div>
         </div>
 
-        <div class="section">
+        <div class="section" style="margin-top: 10px">
             <h3>Kinh Nghiệm Làm Việc</h3>
             <div style="display: grid; grid-template-columns: 2px 90%; column-gap: 20px;">
                 <div class="circle-line">

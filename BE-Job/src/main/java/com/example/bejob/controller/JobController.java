@@ -1,53 +1,53 @@
-package com.example.bejob.controller;
-
-import com.example.bejob.dto.request.JobRequest;
-import com.example.bejob.model.ResponseDto;
-import com.example.bejob.service.JobService;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-@RestController
-@RequiredArgsConstructor
-@RequestMapping("/job")
-public class JobController {
-
-    private final JobService jobService;
-
-    @PostMapping()
-    public ResponseEntity<ResponseDto<Object>> createJob(@Valid @RequestBody JobRequest jobRequest) {
-        return jobService.createJob(jobRequest);
-    }
-
-    @PatchMapping("/{id}")
-    public ResponseEntity<ResponseDto<Object>> updateJob(@PathVariable Long id, @Valid @RequestBody JobRequest jobRequest) {
-        return jobService.updateJob(id, jobRequest);
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<ResponseDto<Object>> getJob(@PathVariable Long id) {
-        return jobService.getJob(id);
-    }
-
-    @GetMapping("/detail/{id}")
-    public ResponseEntity<ResponseDto<Object>> getJobWith(@PathVariable Long id) {
-        return jobService.getJobWith(id);
-    }
-
-    @GetMapping()
-    public ResponseEntity<ResponseDto<Object>> getListJob() {
-        return jobService.getAllJob();
-    }
-
-    @GetMapping("/with-company")
-    public ResponseEntity<ResponseDto<Object>> getJobsWithCompany() {
-        return jobService.getAllJobsWithCompany();
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<ResponseDto<Object>> deleteJob(@PathVariable Long id) {
-        jobService.deleteJob(id);
-        return jobService.deleteJob(id);
-    }
-}
+//package com.example.bejob.controller;
+//
+//import com.example.bejob.dto.request.JobRequest;
+//import com.example.bejob.model.ResponseDto;
+//import com.example.bejob.service.JobService;
+//import jakarta.validation.Valid;
+//import lombok.RequiredArgsConstructor;
+//import org.springframework.http.ResponseEntity;
+//import org.springframework.web.bind.annotation.*;
+//
+//@RestController
+//@RequiredArgsConstructor
+//@RequestMapping("/job")
+//public class JobController {
+//
+//    private final JobService jobService;
+//
+//    @PostMapping()
+//    public ResponseEntity<ResponseDto<Object>> createJob(@Valid @RequestBody JobRequest jobRequest) {
+//        return jobService.createJob(jobRequest);
+//    }
+//
+//    @PatchMapping("/{id}")
+//    public ResponseEntity<ResponseDto<Object>> updateJob(@PathVariable Long id, @Valid @RequestBody JobRequest jobRequest) {
+//        return jobService.updateJob(id, jobRequest);
+//    }
+//
+//    @GetMapping("/{id}")
+//    public ResponseEntity<ResponseDto<Object>> getJob(@PathVariable Long id) {
+//        return jobService.getJob(id);
+//    }
+//
+//    @GetMapping("/detail/{id}")
+//    public ResponseEntity<ResponseDto<Object>> getJobWith(@PathVariable Long id) {
+//        return jobService.getJobWith(id);
+//    }
+//
+//    @GetMapping()
+//    public ResponseEntity<ResponseDto<Object>> getListJob() {
+//        return jobService.getAllJob();
+//    }
+//
+//    @GetMapping("/with-company")
+//    public ResponseEntity<ResponseDto<Object>> getJobsWithCompany() {
+//        return jobService.getAllJobsWithCompany();
+//    }
+//
+//    @DeleteMapping("/{id}")
+//    public ResponseEntity<ResponseDto<Object>> deleteJob(@PathVariable Long id) {
+//        jobService.deleteJob(id);
+//        return jobService.deleteJob(id);
+//    }
+//}

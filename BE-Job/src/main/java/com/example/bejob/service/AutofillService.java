@@ -9,6 +9,7 @@ import com.example.bejob.model.ResponseDto;
 import com.example.bejob.util.Util;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -23,13 +24,15 @@ public class AutofillService {
     private final DistrictRepository districtRepository;
     private final LanguageService languageService;
     private final ModelMapper modelMapper;
-    private final SalaryRepository salaryRepository;
+    //    private final SalaryRepository salaryRepository;
     private final JobTypeRepository jobTypeRepository;
-    private final TechRepository techRepository;
     private final YearExperienceRepository yearExperienceRepository;
     private final PositionRepository positionRepository;
     private final ContractTypeRepository contractTypeRepository;
     private final CompanyRepository companyRepository;
+    private final IndustryRepository industryRepository;
+    private final EducationLevelRepository educationLevelRepository;
+    private final SkillRepository skillRepository;
 
 
     public ResponseEntity<ResponseDto<List<City>>> autofillCity(String name) {
@@ -79,7 +82,6 @@ public class AutofillService {
         }
     }
 
-
     public ResponseEntity<ResponseDto<List<DistrictResponse>>> autofillDistrict(String name, Long cityId) {
         try {
             List<District> districts;
@@ -108,29 +110,22 @@ public class AutofillService {
         }
     }
 
-    public ResponseEntity<ResponseDto<List<Salary>>> autofillSalary() {
-        try {
-//            List<Salary> salaries = salaryRepository.findAll();
-
-            List<Salary> salaries = new ArrayList<>();
-
-            // Create and add Salary objects
-            salaries.add(new Salary(1, "1000 - 2000", 1000L, 2000L));
-            salaries.add(new Salary(2, "2000 - 3000", 2000L, 3000L));
-            salaries.add(new Salary(3, "3000 - 4000", 3000L, 4000L));
-
-            return ResponseBuilder.okResponse(
-                    languageService.getMessage("autofill.salary.success"),
-                    salaries,
-                    StatusCodeEnum.SALARY1000
-            );
-        } catch (Exception e) {
-            return ResponseBuilder.badRequestResponse(
-                    languageService.getMessage("autofill.salary.failed"),
-                    StatusCodeEnum.SALARY0000
-            );
-        }
-    }
+//    public ResponseEntity<ResponseDto<List<Salary>>> autofillSalary() {
+//        try {
+//            List<Salary> salaries = salaryRepository.findAll(Sort.by(Sort.Direction.ASC, "id"));
+//
+//            return ResponseBuilder.okResponse(
+//                    languageService.getMessage("autofill.salary.success"),
+//                    salaries,
+//                    StatusCodeEnum.SALARY1000
+//            );
+//        } catch (Exception e) {
+//            return ResponseBuilder.badRequestResponse(
+//                    languageService.getMessage("autofill.salary.failed"),
+//                    StatusCodeEnum.SALARY0000
+//            );
+//        }
+//    }
 
     public ResponseEntity<ResponseDto<List<JobType>>> autofillJobType() {
         try {
@@ -149,26 +144,26 @@ public class AutofillService {
         }
     }
 
-    public ResponseEntity<ResponseDto<List<Tech>>> autofillTech() {
+    public ResponseEntity<ResponseDto<List<Industry>>> autofillIndustry() {
         try {
-            List<Tech> techList = techRepository.findAll();
+            List<Industry> industryList = industryRepository.findAll();
 
             return ResponseBuilder.okResponse(
-                    languageService.getMessage("autofill.tech.success"),
-                    techList,
-                    StatusCodeEnum.TECH1000
+                    languageService.getMessage("autofill.industry.success"),
+                    industryList,
+                    StatusCodeEnum.INDUSTRY1000
             );
         } catch (Exception e) {
             return ResponseBuilder.badRequestResponse(
-                    languageService.getMessage("autofill.tech.failed"),
-                    StatusCodeEnum.TECH0000
+                    languageService.getMessage("autofill.industry.failed"),
+                    StatusCodeEnum.INDUSTRY0000
             );
         }
     }
 
     public ResponseEntity<ResponseDto<List<YearExperience>>> autofillYearExperience() {
         try {
-            List<YearExperience> experiences = yearExperienceRepository.findAll();
+            List<YearExperience> experiences = yearExperienceRepository.findAll(Sort.by(Sort.Direction.ASC, "id"));
 
             return ResponseBuilder.okResponse(
                     languageService.getMessage("autofill.year.experience.success"),
@@ -234,4 +229,37 @@ public class AutofillService {
         }
     }
 
+    public ResponseEntity<ResponseDto<List<EducationLevel>>> autofillEducationLevel() {
+        try {
+            List<EducationLevel> educationLevels = educationLevelRepository.findAll();
+
+            return ResponseBuilder.okResponse(
+                    languageService.getMessage("autofill.industry.success"),
+                    educationLevels,
+                    StatusCodeEnum.EDUCATIONLEVEL1000
+            );
+        } catch (Exception e) {
+            return ResponseBuilder.badRequestResponse(
+                    languageService.getMessage("autofill.industry.failed"),
+                    StatusCodeEnum.EDUCATIONLEVEL0000
+            );
+        }
+    }
+
+    public ResponseEntity<ResponseDto<List<Skill>>> autofillSkill(String name) {
+        try {
+            List<Skill> skillList;
+
+            if (Util.isNullOrEmpty(name)) {
+                skillList = skillRepository.findAll();
+            } else {
+                skillList = skillRepository.findByNameContainingIgnoreCase(name);
+            }
+
+            return ResponseBuilder.okResponse(languageService.getMessage("autofill.skill.success"),
+                    skillList, StatusCodeEnum.SKILL1002);
+        } catch (Exception e) {
+            return ResponseBuilder.badRequestResponse(languageService.getMessage("autofill.skill.failed"), StatusCodeEnum.SKILL0002);
+        }
+    }
 }

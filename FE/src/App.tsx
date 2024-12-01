@@ -50,11 +50,11 @@ function App() {
         <Route path="/jobposting" element={<JobPosting />} />
         <Route path="/jobapplied" element={<JobApplied />} />
         <Route path="/jobsaved" element={<JobSaved />} />
-        <Route path="/view-cv" element={<ViewPdf />}/>
-        <Route path="/setting" element={<Setting/>}/>
-        <Route path="find-job" element={<Findjob/>}/>
+        <Route path="/view-cv" element={<ViewPdf />} />
+        <Route path="/setting" element={<Setting />} />
+        <Route path="find-job" element={<Findjob />} />
       </Routes>
-      
+
       <ToastContainer
         position="top-right"
         autoClose={4000}

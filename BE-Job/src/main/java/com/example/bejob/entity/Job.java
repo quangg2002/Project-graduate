@@ -20,26 +20,31 @@ public class Job extends Auditable {
     private Long id;
     private Long employer;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "VARCHAR(5000)")
     private String title;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "VARCHAR(5000)")
     private String description;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "VARCHAR(5000)")
     private String benefit;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "VARCHAR(5000)")
     private String requirements;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "VARCHAR(5000)")
     private String location;
 
-    private Long yearExperience;
+    @Column(columnDefinition = "VARCHAR(5000)")
+    private String workingTime;
 
     private Long cityId;
 
     private Long districtId;
+
+    private Long salary;
+
+    private Long yearExperience;
 
     private Long positionId;
 
@@ -53,11 +58,7 @@ public class Job extends Auditable {
 
     private String deadline;
 
-    @Column(columnDefinition = "TEXT")
-    private String workingTime;
+    private Long quantity;
 
-    private String quantity;
-
-    @Enumerated(EnumType.STRING)
-    private JobStatus status;
+    private Boolean active;
 }
