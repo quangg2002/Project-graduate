@@ -20,7 +20,7 @@ const axiosIns: AxiosInstance = axios.create({
 });
 
 const axiosWsIns: AxiosInstance = axios.create({
-    baseURL: process.env.REACT_APP_BASE_WS_URL || 'https://localhost:8888',
+    baseURL: process.env.REACT_APP_BASE_WS_URL || 'http://localhost:8080',
     timeout: 5000,
     headers: {
         'Content-Type': 'application/json',

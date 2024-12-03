@@ -46,15 +46,6 @@ public class MessageController {
         return ResponseBuilder.okResponse("Query success", conversations, StatusCodeEnum.MESSAGE1000);
     }
 
-    @MessageMapping("/getConversations") // Đây là endpoint mà client sẽ gửi tin nhắn tới
-    public void sendConversationsToUser(@AuthenticationPrincipal User user) {
-        // Lấy danh sách cuộc trò chuyện
-        List<UserConversationsDto> conversations = messageService.getUserConversations(user.getId());
-
-        // Gửi dữ liệu đến một user cụ thể qua WebSocket (với định danh của người nhận)
-        simpMessagingTemplate.convertAndSendToUser(user.getId().toString(), "/queue/conversations", conversations);
-    }
-
     @MessageMapping("/private-message")
     public void processPrivateMessage(@Payload MessageDto messageDto) {
         log.info("Private message from {} to {}: {}", messageDto.getSender(), messageDto.getReceiver(), messageDto.getMessage());

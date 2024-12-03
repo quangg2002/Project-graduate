@@ -57,3 +57,9 @@ export const jobDelete = createAsyncThunk<any, number>(
             .catch(error => { });
     }
 );
+
+export const getFullJobById = async (id: number) => {
+    return axiosIns.get(`/job/full-job/${id}`)
+        .then(response => response.data)
+        .catch(error => { });
+}

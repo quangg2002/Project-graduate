@@ -31,13 +31,14 @@ import TaskOutlinedIcon from '@mui/icons-material/TaskOutlined';
 import NoteAddOutlinedIcon from '@mui/icons-material/NoteAddOutlined';
 import FolderOpenOutlinedIcon from '@mui/icons-material/FolderOpenOutlined';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-
+import { openMessenger } from "../redux/slice/messageSlice";
+import useAppDispatch from "../hooks/useAppDispatch";
 
 export default function Header() {
     const [open, setOpen] = React.useState(false);
     const location = useLocation();
     const navigate = useNavigate();
-
+    const dispatch = useAppDispatch();
     const [openDropdown, setOpenDropdown] = React.useState(null);
 
     const items = ['Công việc', 'Hồ sơ & CV', 'Danh sách công ty'];
@@ -383,6 +384,7 @@ export default function Header() {
                                         size="sm"
                                         variant="soft"
                                         sx={{ alignSelf: "center", borderRadius: '50%' }}
+                                        onClick={() => { dispatch(openMessenger()) }}
                                     >
                                         <ForumIcon color="success" />
                                     </IconButton>
