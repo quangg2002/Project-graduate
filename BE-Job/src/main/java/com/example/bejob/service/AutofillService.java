@@ -110,23 +110,6 @@ public class AutofillService {
         }
     }
 
-//    public ResponseEntity<ResponseDto<List<Salary>>> autofillSalary() {
-//        try {
-//            List<Salary> salaries = salaryRepository.findAll(Sort.by(Sort.Direction.ASC, "id"));
-//
-//            return ResponseBuilder.okResponse(
-//                    languageService.getMessage("autofill.salary.success"),
-//                    salaries,
-//                    StatusCodeEnum.SALARY1000
-//            );
-//        } catch (Exception e) {
-//            return ResponseBuilder.badRequestResponse(
-//                    languageService.getMessage("autofill.salary.failed"),
-//                    StatusCodeEnum.SALARY0000
-//            );
-//        }
-//    }
-
     public ResponseEntity<ResponseDto<List<JobType>>> autofillJobType() {
         try {
             List<JobType> jobTypes = jobTypeRepository.findAll();
@@ -246,20 +229,18 @@ public class AutofillService {
         }
     }
 
-    public ResponseEntity<ResponseDto<List<Skill>>> autofillSkill(String name) {
+    public ResponseEntity<ResponseDto<List<Skill>>> autofillSkill() {
         try {
-            List<Skill> skillList;
+            List<Skill> skillList =  skillRepository.findAll();
 
-            if (Util.isNullOrEmpty(name)) {
-                skillList = skillRepository.findAll();
-            } else {
-                skillList = skillRepository.findByNameContainingIgnoreCase(name);
-            }
-
-            return ResponseBuilder.okResponse(languageService.getMessage("autofill.skill.success"),
-                    skillList, StatusCodeEnum.SKILL1002);
+            return ResponseBuilder.okResponse(
+                    languageService.getMessage("autofill.skill.success"),
+                    skillList,
+                    StatusCodeEnum.SKILL1002);
         } catch (Exception e) {
-            return ResponseBuilder.badRequestResponse(languageService.getMessage("autofill.skill.failed"), StatusCodeEnum.SKILL0002);
+            return ResponseBuilder.badRequestResponse(
+                    languageService.getMessage("autofill.skill.failed"),
+                    StatusCodeEnum.SKILL0002);
         }
     }
 }

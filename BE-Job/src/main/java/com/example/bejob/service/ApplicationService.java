@@ -30,7 +30,7 @@ public class ApplicationService {
 
     private final EmployerRepository employerRepository;
     private final CompanyRepository companyRepository;
-    private final SalaryRepository salaryRepository;
+    private final PositionRepository positionRepository;
     @Value("${minio.url.public}")
     private String publicUrl;
 
@@ -167,6 +167,11 @@ public class ApplicationService {
                                 .id(application.getId())
                                 .jobId(job.getId())
                                 .jobTitle(job.getTitle())
+                                .position(positionRepository.findById(job.getId())
+                                        .map(Position::getName)
+                                        .orElse(null)
+                                )
+                                .salary(job.getSalary())
                                 .address(job.getLocation())
                                 .cvPdf(application.getCvPdf())
                                 .employeeId(employee.getId())
@@ -174,6 +179,7 @@ public class ApplicationService {
                                 .companyAvata(company.get().getLogo())
                                 .fullName(userRepository.findById(employee.getUserId()).get().getFullName())
                                 .email(userRepository.findById(employee.getUserId()).get().getEmail())
+                                .phoneNumberEmployee(userRepository.findById(employee.getUserId()).get().getPhoneNumber())
                                 .coverLetter(application.getCoverLetter())
                                 .status(application.getStatus())
                                 .createdAt(application.getCreatedAt())
@@ -228,14 +234,11 @@ public class ApplicationService {
                         Company company = companyRepository.findById(application.getCompanyId())
                                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
-                        Salary salary = salaryRepository.findById(job.getSalary())
-                                .orElseThrow(() -> new RuntimeException("Salary not found"));
-
                         return ApplicationResponse.builder()
                                 .id(application.getId())
                                 .jobId(job.getId())
                                 .jobTitle(job.getTitle())
-                                .salary(salary.getName())
+                                .salary(job.getSalary())
                                 .address(job.getLocation())
                                 .cvPdf(application.getCvPdf())
                                 .employeeId(employee.getId())

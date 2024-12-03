@@ -68,7 +68,7 @@ public class AutofillController {
     }
 
     @GetMapping("/skill")
-    public ResponseEntity<ResponseDto<List<Skill>>> autofillSkill(@RequestParam(required = false) String name) {
-        return autofillService.autofillSkill(name);
+    public ResponseEntity<ResponseDto<List<Skill>>> autofillSkill() {
+        return autofillService.autofillSkill();
     }
 }

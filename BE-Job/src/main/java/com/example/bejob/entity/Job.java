@@ -30,7 +30,7 @@ public class Job extends Auditable {
     private String benefit;
 
     @Column(columnDefinition = "VARCHAR(5000)")
-    private String requirements;
+    private String requirement;
 
     @Column(columnDefinition = "VARCHAR(5000)")
     private String location;
@@ -42,7 +42,7 @@ public class Job extends Auditable {
 
     private Long districtId;
 
-    private Long salary;
+    private String salary;
 
     private Long yearExperience;
 

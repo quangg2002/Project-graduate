@@ -135,7 +135,7 @@ export default function Navigation() {
                                 <ListItem>
                                     <ListItemButton
                                         component="a"
-                                        href="/addjob"
+                                        href="/addjob/0"
                                         sx={underlineStyle}
                                     >
                                         <Typography>Thêm bài đăng tuyển</Typography>

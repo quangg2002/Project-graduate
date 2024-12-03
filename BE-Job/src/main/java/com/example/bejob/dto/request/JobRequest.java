@@ -17,7 +17,7 @@ public class JobRequest {
     private String location;
     private String requirement;
     private Long yearExperience;
-    private Long salary;
+    private String salary;
     private Long city;
     private Long district;
     private Long position;

@@ -14,6 +14,9 @@ public class ModelMapperConfig {
         ModelMapper modelMapper = new ModelMapper();
 
         modelMapper.addMappings(new EmployeeDTOToEmployee());
+        modelMapper.addMappings(new JobRequestToJob());
+        modelMapper.addMappings(new ExperienceRequestToExperience());
+        modelMapper.addMappings(new SkillRequestToSkill());
 
         return modelMapper;
     }

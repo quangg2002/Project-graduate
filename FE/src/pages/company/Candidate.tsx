@@ -3,7 +3,7 @@ import { CssVarsProvider } from "@mui/joy/styles";
 import CssBaseline from "@mui/joy/CssBaseline";
 import Header from "../../components/Header";
 import Navigation from "../../components/Navigation";
-import { Typography, IconButton, Input, Box, Button, CircularProgress } from "@mui/joy";
+import { Typography, IconButton, Input, Box, Button, CircularProgress, Stack } from "@mui/joy";
 
 import List from '@mui/joy/List';
 import ListItem from '@mui/joy/ListItem';
@@ -43,6 +43,9 @@ import Breadcrumbs from '@mui/joy/Breadcrumbs';
 import useAppDispatch from '../../hooks/useAppDispatch';
 import { toast } from 'react-toastify';
 import { applicationLists, applicationUpdate, deleteApplication, ApplicationStatus } from '../../services/applicationApi';
+import { Drawer } from 'antd';
+import ForwardToInboxIcon from '@mui/icons-material/ForwardToInbox';
+import TelegramIcon from '@mui/icons-material/Telegram';
 
 type Order = 'asc' | 'desc';
 
@@ -77,8 +80,22 @@ function descendingComparator<Key extends keyof any>(
     return 0;
 }
 
+type JobSelected = {
+    appllicationId: string;
+    fullName: string;
+    jobTitle: string;
+    position: string;
+    email: string;
+    coverLetter: string;
+    createdAt: string;
+    cvPdf: string;
+    phoneNumberEmployee: string;
+};
+
 export default function Candidate() {
 
+    const [openDraw, setOpenDraw] = useState(false);
+    const [jobSlected, setJobSelected] = useState<JobSelected | null>(null);
     const dispatch = useAppDispatch();
     const [applications, setApplications] = useState([]);
     const [filteredApplications, setFilteredApplications] = useState([]);
@@ -91,26 +108,46 @@ export default function Candidate() {
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
 
-    // Lấy danh sách ứng dụng
-    const fetchJobDetail = async () => {
-        setIsLoading(true);
-        setError(null);
-        try {
-            const result = await dispatch(applicationLists());
-            const data = result?.payload?.response?.data || [];
-            console.log(data)
-            setApplications(data);
-            setFilteredApplications(data);
-        } catch (err) {
-            setError(err || 'Không thể tải danh sách ứng viên');
-        } finally {
-            setIsLoading(false);
-        }
+
+    const showDrawer = (event, jobId) => {
+        const selectedApplication = applications.find(app => app.id === jobId);
+        setJobSelected(selectedApplication);
+    
+        setSelected((prevSelected) => {
+            if (prevSelected.includes(jobId)) {
+                return prevSelected.filter(id => id !== jobId);
+            } else {
+                return [...prevSelected, jobId];
+            }
+        });
+    
+        setOpenDraw(true); 
+    };
+    
+    const onClose = () => {
+        setOpenDraw(false);
+        setSelected([]);
     };
 
+
     useEffect(() => {
+        const fetchJobDetail = async () => {
+            setIsLoading(true);
+            setError(null);
+            try {
+                const result = await dispatch(applicationLists());
+                const data = result?.payload?.response?.data || [];
+                setApplications(data);
+                setFilteredApplications(data);
+            } catch (err) {
+                setError(err || 'Không thể tải danh sách ứng viên');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
         fetchJobDetail();
-    }, []);
+    }, [dispatch]);
 
 
     const handleUpdateStatus = async (id: number, status: ApplicationStatus) => {
@@ -177,6 +214,8 @@ export default function Candidate() {
             </div>
         );
     }
+
+    console.log(selected)
 
     return (
         <CssVarsProvider disableTransitionOnChange>
@@ -424,7 +463,7 @@ export default function Candidate() {
                                             checked={selected.length === applications.length}
                                             onChange={(event) => {
                                                 setSelected(
-                                                    event.target.checked ? applications.map((row) => row.id) : [],
+                                                    event.target.checked ? applications.map((app) => app.id) : [],
                                                 );
                                             }}
                                             color={
@@ -542,7 +581,7 @@ export default function Candidate() {
                                                         <MoreHorizRoundedIcon />
                                                     </MenuButton>
                                                     <Menu size="sm" sx={{ minWidth: 140 }}>
-                                                        <MenuItem>Xem chi tiết</MenuItem>
+                                                        <MenuItem onClick={(event) => showDrawer(event, application?.id)}>Xem chi tiết</MenuItem>
                                                         <MenuItem
                                                             color='success'
                                                             onClick={() => {
@@ -582,7 +621,7 @@ export default function Candidate() {
 
                     <Box sx={{ display: { xs: 'block', sm: 'none' }, pb: 7 }}>
                         {applications.map((candidate) => (
-                            <List key={candidate.id} size="sm" sx={{ '--ListItem-paddingX': 0 }}>
+                            <List key={candidate.id} size="sm" sx={{ '--ListItem-paddingX': 0 }}    >
                                 <ListItem
                                     sx={{
                                         display: 'flex',
@@ -663,6 +702,53 @@ export default function Candidate() {
                     </Box>
                 </Box>
             </Box>
+
+            <Drawer
+                title={<span style={{ fontFamily: '"Sansita", sans-serif', fontWeight: 600 }}>Thư tuyển dụng</span>}
+                onClose={onClose}
+                open={openDraw}
+                zIndex={9999999999}
+            >
+                <Stack position={'relative'} height={'100%'}>
+                    <Stack flex={1} gap={0.5}>
+                        <Typography fontWeight={'600'}>Vị trí: {jobSlected?.position}</Typography>
+                        <Stack direction={'row'} gap={1}>
+                            <Typography fontWeight={'600'}>Tên ứng viên: </Typography>
+                            <Typography>{jobSlected?.fullName}</Typography>
+                        </Stack>
+
+                        <Stack direction={'row'} gap={1}>
+                            <Typography fontWeight={'600'}>Email: </Typography>
+                            <Typography>{jobSlected?.email}</Typography>
+                        </Stack>
+
+                        <Stack direction={'row'} gap={1}>
+                            <Typography fontWeight={'600'}>Sđt liên hệ: </Typography>
+                            <Typography>{jobSlected?.phoneNumberEmployee}</Typography>
+                        </Stack>
+
+                        <Stack direction={'row'} gap={1}>
+                            <Typography fontWeight={'600'}>CV: </Typography>
+                            <Link underline='always' component="button" onClick={() => window.open(`${jobSlected.cvPdf}`)}>
+                                Download cv
+                            </Link>
+                        </Stack>
+                        <Typography><Typography fontWeight={'600'}>Thư giới thiệu:</Typography> {jobSlected?.coverLetter}</Typography>
+
+                    </Stack>
+                    <Stack position={'sticky'} bottom={0} gap={2}>
+                        <Button startDecorator={<TelegramIcon />}>Nhắn tin</Button>
+                        <Button startDecorator={<ForwardToInboxIcon />}
+                            onClick={() => {
+                                window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${jobSlected?.email}`, '_blank');
+                            }}
+                        >
+                            Liên hệ qua email
+                        </Button>
+                    </Stack>
+                </Stack>
+            </Drawer>
+
         </CssVarsProvider>
     );
 }

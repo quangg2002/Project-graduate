@@ -40,7 +40,7 @@ function App() {
         <Route path="/getstart" element={<Getstart />} />
         <Route path="/navbar" element={<Navbar />} />
         <Route path="/mes" element={<MyMessages />} />
-        <Route path="/addjob" element={<Addjob />} />
+        <Route path="/addjob/:id" element={<Addjob />} />
         <Route path="/overview" element={<Overview />} />
         <Route path="/candidate" element={<Candidate />} />
         <Route path="/listjob" element={<Listjob />} />

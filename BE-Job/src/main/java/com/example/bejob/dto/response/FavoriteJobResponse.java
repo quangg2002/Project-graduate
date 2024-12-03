@@ -13,7 +13,7 @@ public class FavoriteJobResponse {
     private String description;
     private String requirements;
     private String location;
-    private Long salary;
+    private String salary;
 
     // Thông tin về công ty
     private Long companyId;

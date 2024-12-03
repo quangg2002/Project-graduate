@@ -126,7 +126,7 @@ public class FavoriteJobService {
                                 job.getId(),
                                 job.getTitle(),
                                 job.getDescription(),
-                                job.getRequirements(),
+                                job.getRequirement(),
                                 job.getLocation(),
                                 job.getSalary(),
                                 company != null ? company.getId() : null,

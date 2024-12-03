@@ -1,7 +1,5 @@
-import { useCallback, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Box from "@mui/material/Box";
-import { CssVarsProvider } from "@mui/joy/styles";
-import CssBaseline from "@mui/joy/CssBaseline";
 import Header from "../../components/Header";
 import Navigation from "../../components/Navigation";
 import Typography from "@mui/joy/Typography";
@@ -16,7 +14,6 @@ import ListItemDecorator from "@mui/joy/ListItemDecorator";
 import ListItemContent from "@mui/joy/ListItemContent";
 import RadioGroup from "@mui/joy/RadioGroup";
 import Radio from "@mui/joy/Radio";
-import Slider from "@mui/joy/Slider";
 import Sheet from "@mui/joy/Sheet";
 import AccordionGroup from "@mui/joy/AccordionGroup";
 import Accordion from "@mui/joy/Accordion";
@@ -30,12 +27,70 @@ import Input from '@mui/joy/Input';
 import city from '../../utils/citis.json';
 import districts from '../../utils/districts.json';
 import { Field, Form, Formik } from "formik";
-
+import { skillList, experienceList, positionList, jobTypeList, industryList, contracTypeList, educationList } from '../../services/autofillApi';
+import { toast } from 'react-toastify';
+import useAppDispatch from '../../hooks/useAppDispatch';
+import { useParams, useNavigate } from 'react-router-dom';
 
 
 export default function Addjob() {
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const dispatch = useAppDispatch();
 
     const [today] = useState(() => new Date().toISOString().split("T")[0]);
+
+    const [experiences, setExperiences] = useState([]);
+    const [positions, setPositions] = useState([]);
+    const [jobTypes, setJobTypes] = useState([]);
+    const [industrys, setIndustry] = useState([]);
+    const [education, setEducation] = useState([]);
+    const [contractType, setContractType] = useState([]);
+    const [skills, setSkills] = useState([]);
+
+    // wysiwig
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [experienceResult, positionResult, jobTypeResult, industryResult, educationResult, contractTypeResult, skillResult] = await Promise.all([
+                    dispatch(experienceList()).unwrap(),
+                    dispatch(positionList()).unwrap(),
+                    dispatch(jobTypeList()).unwrap(),
+                    dispatch(industryList()).unwrap(),
+                    dispatch(educationList()).unwrap(),
+                    dispatch(contracTypeList()).unwrap(),
+                    dispatch(skillList()).unwrap(),
+                ]);
+
+                if (experienceResult.response?.data) {
+                    setExperiences(experienceResult.response.data);
+                }
+                if (positionResult.response?.data) {
+                    setPositions(positionResult.response.data);
+                }
+                if (jobTypeResult.response?.data) {
+                    setJobTypes(jobTypeResult.response.data);
+                }
+                if (industryResult.response?.data) {
+                    setIndustry(industryResult.response.data);
+                }
+                if (educationResult.response?.data) {
+                    setEducation(educationResult.response.data);
+                }
+                if (contractTypeResult.response?.data) {
+                    setContractType(contractTypeResult.response.data);
+                }
+                if (skillResult.response?.data) {
+                    setSkills(skillResult.response.data);
+                }
+            } catch (error) {
+                toast.error('Lỗi khi tải dữ liệu. Vui lòng thử lại sau.');
+            }
+        };
+
+        fetchData();
+    }, [dispatch]);
 
     const peopleData = [
         {
@@ -60,35 +115,8 @@ export default function Addjob() {
         },
     ];
 
-    const data = [
-        {
-            id: 1,
-            name: 'a',
-            text: '123',
-        },
-        {
-            id: 2,
-            name: 'b',
-            text: '123',
-        },
-        {
-            id: 3,
-            name: 'c',
-            text: '123',
-        },
-        {
-            id: 4,
-            name: 'd',
-            text: '123',
-        },
-    ]
-
-
     const [selectedOptions, setSelectedOptions] = useState<any[]>([]);
 
-    const handleChange = (event: any, value: any[]) => {
-        setSelectedOptions(value);
-    };
 
     const [filteredDistricts, setFilteredDistricts] = useState([]);
 
@@ -105,8 +133,7 @@ export default function Addjob() {
     }
 
     return (
-        <CssVarsProvider disableTransitionOnChange>
-            <CssBaseline />
+        <Stack>
             <Header />
             <Box
                 sx={[
@@ -200,20 +227,21 @@ export default function Addjob() {
                             title: '',
                             description: '',
                             benefit: '',
-                            requirements: '',
+                            requirement: '',
                             location: '',
                             workingTime: '',
-                            cityId: null,
-                            districtId: null,
+                            city: null,
+                            district: null,
                             salary: '',
                             yearExperience: '',
-                            positionId: '',
-                            jobTypeId: '',
-                            contractTypeId: '',
-                            industryId: '',
-                            educationLevelId: '',
+                            position: '',
+                            jobType: '',
+                            contractType: '',
+                            industry: '',
+                            education: '',
                             deadline: '',
                             quantity: '',
+                            email: '',
                             skills: []
                         }}
                         onSubmit={(values) => {
@@ -231,7 +259,6 @@ export default function Addjob() {
                                     gap: 2
                                 }}
                             >
-
                                 <Form>
                                     <Box
                                         sx={[
@@ -261,7 +288,7 @@ export default function Addjob() {
                                                 Job
                                             </Typography>
                                             <Button color="success" type="submit">
-                                                Đăng tuyển
+                                                {id === '0' ? 'Đăng tuyển' : 'Cập nhật'}
                                             </Button>
                                         </Box>
 
@@ -300,12 +327,12 @@ export default function Addjob() {
                                                                     size="sm"
                                                                     placeholder="Tỉnh/ Thành phố"
                                                                     options={city.map((option) => option.name)}
-                                                                    value={[city.find((item) => item.id === values.cityId)?.name]}
+                                                                    value={[city.find((item) => item.id === values.city)?.name]}
                                                                     onChange={(event, newValue: any) => {
                                                                         handleCityChange(event, newValue)
-                                                                        values.districtId = ''
+                                                                        values.district = ''
                                                                         const selectedCity = city.find((option) => option.name === newValue);
-                                                                        setFieldValue("cityId", selectedCity ? selectedCity.id : "");
+                                                                        setFieldValue("city", selectedCity ? selectedCity.id : "");
                                                                     }}
                                                                 />
                                                             </Stack>
@@ -314,20 +341,20 @@ export default function Addjob() {
                                                                     size="sm"
                                                                     placeholder="Quận Huyện"
                                                                     options={filteredDistricts.map((option) => option.name)}
-                                                                    value={[districts.find((item) => item.id === values.districtId)?.name]}
+                                                                    value={[districts.find((item) => item.id === values.district)?.name]}
                                                                     groupBy={(option) => {
                                                                         console.log(option)
                                                                         const selectedDistrict = districts.find((distr) =>
-                                                                            distr.city_id === values.cityId && distr.name === option
+                                                                            distr.city_id === values.city && distr.name === option
                                                                         );
                                                                         const cityObj = city.find((c) => c.id === selectedDistrict.city_id);
                                                                         return cityObj ? cityObj.name : "Khác";
                                                                     }}
                                                                     onChange={(event, newValue: any) => {
                                                                         const selectedDistrict = districts.find((option) =>
-                                                                            option.city_id === values.cityId && option.name === newValue
+                                                                            option.city_id === values.city && option.name === newValue
                                                                         );
-                                                                        setFieldValue("districtId", newValue ? selectedDistrict.id : "");
+                                                                        setFieldValue("district", newValue ? selectedDistrict.id : "");
                                                                     }}
                                                                 // disabled={!selectedCity}
                                                                 />
@@ -353,10 +380,10 @@ export default function Addjob() {
                                                             sx={{ flex: 1 }}
                                                             size="sm"
                                                             placeholder="Ngành nghề"
-                                                            options={data}
+                                                            options={industrys}
                                                             getOptionLabel={(option: any) => option.name}
                                                             onChange={(event, option: any) => {
-                                                                setFieldValue("industryId", option ? option.id : "")
+                                                                setFieldValue("industry", option ? option.id : "")
                                                             }}
                                                         />
 
@@ -364,7 +391,7 @@ export default function Addjob() {
                                                             sx={{ flex: 1 }}
                                                             size="sm"
                                                             placeholder="Kinh nghiệm làm việc"
-                                                            options={data}
+                                                            options={experiences}
                                                             getOptionLabel={(option: any) => option.name}
                                                             onChange={(event, option: any) => {
                                                                 setFieldValue("yearExperience", option ? option.id : "")
@@ -384,10 +411,10 @@ export default function Addjob() {
                                                             sx={{ flex: 1 }}
                                                             size="sm"
                                                             placeholder="Vị trí"
-                                                            options={data}
+                                                            options={positions}
                                                             getOptionLabel={(option: any) => option.name}
                                                             onChange={(event, option: any) => {
-                                                                setFieldValue("positionId", option ? option.id : "")
+                                                                setFieldValue("position", option ? option.id : "")
                                                             }}
                                                         />
 
@@ -395,10 +422,10 @@ export default function Addjob() {
                                                             sx={{ flex: 1 }}
                                                             size="sm"
                                                             placeholder="Loại hình làm việc"
-                                                            options={data}
+                                                            options={jobTypes}
                                                             getOptionLabel={(option: any) => option.name}
                                                             onChange={(event, option: any) => {
-                                                                setFieldValue("jobTypeId", option ? option.id : "")
+                                                                setFieldValue("jobType", option ? option.id : "")
                                                             }}
                                                         />
                                                     </Stack>
@@ -415,7 +442,7 @@ export default function Addjob() {
                                                             size="sm"
                                                             sx={{ flex: 1 }}
                                                             placeholder="Kĩ năng"
-                                                            options={data}
+                                                            options={skills}
                                                             multiple
                                                             getOptionLabel={(option: any) => option.name}
                                                             onChange={(event, options: any[]) => {
@@ -428,10 +455,10 @@ export default function Addjob() {
                                                             size="sm"
                                                             sx={{ flex: 1 }}
                                                             placeholder="Loại công việc"
-                                                            options={data}
+                                                            options={contractType}
                                                             getOptionLabel={(option: any) => option.name}
                                                             onChange={(event, option: any) => {
-                                                                setFieldValue("contractTypeId", option ? option.id : "")
+                                                                setFieldValue("contractType", option ? option.id : "")
                                                             }}
                                                         />
                                                     </Stack>
@@ -478,6 +505,11 @@ export default function Addjob() {
                                                                 name="quantity"
                                                                 size="sm"
                                                                 type="number"
+                                                                slotProps={{
+                                                                    input: {
+                                                                        min: 1,
+                                                                    },
+                                                                }}
                                                                 placeholder="Số lượng tuyển dụng"
                                                             />
                                                         </Stack>
@@ -487,21 +519,30 @@ export default function Addjob() {
 
                                             <Accordion defaultExpanded>
                                                 <AccordionSummary>
-                                                    <Typography level="title-md">Cấp bậc <Typography component="span" color="danger">*</Typography></Typography>
+                                                    <Typography level="title-md">Học vấn & Email <Typography component="span" color="danger">*</Typography></Typography>
                                                 </AccordionSummary>
                                                 <AccordionDetails>
-                                                    <Box sx={{ my: 2 }}>
-                                                        <RadioGroup name="education" defaultValue="any">
-                                                            <Radio label="Any" value="any" size="sm" />
-                                                            <Radio label="High School" value="high-school" size="sm" />
-                                                            <Radio label="College" value="college" size="sm" />
-                                                            <Radio
-                                                                label="Post-graduate"
-                                                                value="post-graduate"
-                                                                size="sm"
-                                                            />
-                                                        </RadioGroup>
-                                                    </Box>
+                                                    <Stack direction={'row'} gap={2} my={1}>
+                                                        <Autocomplete
+                                                            size="sm"
+                                                            sx={{ flex: 1 }}
+                                                            placeholder="Học vấn"
+                                                            options={education}
+                                                            getOptionLabel={(option: any) => option.name}
+                                                            onChange={(event, option: any) => {
+                                                                setFieldValue("education", option ? option.id : "")
+                                                            }}
+                                                        />
+
+                                                        <Field
+                                                            as={Input}
+                                                            sx={{ flex: 1 }}
+                                                            size="sm"
+                                                            name="email"
+                                                            type="email"
+                                                            placeholder="example@gmail.com"
+                                                        />
+                                                    </Stack>
                                                 </AccordionDetails>
                                             </Accordion>
 
@@ -654,6 +695,6 @@ export default function Addjob() {
                     </Formik>
                 </Box>
             </Box>
-        </CssVarsProvider>
+        </Stack>
     );
 }

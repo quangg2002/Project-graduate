@@ -18,12 +18,14 @@ public class ApplicationResponse {
     private String companyName;
     private String companyAvata;
     private String jobTitle;
+    private String position;
     private String salary;
     private String address;
     private Long employeeId;
     private String cvPdf;
     private String fullName;
     private String email;
+    private String phoneNumberEmployee;
     private String coverLetter;
     private ApplicationStatus status;
     private LocalDateTime createdAt;
