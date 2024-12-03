@@ -138,6 +138,11 @@ export default function Setting() {
         }));
     };
 
+    const denormalizeTextAreaContent = (content: string): string => {
+        if (!content) return '';
+        return content.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
+    }
+
     useEffect(() => {
         const fetchEmployeeData = async () => {
             try {
@@ -244,7 +249,7 @@ export default function Setting() {
             formData.append('scale', values.scale);
             if (values.logo instanceof File)  
                 formData.append('logo', values.logo);
-            formData.append('description', values.description);
+            formData.append('description', denormalizeTextAreaContent(values.description));
 
             const result = await dispatch(updateCompany(formData));
 
@@ -605,7 +610,7 @@ export default function Setting() {
                                     city: employer.company.city,
                                     district: employer.company.district,
                                     website: employer.company.website,
-                                    scale: employer.company.scale.toString(),
+                                    scale: employer.company.scale?.toString(),
                                     logo: employer.company.logo,
                                     description: employer.company.description
                                 }}
@@ -682,7 +687,7 @@ export default function Setting() {
                                                         {({ field, form }: any) => (
                                                             <Select
                                                                 {...field}
-                                                                value={form.values.scale || employer.company.scale.toString()}
+                                                                value={form.values.scale || employer.company.scale?.toString()}
                                                                 onChange={(event, newValue) => {
                                                                     form.setFieldValue("scale", newValue)
                                                                 }}

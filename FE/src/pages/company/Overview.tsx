@@ -3,7 +3,7 @@ import { CssVarsProvider } from "@mui/joy/styles";
 import CssBaseline from "@mui/joy/CssBaseline";
 import Header from "../../components/Header";
 import Navigation from "../../components/Navigation";
-import { Typography, Card, CardCover, CardContent, Link, Tooltip, IconButton, Breadcrumbs, Stack, CardOverflow, Input, Snackbar } from "@mui/joy";
+import { Typography, Card, CardCover, CardContent, Link, Tooltip, IconButton, Breadcrumbs, Stack, CardOverflow, Input, Snackbar, Divider } from "@mui/joy";
 
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
@@ -21,8 +21,7 @@ import useAppDispatch from '../../hooks/useAppDispatch';
 import { startLoading, stopLoading } from '../../redux/slice/loadingSlice';
 import { useState, useEffect } from "react";
 import { getCompany } from '../../services/companyApi';
-import city from '../../utils/citis.json';
-import districts from '../../utils/districts.json';
+import { Image } from "antd";
 
 export default function Overview() {
 
@@ -34,8 +33,9 @@ export default function Overview() {
         website: '',
         logo: '',
         address: '',
-        city: null,
-        district: null,
+        scale: '',
+        city: '',
+        district: '',
     });
 
     useEffect(() => {
@@ -54,6 +54,7 @@ export default function Overview() {
                             logo: response.logo,
                             address: response.address,
                             city: response.city,
+                            scale: response.scale,
                             district: response.district
                         });
                 }
@@ -151,117 +152,120 @@ export default function Overview() {
                             </Typography>
                         </Breadcrumbs>
                     </Box>
-                    <Box
+                    {company.companyName ? (
+                        <Stack gap={4}>
+                            <Box
 
-                        sx={{
-                            display: "grid",
-                            gridTemplateColumns: {
-                                xs: "repeat(1fr)",
-                                sm: "repeat(2, 1fr)",
-                                md: "repeat(3, 1fr)",
-                            },
-                            gap: 3,
-                        }}
-                    >
-                        <Stack sx={{ bgcolor: '#FBFCFE' }} border={'1px solid #007bff'} borderRadius={10} p={1}>
-                            <Stack direction={'row'} justifyContent={'space-between'} alignItems={'center'} flexGrow={1} m={2}>
-                                <Stack flex={9}>
-                                    <Typography color='primary' level="h4">8</Typography>
-                                    <Typography color='primary' level="h4">Tin tuyển dụng</Typography>
-                                </Stack>
-                                <Stack flex={1}>
-                                    <CampaignIcon color='primary' sx={{ fontSize: '30px' }} />
-                                </Stack>
-                            </Stack>
-                        </Stack>
-                        <Stack sx={{ bgcolor: '#F5FFF9' }} border={'1px solid #28a745'} borderRadius={10}>
-                            <Stack direction={'row'} justifyContent={'space-between'} alignItems={'center'} flexGrow={1} m={2}>
-                                <Stack flex={9}>
-                                    <Typography color='success' level="h4">8</Typography>
-                                    <Typography color='success' level="h4">CV tiếp nhận</Typography>
-                                </Stack>
-                                <Stack flex={1}>
-                                    <TaskIcon color='success' sx={{ fontSize: '30px' }} />
-                                </Stack>
-                            </Stack>
-                        </Stack>
-                        <Stack sx={{ bgcolor: '#FFF3F2' }} border={'1px solid red'} borderRadius={10}>
-                            <Stack direction={'row'} justifyContent={'space-between'} alignItems={'center'} flexGrow={1} m={2}>
-                                <Stack flex={9}>
-                                    <Typography color='danger' level="h4">8</Typography>
-                                    <Typography color='danger' level="h4">CV ứng tuyển mới</Typography>
-                                </Stack>
-                                <Stack flex={1}>
-                                    <LibraryAddIcon sx={{ fontSize: '30px', color: '#C41C1C' }} />
-                                </Stack>
-                            </Stack>
-                        </Stack>
-
-                    </Box>
-                    <Stack gap={3}>
-                        <Stack>
-                            <Typography level="h4">Thông tin công ty</Typography>
-                            <Stack
-                                flex={1}
-                                sx={{ background: "linear-gradient(90deg, #BFFFA7, #18A5A7)", }}
-                                position={'relative'}
-                                minHeight={'150px'}
-                                justifyContent={'center'}
-                                alignItems={'center'}
-                                borderRadius={'10px'}
+                                sx={{
+                                    display: "grid",
+                                    gridTemplateColumns: {
+                                        xs: "repeat(1fr)",
+                                        sm: "repeat(2, 1fr)",
+                                        md: "repeat(4, 1fr)",
+                                    },
+                                    gap: 3,
+                                }}
                             >
-
-                                <Stack gap={2}>
-                                    <Typography level="h3">{company.companyName}</Typography>
-                                    <Stack direction={'row'} gap={4}>
-                                        <Stack direction={'row'}>
-                                            <LanguageIcon sx={{ color: '#000' }} /> &nbsp;
-                                            <Typography level="title-md" >{company.website}</Typography>
+                                <Stack sx={{ bgcolor: '#FBFCFE' }} border={'1px solid #007bff'} borderRadius={10} p={1}>
+                                    <Stack direction={'row'} justifyContent={'space-between'} alignItems={'center'} flexGrow={1} m={2}>
+                                        <Stack flex={9}>
+                                            <Typography color='primary' level="h4">8</Typography>
+                                            <Typography color='primary' level="h4">Tin tuyển dụng</Typography>
                                         </Stack>
-
-                                        <Stack direction={'row'}>
-                                            <BusinessIcon sx={{ color: '#000' }} /> &nbsp;
-                                            <Typography level="title-md">100-499 nhân viên</Typography>
+                                        <Stack flex={1}>
+                                            <CampaignIcon color='primary' sx={{ fontSize: '30px' }} />
                                         </Stack>
+                                    </Stack>
+                                </Stack>
+                                <Stack sx={{ bgcolor: '#F5FFF9' }} border={'1px solid #28a745'} borderRadius={10}>
+                                    <Stack direction={'row'} justifyContent={'space-between'} alignItems={'center'} flexGrow={1} m={2}>
+                                        <Stack flex={9}>
+                                            <Typography color='success' level="h4">8</Typography>
+                                            <Typography color='success' level="h4">CV tiếp nhận</Typography>
+                                        </Stack>
+                                        <Stack flex={1}>
+                                            <TaskIcon color='success' sx={{ fontSize: '30px' }} />
+                                        </Stack>
+                                    </Stack>
+                                </Stack>
+                                <Stack sx={{ bgcolor: '#FFF3F2' }} border={'1px solid red'} borderRadius={10}>
+                                    <Stack direction={'row'} justifyContent={'space-between'} alignItems={'center'} flexGrow={1} m={2}>
+                                        <Stack flex={9}>
+                                            <Typography color='danger' level="h4">8</Typography>
+                                            <Typography color='danger' level="h4">CV ứng tuyển mới</Typography>
+                                        </Stack>
+                                        <Stack flex={1}>
+                                            <LibraryAddIcon sx={{ fontSize: '30px', color: '#C41C1C' }} />
+                                        </Stack>
+                                    </Stack>
+                                </Stack>
+
+                                <Image src={company.logo} style={{ borderRadius: 10 }} />
+                            </Box>
+                            <Stack gap={3}>
+                                <Stack
+                                    direction={'row'}
+                                    gap={2}
+                                    flexWrap={'wrap'}
+                                >
+                                    <Stack flex={2}>
+                                        <Card>
+                                            <CardOverflow sx={{ pt: 1 }} >
+                                                <Typography level="h4">Thông tin công ty</Typography>
+                                            </CardOverflow>
+                                            <Divider />
+                                            <Stack>
+                                                <Typography fontWeight={'600'}>Tổng quan</Typography>
+                                                <Stack justifyContent={'center'} alignItems={'center'} gap={2}>
+                                                    <Typography level="h4">{company.companyName}</Typography>
+                                                    <Stack direction={'row'} gap={4}>
+                                                        <Stack direction={'row'}>
+                                                            <LanguageIcon sx={{ color: '#000' }} /> &nbsp;
+                                                            <Typography level="title-md" >{company.website}</Typography>
+                                                        </Stack>
+
+                                                        <Stack direction={'row'}>
+                                                            <BusinessIcon sx={{ color: '#000' }} /> &nbsp;
+                                                            <Typography level="title-md">{company.scale}</Typography>
+                                                        </Stack>
+                                                    </Stack>
+                                                </Stack>
+                                            </Stack>
+                                            <Stack>
+                                                <Typography fontWeight={'600'}>Mô tả</Typography>
+                                                <Typography>{company.description}</Typography>
+                                            </Stack>
+                                        </Card>
+                                    </Stack>
+                                    <Stack flex={1}>
+                                        <Card>
+                                            <CardOverflow sx={{ pt: 1 }} >
+                                                <Typography level="h4">Liên hệ</Typography>
+                                            </CardOverflow>
+                                            <Divider />
+                                            <Typography level="title-md"><LocationOnIcon sx={{ color: '#00b14f' }} />Địa chỉ công ty</Typography>
+                                            <Typography ml={1}>{company.address}, {company.district}, {company.city} </Typography>
+
+                                            <Typography level="title-md"><NearMeIcon sx={{ color: '#00b14f' }} />Sao chép đường dẫn</Typography>
+                                            <Input
+                                                size="sm"
+                                                endDecorator={
+                                                    <IconButton variant="soft" onClick={handleCopy}>
+                                                        <ContentCopyIcon />
+                                                    </IconButton>
+                                                }
+                                                value={company.website}
+                                            />
+                                        </Card>
                                     </Stack>
                                 </Stack>
                             </Stack>
                         </Stack>
-                        <Stack
-                            direction={'row'}
-                            gap={2}
-                            flexWrap={'wrap'}
-                        >
-                            <Stack flex={2}>
-                                <Card>
-                                    <CardOverflow sx={{ background: "linear-gradient(90deg, #BFFFA7, #18A5A7)", py: 1 }} >
-                                        <Typography level="h4">Giới thiệu công ty</Typography>
-                                    </CardOverflow>
-                                    <Typography>{company.description}</Typography>
-                                </Card>
-                            </Stack>
-                            <Stack flex={1}>
-                                <Card>
-                                    <CardOverflow sx={{ background: "linear-gradient(90deg, #BFFFA7, #18A5A7)", py: 1 }} >
-                                        <Typography level="h4">Thông tin liên hệ</Typography>
-                                    </CardOverflow>
-                                    <Typography level="title-md"><LocationOnIcon sx={{ color: '#00b14f' }} />Địa chỉ công ty</Typography>
-                                    <Typography ml={1}>{company.address}, {districts.at(company.district - 1).name}, {city.at(company.city - 1).name} </Typography>
-
-                                    <Typography level="title-md"><NearMeIcon sx={{ color: '#00b14f' }} />Sao chép đường dẫn</Typography>
-                                    <Input
-                                        size="sm"
-                                        endDecorator={
-                                            <IconButton variant="soft" onClick={handleCopy}>
-                                                <ContentCopyIcon />
-                                            </IconButton>
-                                        }
-                                        value={company.website}
-                                    />
-                                </Card>
-                            </Stack>
+                    ) : (
+                        <Stack height={'100%'} justifyContent={'center'} alignItems={'center'}>
+                            <Link component="a" href={'/setting'}>Hãy bổ sung thông tin cho công ty của bạn</Link>
                         </Stack>
-                    </Stack>
+                    )}
                 </Box>
                 <Snackbar
                     autoHideDuration={2000}

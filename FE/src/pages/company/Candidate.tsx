@@ -106,13 +106,13 @@ export default function Candidate() {
     const [selected, setSelected] = useState<readonly string[]>([]);
     const [open, setOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
-    const [statusFilter, setStatusFilter] = useState('');
+    const [statusFilter, setStatusFilter] = useState('ALL');
 
 
     const showDrawer = (event, jobId) => {
         const selectedApplication = applications.find(app => app.id === jobId);
         setJobSelected(selectedApplication);
-    
+
         setSelected((prevSelected) => {
             if (prevSelected.includes(jobId)) {
                 return prevSelected.filter(id => id !== jobId);
@@ -120,10 +120,10 @@ export default function Candidate() {
                 return [...prevSelected, jobId];
             }
         });
-    
-        setOpenDraw(true); 
+
+        setOpenDraw(true);
     };
-    
+
     const onClose = () => {
         setOpenDraw(false);
         setSelected([]);
@@ -195,11 +195,11 @@ export default function Candidate() {
 
         if (searchQuery.trim()) {
             filtered = filtered.filter((app) =>
-                app.fullName.toLowerCase().includes(searchQuery.toLowerCase())
+                app.jobTitle.toLowerCase().includes(searchQuery.toLowerCase())
             );
         }
 
-        if (statusFilter) {
+        if (statusFilter !== 'ALL') {
             filtered = filtered.filter((app) => app.status === statusFilter);
         }
 
@@ -408,7 +408,13 @@ export default function Candidate() {
                     >
                         <FormControl sx={{ flex: 1 }}>
                             <FormLabel><Typography level='title-md'>Tìm kiếm theo tên việc đăng tuyển</Typography></FormLabel>
-                            <Input size="sm" placeholder="Nhập tên công việc" startDecorator={<SearchIcon />} />
+                            <Input
+                                size="sm"
+                                placeholder="Nhập tên công việc"
+                                startDecorator={<SearchIcon />}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                value={searchQuery}
+                            />
                         </FormControl>
                         <FormControl>
                             <FormLabel><Typography level='title-md'>Trạng thái</Typography></FormLabel>
@@ -416,11 +422,13 @@ export default function Candidate() {
                                 size="sm"
                                 placeholder="Chọn trạng thái"
                                 slotProps={{ button: { sx: { whiteSpace: 'nowrap' } } }}
+                                value={statusFilter}
+                                onChange={(event, newValue) => setStatusFilter(newValue)}
                             >
-                                <Option value="paid">Tất cả</Option>
-                                <Option color='success' value="pending">Phê duyệt</Option>
-                                <Option color="primary" value="refunded">Đang chờ</Option>
-                                <Option color="danger" value="cancelled">Từ chối</Option>
+                                <Option value="ALL">Tất cả</Option>
+                                <Option color='success' value="ACCEPTED">Phê duyệt</Option>
+                                <Option color="primary" value="PENDING">Đang chờ</Option>
+                                <Option color="danger" value="REJECTED">Từ chối</Option>
                             </Select>
                         </FormControl>
                         {/* <FormControl size="sm">
@@ -507,7 +515,7 @@ export default function Candidate() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {[...applications].sort(getComparator(order, 'jobTitle')).map((application) => (
+                                {[...filteredApplications].sort(getComparator(order, 'jobTitle')).map((application) => (
                                     <tr key={application.id}>
                                         <td style={{ textAlign: 'center', width: 120 }}>
                                             <Checkbox
@@ -620,7 +628,7 @@ export default function Candidate() {
                     </Sheet>
 
                     <Box sx={{ display: { xs: 'block', sm: 'none' }, pb: 7 }}>
-                        {applications.map((candidate) => (
+                        {filteredApplications.map((candidate) => (
                             <List key={candidate.id} size="sm" sx={{ '--ListItem-paddingX': 0 }}    >
                                 <ListItem
                                     sx={{

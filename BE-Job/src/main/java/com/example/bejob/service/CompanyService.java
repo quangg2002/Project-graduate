@@ -1,11 +1,8 @@
 package com.example.bejob.service;
 
-import com.example.bejob.entity.Company;
-import com.example.bejob.entity.Employer;
-import com.example.bejob.entity.User;
-import com.example.bejob.repository.CompanyRepository;
-import com.example.bejob.repository.EmployerRepository;
-import com.example.bejob.repository.UserRepository;
+import com.example.bejob.dto.response.CompanyResponse;
+import com.example.bejob.entity.*;
+import com.example.bejob.repository.*;
 import com.example.bejob.dto.request.CompanyRequest;
 import com.example.bejob.enums.StatusCodeEnum;
 import com.example.bejob.model.ResponseBuilder;
@@ -15,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.actuate.web.mappings.MappingsEndpoint;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +25,10 @@ import java.util.Optional;
 public class CompanyService {
 
     private final FileService fileService;
+    private final DistrictRepository districtRepository;
+    private final MappingsEndpoint mappingsEndpoint;
+    private final CityRepository cityRepository;
+    private final ScaleRepository scaleRepository;
     @Value("${minio.url.public}")
     private String publicUrl;
 
@@ -64,9 +66,29 @@ public class CompanyService {
         try {
             Optional<Company> company = companyRepository.findById(employer.getCompany());
 
+            CompanyResponse companyResponse = CompanyResponse.builder()
+                    .logo(company.get().getLogo())
+                    .companyName(company.get().getCompanyName())
+                    .website(company.get().getWebsite())
+                    .address(company.get().getAddress())
+                    .description(company.get().getDescription())
+                    .district(districtRepository.findById(company.get().getDistrict())
+                            .map(District::getName)
+                            .orElse(null)
+                    )
+                    .city(cityRepository.findById(company.get().getCity())
+                            .map(City::getName)
+                            .orElse(null)
+                    )
+                    .scale(scaleRepository.findById(company.get().getScale())
+                            .map(Scale::getName)
+                            .orElse(null)
+                    )
+                    .build();
+
             return ResponseBuilder.okResponse(
                     languageService.getMessage("get.company.success"),
-                    company,
+                    companyResponse,
                     StatusCodeEnum.COMPANY1001
             );
         } catch (Exception e) {
