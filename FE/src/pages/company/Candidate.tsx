@@ -42,7 +42,7 @@ import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
 import Breadcrumbs from '@mui/joy/Breadcrumbs';
 import useAppDispatch from '../../hooks/useAppDispatch';
 import { toast } from 'react-toastify';
-import { applicationLists, applicationUpdate, deleteApplication, ApplicationStatus } from '../../services/applicationApi';
+import { applicationWithCompany, applicationUpdate, deleteApplication, ApplicationStatus } from '../../services/applicationApi';
 import { Drawer } from 'antd';
 import ForwardToInboxIcon from '@mui/icons-material/ForwardToInbox';
 import TelegramIcon from '@mui/icons-material/Telegram';
@@ -135,7 +135,7 @@ export default function Candidate() {
             setIsLoading(true);
             setError(null);
             try {
-                const result = await dispatch(applicationLists());
+                const result = await dispatch(applicationWithCompany());
                 const data = result?.payload?.response?.data || [];
                 setApplications(data);
                 setFilteredApplications(data);

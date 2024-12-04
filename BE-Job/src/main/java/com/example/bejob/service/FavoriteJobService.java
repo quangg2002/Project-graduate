@@ -29,6 +29,7 @@ public class FavoriteJobService {
     private final JobRepository jobRepository;
     private final CompanyRepository companyRepository;
     private final AuthenticationService authenticationService;
+    private final CityRepository cityRepository;
 
     public ResponseEntity<ResponseDto<Object>> createJob(Long jobId) {
 
@@ -55,14 +56,20 @@ public class FavoriteJobService {
 
         try {
             Optional<FavoriteJob> existingFavoriteJob = favoriteJobRepository.findByUserIdAndJobId(employee.getUserId(), jobId);
-
             if (existingFavoriteJob.isPresent()) {
-                favoriteJobRepository.delete(existingFavoriteJob.get());
-                return ResponseBuilder.okResponse(
-                        languageService.getMessage("delete.favorite-job.success"),
-                        null,
-                        StatusCodeEnum.JOB1001
-                );
+                try {
+                    favoriteJobRepository.deleteById(existingFavoriteJob.get().getId());
+                    return ResponseBuilder.okResponse(
+                            "delete.favorite-job.success",
+                            StatusCodeEnum.JOB1000
+                    );
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return ResponseBuilder.badRequestResponse(
+                            "delete.favorite-job.failed",
+                            StatusCodeEnum.JOB0000
+                    );
+                }
             } else {
                 FavoriteJob favoriteJob = FavoriteJob.builder()
                         .userId(employee.getUserId())
@@ -72,14 +79,14 @@ public class FavoriteJobService {
                 favoriteJobRepository.save(favoriteJob);
 
                 return ResponseBuilder.okResponse(
-                        languageService.getMessage("create.favorite-job.success"),
+                        "create.favorite-job.success",
                         favoriteJob,
                         StatusCodeEnum.JOB1000
                 );
             }
         } catch (Exception e) {
             return ResponseBuilder.badRequestResponse(
-                    languageService.getMessage("create.favorite-job.failed"),
+                   "create.favorite-job.failed",
                     StatusCodeEnum.JOB0000
             );
         }
@@ -110,18 +117,15 @@ public class FavoriteJobService {
 
         try {
             List<FavoriteJob> favoriteJobs = favoriteJobRepository.findByUserId(employee.getUserId());
-            System.out.println(favoriteJobs);
 
             List<FavoriteJobResponse> favoriteJobResponses = favoriteJobs.stream()
                     .map(favJob -> {
                         Job job = jobRepository.findById(favJob.getJobId()).orElse(null);
-                        System.out.println("job: " + favJob.getJobId() + job);
                         if (job == null) {
                             return null;
                         }
-                        System.out.println(job.getEmployer());
-                        Company company = companyRepository.findById(job.getEmployer()).orElse(null);
-                        System.out.println("company" +company);
+                        Company company = companyRepository.findByEmployerId(job.getEmployer()).orElse(null);
+                        City city = cityRepository.findById(company.getCity()).orElse(null);
                         return new FavoriteJobResponse(
                                 job.getId(),
                                 job.getTitle(),
@@ -129,10 +133,12 @@ public class FavoriteJobService {
                                 job.getRequirement(),
                                 job.getLocation(),
                                 job.getSalary(),
+                                favJob.getCreatedAt(),
+                                job.getUpdatedAt(),
                                 company != null ? company.getId() : null,
                                 company != null ? company.getCompanyName() : null,
                                 company != null ? company.getLogo() : null,
-                                company != null ? company.getAddress() : null
+                                city.getName()
                         );
                     })
                     .filter(Objects::nonNull)

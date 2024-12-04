@@ -1,5 +1,6 @@
 package com.example.bejob.entity;
 
+import com.example.bejob.base.Auditable;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,7 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 @Table(name = "favorite_job")
-public class FavoriteJob {
+public class FavoriteJob extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

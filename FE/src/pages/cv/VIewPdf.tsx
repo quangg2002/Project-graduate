@@ -23,7 +23,7 @@ const ViewPdf = () => {
                     left={15}
                     onClick={() => navigate(-1)}
                 >
-                    <IconButton variant='solid'>
+                    <IconButton variant='outlined'>
                         <ArrowBackIcon />
                     </IconButton>
                 </Box>

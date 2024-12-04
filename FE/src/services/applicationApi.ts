@@ -27,6 +27,17 @@ export const applicationCreate = createAsyncThunk<any, any>(
 export const applicationLists = createAsyncThunk<any>(
     'application/getList',
     async () => {
+        return axiosIns.get('/application', {
+            includeToken: true,
+        })
+            .then(response => { return { response: response.data } })
+            .catch(error => { });
+    }
+);
+
+export const applicationWithCompany = createAsyncThunk<any>(
+    'application/getListWithCompany',
+    async () => {
         return axiosIns.get('/application/with-company', {
             includeToken: true,
         })

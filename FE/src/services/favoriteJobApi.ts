@@ -3,8 +3,8 @@ import axiosIns from "./axiosIns";
 
 export const favoriteJobCreate = createAsyncThunk<any, any>(
     'favoriteJob/update',
-    async (id) => {
-        return axiosIns.post(`/favorite-job/${id}`, {
+    async (jobId) => {
+        return axiosIns.post(`/favorite-job/${jobId}`, null, {
             includeToken: true,
         })
             .then(response => { return { response: response.data } })

@@ -1,21 +1,23 @@
-import { Box, Breadcrumbs, Button, Card, CardContent, Chip, Divider, IconButton, Link, Option, Select, selectClasses, Stack, Tooltip, Typography } from "@mui/joy";
+import { Box, Button, Card, Chip, Divider, IconButton, Link, Option, Select, selectClasses, Stack, Tooltip, Typography } from "@mui/joy";
 import Header from "../../components/Header";
-import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
-import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import KeyboardArrowDown from '@mui/icons-material/KeyboardArrowDown';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
-import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ForumIcon from '@mui/icons-material/Forum';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import PaidIcon from '@mui/icons-material/Paid';
+import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 import useAppDispatch from '../../hooks/useAppDispatch';
 import { useState, useEffect } from "react";
 import { applicationLists } from '../../services/applicationApi';
 import { useNavigate } from 'react-router-dom';
+import { Empty, Spin } from "antd";
 
 
 export default function JobApplied() {
     const [applications, setApplications] = useState([])
+    const [selectedStatus, setSelectedStatus] = useState('ALL');
+    const [filteredApplications, setFilteredApplications] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
 
     const dispatch = useAppDispatch();
@@ -25,45 +27,32 @@ export default function JobApplied() {
                 const action = await dispatch(applicationLists());
                 if (applicationLists.fulfilled.match(action)) {
                     const response = action.payload.response?.data;
-                    console.log(action.payload.response?.data)
                     if (response) setApplications(response)
                 }
             }
             catch (error) {
                 console.error('Failed to fetch applications data:', error);
             }
+            finally {
+                setIsLoading(false);
+            }
         };
         fetchApplicationsData();
     }, [dispatch]);
 
+    useEffect(() => {
+        if (selectedStatus !== "ALL") {
+            const filtered = applications.filter((app: any) => app.status === selectedStatus);
+            setFilteredApplications(filtered);
+        } else {
+            setFilteredApplications(applications);
+        }
+    }, [selectedStatus, applications]);
+
     return (
         <Box bgcolor={'#f4f5f5'} minHeight={'100vh'}>
             <Header />
-            <Box width={'90%'} justifySelf={'center'} alignSelf={'center'} my={2}>
-                <Breadcrumbs
-                    size="sm"
-                    aria-label="breadcrumbs"
-                    separator={<ChevronRightRoundedIcon fontSize="small" />}
-                >
-                    <Link
-                        underline="none"
-                        color="neutral"
-                        href="#some-link"
-                        aria-label="Home"
-                    >
-                        <HomeRoundedIcon /> &nbsp;
-                        <Typography level="body-xs">
-                            Trang chủ
-                        </Typography>
-                    </Link>
-                    <Typography color="primary" level="body-xs">
-                        Việc làm
-                    </Typography>
-                    <Typography color="primary" level="body-xs">
-                        Việc làm đã ứng tuyển
-                    </Typography>
-                </Breadcrumbs>
-
+            <Box width={'80%'} justifySelf={'center'} alignSelf={'center'} mt={4}>
                 <Stack
                     direction={'row'}
                     gap={2}
@@ -73,7 +62,7 @@ export default function JobApplied() {
                         <Card>
                             <Stack gap={2}>
                                 <Stack direction={'row'} justifyContent={'space-between'}>
-                                    <Typography level="h4">Việc làm đã ứng tuyển</Typography>
+                                    <Typography level="title-lg">Việc làm đã ứng tuyển</Typography>
                                     <Select
                                         color="primary"
                                         placeholder="Trạng thái"
@@ -87,63 +76,138 @@ export default function JobApplied() {
                                                 },
                                             },
                                         }}
+                                        onChange={(e, newValue) => setSelectedStatus(newValue as string || '')}
                                     >
-                                        <Option value="dog">Đã ứng tuyển</Option>
-                                        <Option value="cat">NTD đã xem</Option>
+                                        <Option value="ALL">Tất cả</Option>
+                                        <Option value="PENDING">Đã ứng tuyển</Option>
+                                        <Option value="ACCEPTED">NTD đã xem CV</Option>
+                                        <Option value="REJECTED">NTD từ chối</Option>
                                     </Select>
                                 </Stack>
-                                {applications.map((application, index) => (
-                                    <Card variant="outlined" sx={{ bgcolor: '#f2fbf6' }}>
-                                        <Stack direction={'row'} gap={2}>
-                                            <img src={`${application.companyAvata}`} alt="Company Logo" style={{ width: 100, height: 100, border: '1px solid #000', borderRadius: '5px' }} />
-                                            <Stack flexGrow={1} gap={2}>
-                                                <Stack gap={1}>
-                                                    <Stack direction={'row'} justifyContent={'space-between'}>
-                                                        <Typography level="title-lg">{application.jobTitle}</Typography>
-                                                        <Typography color="success" level="title-lg">$ {application.salary}</Typography>
-                                                    </Stack>
-                                                    <Typography>{application.companyName}</Typography>
-                                                    <Typography>Thời gian ứng tuyển: {application.createdAt.substring(0, 10)}</Typography>
-                                                    <Stack direction={'row'} justifyContent={'space-between'} flexWrap={'wrap'} gap={1}>
-                                                        <Typography>CV đã ứng tuyển: <Link underline="always" color="success" onClick={() => window.open(`${application.cvPdf}`)}>CV tải lên</Link></Typography>
-                                                        <Stack direction={'row'} gap={1}>
-                                                            <Chip
-                                                                variant="soft"
-                                                                color="success"
-                                                                size="md"
-                                                                startDecorator={<ForumIcon />}
+                                {isLoading ? (
+                                    <Stack justifyContent="center" alignItems="center" minHeight="200px">
+                                        <Spin size="large"> Đang tải dữ liệu...</Spin>
+                                    </Stack>
+                                ) : applications.length !== 0 ? (
+                                    filteredApplications.map((application, index) => (
+                                        <Card
+                                            key={index}
+                                            variant="outlined"
+                                            sx={{
+                                                transition: 'border 0.3s, box-shadow 0.3s',
+                                                '&:hover': {
+                                                    borderColor: '#00B14F',
+                                                    boxShadow: '0 1px 3px #00B14F',
+                                                    '& .hover-text': {
+                                                        color: '#00B14F',
+                                                    },
+                                                },
+                                            }}
+                                        >
+                                            <Stack direction={'row'} gap={3}>
+                                                <img
+                                                    src={`${application?.companyAvata}`}
+                                                    alt="Company Logo"
+                                                    style={{
+                                                        width: 100,
+                                                        height: 100,
+                                                        border: '1px solid #000',
+                                                        borderRadius: '5px',
+                                                    }}
+                                                />
+                                                <Stack flexGrow={1} gap={1}>
+                                                    <Stack gap={0.7}>
+                                                        <Stack direction={'row'} justifyContent={'space-between'}>
+                                                            <Typography
+                                                                level="title-lg"
+                                                                className="hover-text"
+                                                                sx={{
+                                                                    transition: 'color 0.3s',
+                                                                }}
                                                             >
-                                                                Nhắn tin
-                                                            </Chip>
-                                                            <Chip
-                                                                variant="soft"
-                                                                color="success"
-                                                                size="md"
-                                                                startDecorator={<VisibilityIcon />}
-                                                                onClick={() => {    
-                                                                    const pdfLink = application.cvPdf; 
-                                                                    navigate('/view-cv', { state: { pdfUrl: pdfLink } });
-                                                                }} 
-                                                            >
-                                                                Xem CV
-                                                            </Chip>
+                                                                {application?.jobTitle}
+                                                            </Typography>
+                                                            <Typography color="success" level="title-md" fontWeight={'600'}>
+                                                                $ {application?.salary}
+                                                            </Typography>
+                                                        </Stack>
+                                                        <Typography>{application?.companyName}</Typography>
+                                                        <Typography>
+                                                            Thời gian ứng tuyển: {application?.createdAt.substring(0, 10)}
+                                                        </Typography>
+                                                        <Stack
+                                                            direction={'row'}
+                                                            justifyContent={'space-between'}
+                                                            flexWrap={'wrap'}
+                                                            gap={1}
+                                                        >
+                                                            <Typography>
+                                                                CV đã ứng tuyển:{' '}
+                                                                <Link
+                                                                    underline="always"
+                                                                    color="success"
+                                                                    onClick={() => window.open(`${application.cvPdf}`)}
+                                                                >
+                                                                    CV tải lên
+                                                                </Link>
+                                                            </Typography>
+                                                            <Stack direction={'row'} gap={1}>
+                                                                <Chip
+                                                                    variant="soft"
+                                                                    color="success"
+                                                                    size="md"
+                                                                    startDecorator={<ForumIcon />}
+                                                                    onClick={() => {
+                                                                        const pdfLink = application?.cvPdf;
+                                                                        navigate('/view-cv', { state: { pdfUrl: pdfLink } });
+                                                                    }}
+                                                                >
+                                                                    Nhắn tin
+                                                                </Chip>
+                                                                <Chip
+                                                                    variant="soft"
+                                                                    color="success"
+                                                                    size="md"
+                                                                    startDecorator={<VisibilityIcon />}
+                                                                    onClick={() => {
+                                                                        const pdfLink = application?.cvPdf;
+                                                                        navigate('/view-cv', { state: { pdfUrl: pdfLink } });
+                                                                    }}
+                                                                >
+                                                                    Xem CV
+                                                                </Chip>
+                                                            </Stack>
                                                         </Stack>
                                                     </Stack>
+                                                    <Divider />
+                                                    {application?.status === 'PENDING' && (
+                                                        <Typography color="primary">Đã ứng tuyển</Typography>
+                                                    )}
+                                                    {application?.status === 'ACCEPTED' && (
+                                                        <Typography sx={{ color: '#F70' }}>NTD đã xem CV</Typography>
+                                                    )}
+                                                    {application?.status === 'REJECTED' && (
+                                                        <Typography sx={{ color: '#da4538' }}>
+                                                            Thư tuyển dụng đã bị từ chối
+                                                        </Typography>
+                                                    )}
                                                 </Stack>
-                                                <Divider />
-                                                {application.status === "PENDING"
-                                                    ?
-                                                    <Typography color="primary">Đã ứng tuyển</Typography>
-                                                    :
-                                                    <Typography sx={{color: '#F70'}}>NTD đã xem CV</Typography>
-                                                }
                                             </Stack>
+                                        </Card>
+                                    ))
+                                ) : (
+                                    <Stack>
+                                        <Empty
+                                            description="Bạn chưa ứng tuyển công việc nào!"
+                                            image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                        />
+                                        <Stack justifyContent={'center'} alignItems="center">
+                                            <Button color="success">Tìm việc ngay</Button>
                                         </Stack>
-                                    </Card>
-                                ))}
+                                    </Stack>
+                                )}
                             </Stack>
                         </Card>
-
                     </Stack>
 
                     <Stack flex={1}>
@@ -178,10 +242,9 @@ export default function JobApplied() {
                                                     Hà Nội
                                                 </Chip>
                                             </Stack>
-                                            <Tooltip title="Lưu" placement="top">
-
+                                            <Tooltip title="Lưu" placement="bottom" arrow>
                                                 <IconButton variant="outlined" sx={{ borderRadius: '50%' }}>
-                                                    <FavoriteBorderIcon />
+                                                    <BookmarkBorderIcon />
                                                 </IconButton>
                                             </Tooltip>
                                         </Stack>
