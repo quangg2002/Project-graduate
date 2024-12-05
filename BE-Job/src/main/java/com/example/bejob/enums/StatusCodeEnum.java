@@ -154,7 +154,19 @@ public enum StatusCodeEnum {
 
     //
     SUCCESS("Thanh cong"),
-    FAIlS("ThatBai");
+    FAIlS("ThatBai"),
+
+    SAVE1003("SAVE1003"), //Delete save job success
+    SAVE0003("SAVE0003"), //Delete save job failed
+
+    FOLLOW1000("FOLLOW1000"), //Create follow company success
+    FOLLOW0000("FOLLOW0000"), //Create follow company failed
+    FOLLOW1001("FOLLOW1001"), //Update follow company success
+    FOLLOW0001("FOLLOW0001"), //Update follow company failed
+    FOLLOW1002("FOLLOW1002"), //Get follow company success
+    FOLLOW0002("FOLLOW0002"), //Get follow company failed
+    FOLLOW1003("FOLLOW1003"), //Delete follow company success
+    FOLLOW0003("FOLLOW0003"); //Delete follow company failed
 
     public final String value;
 

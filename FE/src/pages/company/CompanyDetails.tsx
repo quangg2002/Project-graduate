@@ -13,6 +13,7 @@ import 'dayjs/locale/vi';
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
 import BusinessIcon from '@mui/icons-material/Business';
+import DoneIcon from '@mui/icons-material/Done';
 import InsertLinkIcon from '@mui/icons-material/InsertLink';
 import LanguageIcon from '@mui/icons-material/Language';
 import { Empty, Spin } from 'antd';
@@ -23,8 +24,11 @@ import { useParams } from 'react-router-dom';
 import useAppDispatch from '../../hooks/useAppDispatch';
 import { favoriteJobCreate } from '../../services/favoriteJobApi';
 import { getFavoriteJob } from '../../services/favoriteJobApi';
+import { getFollowCompany } from '../../services/followCompanyApi';
+import { followCompany } from '../../services/followCompanyApi';
 import { getCompanyDetails } from '../../services/companyApi';
 import { toast } from 'react-toastify';
+import { css, keyframes } from "@emotion/react";
 
 dayjs.extend(relativeTime);
 dayjs.locale('vi');
@@ -54,6 +58,19 @@ interface DataResponse {
 }
 
 
+const rotateAnimation = keyframes`
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+`;
+
+const iconStyle = css`
+    animation: ${rotateAnimation} 1s ease-in-out;
+`;
+
 export default function CompanyDetails() {
     const dispatch = useAppDispatch();
     const [openAlert, setOpenAlert] = useState(false);
@@ -61,6 +78,14 @@ export default function CompanyDetails() {
     const [isLoading, setIsLoading] = useState(true);
     const { companyId } = useParams();
     const [bookmarkedJobs, setBookmarkedJobs] = useState<number[]>([]);
+    const [followCompanies, setFollowCompanies] = useState<number[]>([]);
+
+    const [open, setOpen] = useState(false);
+    const [message, setMessage] = useState('');
+
+    const handleClose = () => {
+        setOpen(false);
+    };
 
     const handleDeleteSave = async (jobId) => {
         try {
@@ -70,9 +95,30 @@ export default function CompanyDetails() {
                     toast.success('Đã gỡ công việc khỏi danh sách đã lưu!');
                 } else {
                     toast.success('Đã lưu công việc vào danh sách đã lưu!');
-                }                
+                }
                 setBookmarkedJobs((prev) =>
                     prev.includes(jobId) ? prev.filter((id) => id !== jobId) : [...prev, jobId]
+                );
+            } else {
+                toast.error('Đã có lỗi xảy ra');
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleFollowCompany = async (companyId: number) => {
+        setOpen(false)
+        try {
+            const result = await dispatch(followCompany(companyId));
+            if (result?.payload?.response?.success) {
+                if (followCompanies.includes(companyId)) {
+                    toast.success('Đã gỡ bỏ theo dõi công ty!');
+                } else {
+                    toast.success('Đã theo dõi công ty!');
+                }
+                setFollowCompanies((prev) =>
+                    prev.includes(companyId) ? prev.filter((id) => id !== companyId) : [...prev, companyId]
                 );
             } else {
                 toast.error('Đã có lỗi xảy ra');
@@ -103,6 +149,30 @@ export default function CompanyDetails() {
 
         fetchCompanyData();
     }, [dispatch]);
+
+    useEffect(() => {
+        const fetchCompanyData = async () => {
+            try {
+                dispatch(startLoading)
+                const action = await dispatch(getFollowCompany());
+                if (getFollowCompany.fulfilled.match(action)) {
+                    const response = action.payload.response?.data;
+                    if (response) {
+                        const companyIds = response.map(data => data?.companyId);
+                        setFollowCompanies(companyIds);
+                    }
+                }
+                dispatch(stopLoading)
+            } catch (error) {
+                console.error('Failed to fetch data:', error);
+            } finally {
+                setIsLoading(false)
+            }
+        };
+
+        fetchCompanyData();
+    }, []);
+
 
     useEffect(() => {
         const fetchCompanyData = async () => {
@@ -205,7 +275,18 @@ export default function CompanyDetails() {
                                 </Stack>
                                 <Button
                                     size="lg"
-                                    startDecorator={<AddIcon color="success" />}
+                                    startDecorator={
+                                        followCompanies.includes(Number(companyId)) ?
+                                            <DoneIcon
+                                                sx={iconStyle}
+                                                color="success"
+                                            />
+                                            :
+                                            <AddIcon
+                                                sx={iconStyle}
+                                                color="success"
+                                            />
+                                    }
                                     sx={{
                                         backgroundColor: '#FFF',
                                         color: '#FFF',
@@ -213,8 +294,19 @@ export default function CompanyDetails() {
                                             backgroundColor: '#f4f5f5',
                                         },
                                     }}
+                                    onClick={() => {
+                                        if (followCompanies.includes(Number(companyId))) {
+                                            setOpen(true)
+                                            setMessage(data?.companyResponse?.companyName)
+                                            //   showConfirmModal(Number(companyId)); // Hiển thị modal khi người dùng muốn gỡ theo dõi
+                                        } else {
+                                            handleFollowCompany(Number(companyId)); // Theo dõi ngay
+                                        }
+                                    }}
                                 >
-                                    <Typography color="success" level="body-md">Theo dõi công ty</Typography>
+                                    <Typography color="success" level="body-md">
+                                        {followCompanies.includes(Number(companyId)) ? "Đã theo dõi" : "Theo dõi công ty"}
+                                    </Typography>
                                 </Button>
                             </Stack>
                         </Stack>
@@ -426,6 +518,37 @@ export default function CompanyDetails() {
                 startDecorator={<InsertLinkIcon />}
             >
                 Sao chép thành công
+            </Snackbar>
+
+            <Snackbar
+                open={open}
+                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                onClose={handleClose}
+            >
+                <Stack spacing={2}>
+                    <Typography level="title-lg">Bỏ theo dõi</Typography>
+                    <Divider/>
+                    <Stack>
+                        <Typography>Bỏ theo dõi sẽ không tiếp tục nhận được thông tin tuyển dụng từ</Typography>
+                        <Typography level="title-md">
+                            {message}
+                        </Typography>
+                    </Stack>
+                    <Stack direction="row" spacing={1} justifyContent={"flex-end"}>
+                        <Button color="neutral" variant="solid" onClick={handleClose}>Hủy</Button>
+                        <Button
+                            onClick={() => handleFollowCompany(Number(companyId))}
+                            sx={{
+                                bgcolor: '#00b14f',
+                                '&:hover': {
+                                    bgcolor: '#008f3e',
+                                },
+                            }}
+                        >
+                            Xác nhận
+                        </Button>
+                    </Stack>
+                </Stack>
             </Snackbar>
         </Stack>
     )
