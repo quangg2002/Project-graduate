@@ -75,6 +75,7 @@ export default function CompanyDetails() {
     const dispatch = useAppDispatch();
     const [openAlert, setOpenAlert] = useState(false);
     const [data, setData] = useState<DataResponse | null>(null);
+    const [originalData, setOriginalData] = useState<DataResponse | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const { companyId } = useParams();
     const [bookmarkedJobs, setBookmarkedJobs] = useState<number[]>([]);
@@ -137,6 +138,7 @@ export default function CompanyDetails() {
                     const response = action.payload.response?.data;
                     if (response) {
                         setData(response);
+                        setOriginalData(response);
                     }
                 }
                 dispatch(stopLoading)
@@ -334,7 +336,23 @@ export default function CompanyDetails() {
                                         }}
                                         // validationSchema={FindJobSchema}
                                         onSubmit={(values) => {
-                                            console.log('Search Data:', values);
+                                            const filteredJobs = originalData?.listJob.filter((job) => {
+                                                const matchesTitle =
+                                                    values.jobPosition.trim() === '' ||
+                                                    job?.jobTitle?.toLowerCase().includes(values.jobPosition.trim().toLowerCase());
+                                                const matchesCity =
+                                                    values.jobCategory.trim() === '' ||
+                                                    job?.jobCity?.toLowerCase() === values.jobCategory.trim().toLowerCase();
+                                                return matchesTitle && matchesCity;
+                                            });
+                                            console.log('Filtered Jobs:', filteredJobs);
+
+
+                                            setData((prevData) => ({
+                                                ...prevData!,
+                                                listJob: filteredJobs,
+                                            }));
+
                                         }}
                                     >
                                         {({ handleSubmit, setFieldValue }) => (
@@ -362,7 +380,7 @@ export default function CompanyDetails() {
                                                                 }}
                                                                 value={field.value}
                                                             >
-                                                                <Option value="" disabled>
+                                                                <Option value="">
                                                                     Địa điểm
                                                                 </Option>
                                                                 {city.map(city => (
@@ -390,93 +408,107 @@ export default function CompanyDetails() {
                                         <Stack justifyContent="center" alignItems="center" minHeight="200px">
                                             <Spin size="large"> Đang tải dữ liệu...</Spin>
                                         </Stack>
-                                    ) : data?.listJob.length !== 0 ? (
-                                        data?.listJob.map((job, index) => (
-                                            <Card
-                                                key={index}
-                                                variant="outlined"
-                                                sx={{
-                                                    transition: 'border 0.3s, box-shadow 0.3s',
-                                                    '&:hover': {
-                                                        borderColor: '#00B14F',
-                                                        boxShadow: '0 1px 3px #00B14F',
-                                                        '& .hover-text': {
-                                                            color: '#00B14F',
-                                                        },
-                                                    }
-                                                }}
-                                            >
-                                                <Stack direction={'row'} gap={2}>
-                                                    <img src={data?.companyResponse?.logo} alt="Company Logo" style={{ width: 100, height: 100, border: '1px solid #e9eaec', borderRadius: '5px' }} />
-                                                    <Stack flexGrow={1} gap={1}>
-                                                        <Stack direction={'row'} justifyContent={'space-between'}>
-                                                            <Typography
-                                                                level="title-lg"
-                                                                className="hover-text"
-                                                                sx={{
-                                                                    transition: 'color 0.3s',
-                                                                }}
-                                                            >
-                                                                {job?.jobTitle}
-                                                            </Typography>
-                                                            <Typography color="success" fontWeight={'600'}>{job?.jobSalary}</Typography>
+                                    ) :
+                                        originalData?.listJob.length !== 0 ? (
+                                            data?.listJob.length !== 0 ? (
+                                                data?.listJob.map((job, index) => (
+                                                    <Card
+                                                        key={index}
+                                                        variant="outlined"
+                                                        sx={{
+                                                            transition: 'border 0.3s, box-shadow 0.3s',
+                                                            '&:hover': {
+                                                                borderColor: '#00B14F',
+                                                                boxShadow: '0 1px 3px #00B14F',
+                                                                '& .hover-text': {
+                                                                    color: '#00B14F',
+                                                                },
+                                                            }
+                                                        }}
+                                                    >
+                                                        <Stack direction={'row'} gap={2}>
+                                                            <img src={data?.companyResponse?.logo} alt="Company Logo" style={{ width: 100, height: 100, border: '1px solid #e9eaec', borderRadius: '5px' }} />
+                                                            <Stack flexGrow={1} gap={1}>
+                                                                <Stack direction={'row'} justifyContent={'space-between'}>
+                                                                    <Typography
+                                                                        level="title-lg"
+                                                                        className="hover-text"
+                                                                        sx={{
+                                                                            transition: 'color 0.3s',
+                                                                        }}
+                                                                    >
+                                                                        {job?.jobTitle}
+                                                                    </Typography>
+                                                                    <Typography color="success" fontWeight={'600'}>{job?.jobSalary}</Typography>
 
-                                                        </Stack>
-                                                        <Typography>{data?.companyResponse?.companyName}</Typography>
-                                                        <Stack direction={'row'} justifyContent={'space-between'} alignItems="center" flexWrap={'wrap'} gap={1}>
-                                                            <Stack direction={'row'} gap={1}>
-                                                                <Chip
-                                                                    variant="solid"
-                                                                    color="neutral"
-                                                                    size="sm"
-                                                                    sx={{ lineHeight: 'normal' }}
-                                                                >
-                                                                    {job?.jobCity}
-                                                                </Chip>
-                                                                <Chip
-                                                                    variant="solid"
-                                                                    color="neutral"
-                                                                    size="sm"
-                                                                    sx={{ lineHeight: 'normal' }}
-                                                                >
-                                                                    Còn {calculateDaysLeft(job?.jobDeadline)} ngày ứng tuyển
-                                                                </Chip>
+                                                                </Stack>
+                                                                <Typography>{data?.companyResponse?.companyName}</Typography>
+                                                                <Stack direction={'row'} justifyContent={'space-between'} alignItems="center" flexWrap={'wrap'} gap={1}>
+                                                                    <Stack direction={'row'} gap={1}>
+                                                                        <Chip
+                                                                            variant="solid"
+                                                                            color="neutral"
+                                                                            size="sm"
+                                                                            sx={{ lineHeight: 'normal' }}
+                                                                        >
+                                                                            {job?.jobCity}
+                                                                        </Chip>
+                                                                        <Chip
+                                                                            variant="solid"
+                                                                            color="neutral"
+                                                                            size="sm"
+                                                                            sx={{ lineHeight: 'normal' }}
+                                                                        >
+                                                                            Còn {calculateDaysLeft(job?.jobDeadline)} ngày ứng tuyển
+                                                                        </Chip>
+                                                                    </Stack>
+                                                                    <Stack direction={'row'} gap={1}>
+                                                                        <Button
+                                                                            sx={{
+                                                                                bgcolor: '#00b14f',
+                                                                                '&:hover': {
+                                                                                    bgcolor: '#008f3e',
+                                                                                },
+                                                                            }}
+                                                                            size="sm">
+                                                                            Ứng tuyển
+                                                                        </Button>
+                                                                        <IconButton variant="outlined" onClick={() => handleDeleteSave(job?.jobId)}>
+                                                                            {bookmarkedJobs.includes(job?.jobId) ? (
+                                                                                <BookmarkIcon color="success" />
+                                                                            ) : (
+                                                                                <BookmarkBorderIcon color="success" />
+                                                                            )}
+                                                                        </IconButton>
+                                                                    </Stack>
+                                                                </Stack>
                                                             </Stack>
-                                                            <Stack direction={'row'} gap={1}>
-                                                                <Button
-                                                                    sx={{
-                                                                        bgcolor: '#00b14f',
-                                                                        '&:hover': {
-                                                                            bgcolor: '#008f3e',
-                                                                        },
-                                                                    }}
-                                                                    size="sm">
-                                                                    Ứng tuyển
-                                                                </Button>
-                                                                <IconButton variant="outlined" onClick={() => handleDeleteSave(job?.jobId)}>
-                                                                    {bookmarkedJobs.includes(job?.jobId) ? (
-                                                                        <BookmarkIcon color="success" />
-                                                                    ) : (
-                                                                        <BookmarkBorderIcon color="success" />
-                                                                    )}
-                                                                </IconButton>
-                                                            </Stack>
                                                         </Stack>
+                                                    </Card>
+                                                ))
+                                            ) : (
+                                                <Stack>
+                                                    <Empty
+                                                        description="Không tìm thấy công việc nào!"
+                                                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                                    />
+                                                    <Stack justifyContent={'center'} alignItems="center">
+                                                        <Button color="success">Tìm việc ngay</Button>
                                                     </Stack>
                                                 </Stack>
-                                            </Card>
-                                        ))
-                                    ) : (
-                                        <Stack>
-                                            <Empty
-                                                description="Bạn chưa ứng tuyển công việc nào!"
-                                                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                                            />
-                                            <Stack justifyContent={'center'} alignItems="center">
-                                                <Button color="success">Tìm việc ngay</Button>
-                                            </Stack>
-                                        </Stack>
-                                    )}
+                                            )
+                                        ) : (
+                                                <Stack>
+                                                    <Empty
+                                                        description="Không có chưa công việc tuyển dụng!"
+                                                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                                    />
+                                                    <Stack justifyContent={'center'} alignItems="center">
+                                                        <Button color="success">Tìm việc ngay</Button>
+                                                    </Stack>
+                                                </Stack>
+                                            )
+                                    }
                                 </Card>
                             </Stack>
                         </Stack>
@@ -527,7 +559,7 @@ export default function CompanyDetails() {
             >
                 <Stack spacing={2}>
                     <Typography level="title-lg">Bỏ theo dõi</Typography>
-                    <Divider/>
+                    <Divider />
                     <Stack>
                         <Typography>Bỏ theo dõi sẽ không tiếp tục nhận được thông tin tuyển dụng từ</Typography>
                         <Typography level="title-md">
