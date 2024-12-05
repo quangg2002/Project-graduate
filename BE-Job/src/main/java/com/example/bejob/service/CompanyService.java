@@ -1,6 +1,8 @@
 package com.example.bejob.service;
 
+import com.example.bejob.dto.response.CompanyDetailsResponse;
 import com.example.bejob.dto.response.CompanyResponse;
+import com.example.bejob.dto.response.JobCompanyDetailsResponse;
 import com.example.bejob.entity.*;
 import com.example.bejob.repository.*;
 import com.example.bejob.dto.request.CompanyRequest;
@@ -16,8 +18,10 @@ import org.springframework.boot.actuate.web.mappings.MappingsEndpoint;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +33,7 @@ public class CompanyService {
     private final MappingsEndpoint mappingsEndpoint;
     private final CityRepository cityRepository;
     private final ScaleRepository scaleRepository;
+    private final JobRepository jobRepository;
     @Value("${minio.url.public}")
     private String publicUrl;
 
@@ -174,6 +179,72 @@ public class CompanyService {
             return ResponseBuilder.okResponse(
                     languageService.getMessage("get.company.success"),
                     companies,
+                    StatusCodeEnum.COMPANY1001
+            );
+        } catch (Exception e) {
+            return ResponseBuilder.badRequestResponse(
+                    languageService.getMessage("get.company.failed"),
+                    StatusCodeEnum.COMPANY0001
+            );
+        }
+    }
+
+    public ResponseEntity<ResponseDto<Object>> getDetailsCompany(Long companyId) {
+        try {
+
+            Company company = companyRepository.findById(companyId).get();
+
+            List<Employer> employers = employerRepository.findByCompany(companyId);
+
+            List<Job> jobs = new ArrayList<>();
+
+            for (Employer employer : employers) {
+                List<Job> employerJobs = jobRepository.findByEmployer(employer.getId());
+                jobs.addAll(employerJobs);
+            }
+
+            List<JobCompanyDetailsResponse> lists = jobs.stream()
+                    .map(job -> JobCompanyDetailsResponse.builder()
+                            .jobId(job.getId())
+                            .jobDeadline(job.getDeadline())
+                            .jobSalary(job.getSalary())
+                            .jobTitle(job.getTitle())
+                            .jobCity(cityRepository.findById(job.getCityId())
+                                    .map(City :: getName)
+                                    .orElse(null)
+                            )
+                            .build()
+                    )
+                    .collect(Collectors.toList());
+
+            CompanyResponse companyResponse = CompanyResponse.builder()
+                    .logo(company.getLogo())
+                    .companyName(company.getCompanyName())
+                    .website(company.getWebsite())
+                    .address(company.getAddress())
+                    .description(company.getDescription())
+                    .scale(scaleRepository.findById(company.getScale())
+                            .map(Scale :: getName)
+                            .orElse(null)
+                    )
+                    .city(cityRepository.findById(company.getCity())
+                            .map(City :: getName)
+                            .orElse(null)
+                    )
+                    .district(districtRepository.findById(company.getDistrict())
+                            .map(District :: getName)
+                            .orElse(null)
+                    )
+                    .build();
+
+            CompanyDetailsResponse companyDetailsResponse = CompanyDetailsResponse.builder()
+                    .companyResponse(companyResponse)
+                    .listJob(lists)
+                    .build();
+
+            return ResponseBuilder.okResponse(
+                    languageService.getMessage("get.company.success"),
+                    companyDetailsResponse,
                     StatusCodeEnum.COMPANY1001
             );
         } catch (Exception e) {
