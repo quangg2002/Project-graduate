@@ -118,7 +118,7 @@ public class CvService {
                 return null;
             }
 
-            CvEmployee cvEmployee = cvEmployeeRepository.findByCvId(cvId)
+            CvEmployee cvEmployee = cvEmployeeRepository.findByCvIdAndEmployeeId(cvId, employee.getId())
                     .orElseThrow(() -> new EntityNotFoundException("CvEmployee not found"));
 
             List<Hobby> hobbyList = hobbyRepository.findByCvIdAndEmployeeId(cvEmployee.getCvId(), employee.getId());
