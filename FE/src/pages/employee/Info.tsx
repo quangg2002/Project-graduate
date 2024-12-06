@@ -183,27 +183,7 @@ export default function Info() {
         <Box bgcolor={'#f0F0F0'} minHeight={'100vh'}>
             <Header />
 
-            <Box component="main" className="MainContent" width={'95%'} alignSelf={'center'} justifySelf={'center'} >
-                <Box display={'flex'} alignItems={'center'} mt={2} mb={2}>
-                    <Breadcrumbs
-                        size="sm"
-                        aria-label="breadcrumbs"
-                        separator={<ChevronRightRoundedIcon fontSize="small" />}
-                        sx={{ pl: 0 }}
-                    >
-                        <Link
-                            underline="none"
-                            color="neutral"
-                            href="#some-link"
-                            aria-label="Home"
-                        >
-                            <HomeRoundedIcon />
-                        </Link>
-                        <Typography color="primary" level="body-xs">
-                            Thông tin cá nhân
-                        </Typography>
-                    </Breadcrumbs>
-                </Box>
+            <Box component="main" className="MainContent" width={'80%'} alignSelf={'center'} justifySelf={'center'} mt={4}>
                 <Box
                     borderRadius={10}
                     boxShadow={'xl'}
@@ -220,7 +200,7 @@ export default function Info() {
                         maxWidth: "100vw",
                     }}>
                     <Box mb={3}>
-                        <Typography level="h3">Thông tin cá nhân</Typography>
+                        <Typography level="title-lg">Thông tin cá nhân</Typography>
                         <Typography level="body-xs">
                             Tùy chỉnh các thông tin hồ sơ của bạn.
                         </Typography>
@@ -230,23 +210,23 @@ export default function Info() {
                             display: "grid",
                             gridTemplateColumns: {
                                 xs: "1fr",
-                                md: "minmax(180px, 300px) minmax(400px, 1fr)",
+                                md: "minmax(250px, 300px) minmax(400px, 1fr)",
                             },
-                            gap: { xs: 2, sm: 2, md: 8 },
+                            gap: { xs: 2, sm: 2, md: 2},
                             width: "100%",
                             maxWidth: "100vw",
                         }}
                     >
                         <Box>
-                            <Box {...getRootProps()} style={{ position: 'relative' }}>
-                                <Card sx={{ height: '200px', borderRadius: 0 }}>
+                            <Box {...getRootProps()} sx={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                                <Card sx={{ width: "250px", height: "250px" , borderRadius: 0, justifyContent: 'center', alignItems: 'center' }}>
                                     <input {...getInputProps()} />
                                     <CardCover>
                                         {previewUrl ? (
                                             <img
                                                 src={previewUrl}
                                                 alt="Preview"
-                                                style={{ maxWidth: "100%", maxHeight: "200px", objectFit: "cover" }}
+                                                style={{ width: "100%", objectFit: "cover" }}
                                             />
                                         ) : (
                                             <Typography level="body-sm" textAlign={'center'}>Kéo thả hình ảnh vào đây hoặc click để chọn file</Typography>
@@ -258,7 +238,7 @@ export default function Info() {
                                         sx={{
                                             background: 'linear-gradient(to top, rgba(0,0,0,0.6), rgba(0,0,0,0)), linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0))',
                                             padding: 2,
-                                            width: '100%'
+                                            // width: '100%'
                                         }}
                                         position={'absolute'}
                                         bottom={0}

@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import "@chatscope/chat-ui-kit-styles/dist/default/styles.min.css";
 import {
     MainContainer,
-    Sidebar,
     ChatContainer,
     MessageList,
     Message,
@@ -12,7 +11,6 @@ import {
     Avatar,
     ConversationHeader,
     VideoCallButton,
-    TypingIndicator,
     MessageModel,
     MessageType,
 
@@ -24,10 +22,12 @@ import { addMessage, selectCurrentConver, setCurrentIndex, setToCaller } from '.
 import { getConversations } from '../../services/messageApi';
 import useAppDispatch from '../../hooks/useAppDispatch';
 import { uploadFile } from '../../services/fileUploadApi';
-import { Inbox } from 'lucide-react';
+import SearchIcon from '@mui/icons-material/Search';
 import { v4 as uuidv4 } from 'uuid';
 import websocketService from '../../utils/WebSocketService'
-import MessageJobCard from './MessageJobCard';
+import { Divider, Input, Stack, Typography } from '@mui/joy';
+import InsertDriveFileRoundedIcon from '@mui/icons-material/InsertDriveFileRounded';
+import { Empty, Image } from 'antd';
 
 export const VIDEO_CALL_RESPONSE = {
     ACCEPT: 'VIDEO_CALL_RESPONSE_ACCEPT',
@@ -71,6 +71,8 @@ const Messenger: React.FC = () => {
     const dispatch = useAppDispatch();
     const currentConver = useSelector(selectCurrentConver);
     const [msgInput, setMsgInput] = useState<string>("");
+    const [searchTerm, setSearchTerm] = useState('');
+    const [search, setSearch] = useState([])
 
     const fileInputRef = useRef(null);
     const { lstConvers } = useSelector((state: RootState) => state.messageReducer);
@@ -85,7 +87,7 @@ const Messenger: React.FC = () => {
                 sender: String(userId),
                 receiver: String(currentConver.userId),
                 message: fileUrl ? '' : msgInput.trim(),
-                sentTime: new Date().toISOString(),
+                sentTime: new Date().toLocaleString(),
                 status: Status.MESSAGE,
                 direction: 'outgoing',
                 position: 'normal',
@@ -144,13 +146,47 @@ const Messenger: React.FC = () => {
         event.target.value = '';
     };
 
+    useEffect(() => {
+        let filtered = lstConvers;
+
+        if (searchTerm.trim()) {
+            filtered = filtered.filter((con) =>
+                con.fullName.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+        }
+
+        setSearch(filtered)
+
+    }, [lstConvers, searchTerm]);
+
     return (
-        <div style={{ position: "relative", width: '100%' }}>
+        <div style={{ height: '100%' }}>
             {lstConvers.length > 0 ? <>
                 <MainContainer responsive>
-                    <Sidebar position="left">
-                        <ConversationList>
-                            {lstConvers.map(conversation => (
+                    <ConversationList>
+                        <Stack my={3} mx={2} gap={2}>
+                            <Typography level='h4'>Find-Job Connect</Typography>
+
+                            <Input
+                                size='sm'
+                                placeholder='Tìm kiếm cuộc trò chuyện'
+                                startDecorator={<SearchIcon />}
+                                sx={{
+                                    borderRadius: 20
+                                }}
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </Stack>
+                        <Divider />
+                        
+                        {searchTerm && 
+                        <Stack mx={2} my={2}>
+                            <Typography startDecorator={<SearchIcon />} level='body-sm'>Tìm kiếm người dùng: {searchTerm}</Typography>
+                            </Stack>
+                        }
+                        {search.map(conversation => (
+                            <>
                                 <Conversation
                                     key={conversation.userId}
                                     name={conversation.fullName ?? conversation.username}
@@ -158,12 +194,13 @@ const Messenger: React.FC = () => {
                                         ? fullName ?? username
                                         : conversation.fullName}
                                     info={conversation.last10Messages[conversation.last10Messages.length - 1].type == 'html'
-                                        ? 'Đã gửi một liên kết công việc'
+                                        ? 'Đã gửi lời chào đến bạn'
                                         : (conversation.last10Messages[conversation.last10Messages.length - 1].type == 'image'
                                             ? 'Đã gửi một ảnh'
                                             : conversation.last10Messages[conversation.last10Messages.length - 1].type == 'custom'
                                                 ? 'Đã gửi một file'
-                                                : conversation.last10Messages[conversation.last10Messages.length - 1]?.message ?? '')}
+                                                : conversation.last10Messages[conversation.last10Messages.length - 1]?.message ?? '')
+                                    }
                                     active={currentConver?.userId === conversation.userId}
                                     onClick={() => {
                                         dispatch(setCurrentIndex(conversation.userId));
@@ -175,9 +212,10 @@ const Messenger: React.FC = () => {
                                 >
                                     <Avatar src={conversation.avtUrl} name={conversation.fullName ?? conversation.username} />
                                 </Conversation>
-                            ))}
-                        </ConversationList>
-                    </Sidebar>
+                                <Divider />
+                            </>
+                        ))}
+                    </ConversationList>
 
                     <ChatContainer>
                         {currentConver && (
@@ -203,22 +241,30 @@ const Messenger: React.FC = () => {
                                         type: msg.type
                                     }}
                                 >
-                                    {msg.type === 'image' && <Message.ImageContent src={msg.fileUrl} />}
-                                    {msg.type === "custom" && (
+                                    {msg.type === 'image' &&
                                         <Message.CustomContent>
-                                            <embed
-                                                src={"https://docs.google.com/gview?embedded=true&url=" + msg.fileUrl}
-                                                width="100%"
-                                                height={'400px'}
-                                                type="application/pdf"
-                                            />
+                                            <Image src={msg.fileUrl} width={150} height={160} />
+                                        </Message.CustomContent>
+                                    }
+                                    {msg.type === "custom" && (
+                                        <Message.CustomContent onClick={() => window.open(msg.fileUrl)} >
+                                            <div onClick={() => window.open(msg.fileUrl)}>
+                                                <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
+                                                    <InsertDriveFileRoundedIcon />
+                                                    <div>
+                                                        <Typography sx={{ fontSize: 'sm' }}>{msg.fileUrl?.substring(50)}</Typography>
+                                                        <Typography level="body-sm">Pdf</Typography>
+                                                    </div>
+                                                </Stack>
+                                            </div>
                                         </Message.CustomContent>
                                     )}
-                                    {msg.type == 'html' && msg.message && <Message.CustomContent>
-                                        <MessageJobCard
-                                            jobId={Number(msg.message)}
-                                        />
-                                    </Message.CustomContent>}
+                                    {msg.type == 'html' && msg.message &&
+                                        <Message.CustomContent>
+                                            <p>Cảm ơn {msg.senderName ? msg.senderName : 'bạn'} đã liên hệ với chúng tôi.</p>
+                                            <p>Hãy đặt câu hỏi để được giúp đỡ</p>
+                                        </Message.CustomContent>
+                                    }
                                 </Message>
                             ))}
 
@@ -240,12 +286,13 @@ const Messenger: React.FC = () => {
                         }
                     </ChatContainer>
                 </MainContainer>
-            </> : <div className="flex flex-col items-center justify-center h-full bg-gray-100">
-                <div className="flex items-center mb-4">
-                    <Inbox color="gray" className="mr-3" size={50} />
+            </> :
+                <div className="flex flex-col items-center justify-center h-full bg-gray-100">
+                    <Empty
+                        description="Hãy kết nối với người khác"
+                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                    />
                 </div>
-                <p className="text-gray-400 text-lg font-medium">Hãy kết nối với người khác.</p>
-            </div>
             }
 
             <input

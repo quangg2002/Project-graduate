@@ -384,7 +384,10 @@ export default function Header() {
                                         size="sm"
                                         variant="soft"
                                         sx={{ alignSelf: "center", borderRadius: '50%' }}
-                                        onClick={() => { dispatch(openMessenger()) }}
+                                        onClick={() => { 
+                                            window.open('http://localhost:3000/chat')
+                                            dispatch(openMessenger()) 
+                                        }}
                                     >
                                         <ForumIcon color="success" />
                                     </IconButton>

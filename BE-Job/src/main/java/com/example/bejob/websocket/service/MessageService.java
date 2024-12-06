@@ -25,7 +25,7 @@ public class MessageService {
     private final UserRepository userRepository;
 
     public List<UserConversationsDto> getUserConversations(Long userId) {
-        List<Message> messages = messageRepository.findTop10BySenderIdOrReceiverIdOrderBySentTimeDesc(userId, userId);
+        List<Message> messages = messageRepository.findTop100BySenderIdOrReceiverIdOrderBySentTimeDesc(userId, userId);
 
         return messages.stream()
                 .collect(Collectors.groupingBy(message -> message.getSenderId() == userId ? message.getReceiverId() : message.getSenderId()))

@@ -234,6 +234,9 @@ public class ApplicationService {
                         Company company = companyRepository.findById(application.getCompanyId())
                                 .orElseThrow(() -> new RuntimeException("Company not found"));
 
+                        Employer employer = employerRepository.findById(job.getEmployer())
+                                .orElseThrow(() -> new RuntimeException("Employer not found"));
+
                         return ApplicationResponse.builder()
                                 .id(application.getId())
                                 .jobId(job.getId())
@@ -242,6 +245,15 @@ public class ApplicationService {
                                 .address(job.getLocation())
                                 .cvPdf(application.getCvPdf())
                                 .employeeId(employee.getId())
+                                .userEmployerId(employer.getUserId())
+                                .avatarEmployer(userRepository.findById(employer.getUserId())
+                                        .map(User::getAvatar)
+                                        .orElse(null)
+                                )
+                                .fullNameEmployer(userRepository.findById(employer.getUserId())
+                                        .map(User::getFullName)
+                                        .orElse(null)
+                                )
                                 .companyName(company.getCompanyName())
                                 .companyAvata(company.getLogo())
                                 .fullName(userRepository.findById(employee.getUserId()).get().getFullName())
