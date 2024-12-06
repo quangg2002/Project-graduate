@@ -16,6 +16,10 @@ import { Empty, Spin } from "antd";
 export default function Chat() {
     const [isLoading, setIsLoading] = useState(true);
     const [applications, setApplications] = useState([])
+    const rawRole = sessionStorage.getItem('role');
+    const role = rawRole ? rawRole.replace(/"/g, '') : null;
+
+    console.log("ROLE: " + role);
 
     const wsUrl = process.env.REACT_APP_BASE_WS_URL;
 
@@ -108,7 +112,7 @@ export default function Chat() {
                     ) : applications.length !== 0 ? (
                         applications.map((application, index) => (
                             <Stack direction={'row'} alignItems="center" justifyContent={'space-between'}>
-                                <Stack direction={'row'} gap={1} justifyContent={'center'} alignItems={'center'}> 
+                                <Stack direction={'row'} gap={1} justifyContent={'center'} alignItems={'center'}>
                                     <img
                                         src={`${application?.companyAvata}`}
                                         alt="Company Logo"
@@ -140,7 +144,7 @@ export default function Chat() {
                                             sentTime: new Date().toLocaleString(),
                                             type: 'html',
                                         };
-                
+
                                         application?.userEmployerId
                                             && dispatch(
                                                 addMessage({
@@ -159,15 +163,24 @@ export default function Chat() {
                             </Stack>
                         ))
                     ) : (
-                        <Stack>
-                            <Empty
-                                description="Bạn chưa ứng tuyển công việc nào!"
-                                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                            />
-                            <Stack justifyContent={'center'} alignItems="center">
-                                <Button color="success">Tìm việc ngay</Button>
+                        role == 'EMPLOYEE' ?
+                            <Stack>
+                                <Empty
+                                    description="Bạn chưa ứng tuyển công việc nào!"
+                                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                />
+                                <Stack justifyContent={'center'} alignItems="center">
+                                    <Button color="success">Tìm việc ngay</Button>
+                                </Stack>
                             </Stack>
-                        </Stack>
+                        :
+                            <Stack mt={10}>
+                                <Empty
+                                    description="Chưa có ai ứng tuyển!"
+                                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                />
+                               
+                            </Stack>
                     )}
                 </Stack>
             </Stack>
