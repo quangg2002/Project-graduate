@@ -24,6 +24,7 @@ public class FollowCompanyService {
     private final EmployeeRepository employeeRepository;
     private final UserRepository userRepository;
     private final FollowCompanyRepository followCompanyRepository;
+    private final EmployerRepository employerRepository;
 
     public ResponseEntity<ResponseDto<Object>> followCompany(Long companyId) {
         String userName = authenticationService.getUserFromContext();
@@ -122,6 +123,22 @@ public class FollowCompanyService {
             Employee employee = employeeRepository.findById(employeeId).orElse(null);
 
             return followCompanyRepository.findAllByEmployeeId(employee.getId());
+        } catch (Exception e) {
+
+            System.err.println("Error while fetching follow company list: " + e.getMessage());
+            e.printStackTrace();
+
+            return new ArrayList<>();
+        }
+    }
+
+    public List<FollowCompany> getListFollowCompany(Long employerId) {
+        try {
+            Employer employer = employerRepository.findById(employerId).orElse(null);
+            System.out.println("employer: " + employer);
+            System.out.println("follow: " + followCompanyRepository.findAllByCompanyId(employer.getCompany()));
+
+            return followCompanyRepository.findAllByCompanyId(employer.getCompany());
         } catch (Exception e) {
 
             System.err.println("Error while fetching follow company list: " + e.getMessage());

@@ -12,6 +12,8 @@ import java.util.Optional;
 public interface FollowCompanyRepository extends JpaRepository<FollowCompany, Long> {
     List<FollowCompany> findAllByEmployeeId(Long id);
 
+    List<FollowCompany> findAllByCompanyId(Long id);
+
     void deleteByEmployeeIdAndCompanyId(Long id, Long companyId);
 
     Optional<FollowCompany> findByEmployeeIdAndCompanyId(Long employeeId, Long companyId);

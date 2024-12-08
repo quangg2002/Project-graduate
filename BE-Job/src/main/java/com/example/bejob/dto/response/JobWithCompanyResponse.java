@@ -27,6 +27,9 @@ public class JobWithCompanyResponse {
     private String jobType;
     private String contractType;
     private String salary;
+    private String companyName;
+    private String companyLogo;
+    private String companyDescription;
     private Long quantity;
     private String description;
     private String requirement;

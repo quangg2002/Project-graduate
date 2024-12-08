@@ -1,6 +1,7 @@
 package com.example.bejob.service;
 
 import com.example.bejob.dto.request.JobRequest;
+import com.example.bejob.dto.request.JobSearchRequest;
 import com.example.bejob.dto.response.EmployerResponse;
 import com.example.bejob.dto.response.JobDTO;
 import com.example.bejob.dto.response.JobResponse;
@@ -12,6 +13,12 @@ import com.example.bejob.repository.*;
 import com.example.bejob.security.service.AuthenticationService;
 import com.example.bejob.enums.StatusCodeEnum;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -42,7 +49,7 @@ public class JobService {
     private final IndustryRepository industryRepository;
     private final EducationLevelRepository educationLevelRepository;
     private final JobSkillRepository jobSkillRepository;
-//    private final FollowCompanyService followCompanyService;
+    private final FollowCompanyService followCompanyService;
     private final NotificationService notificationService;
     private final EmployeeRepository employeeRepository;
     private final MailService mailService;
@@ -93,17 +100,18 @@ public class JobService {
                 jobSkillRepository.saveAll(jobSkills);
             }
 
-//            List<FollowCompany> followCompany = followCompanyService.getListFollow();
-//
-//            for(FollowCompany follow: followCompany){
-//                if(follow.getCompanyId() == employer.getCompany()){
-//
-//                    Optional<User> user1 = userRepository.findById(follow.getEmployeeId());
-//
-//                    notificationService.createNotification(follow.getEmployeeId(), job.getId(), "FOLLOW");
-//                    mailService.sendEmailFollow(user1.get().getEmail(), companyRepository.findById(employer.getCompany()).get().getCompanyName(), "https://deploy-hirexptit.io.vn/");
-//                }
-//            }
+            List<FollowCompany> followCompany = followCompanyService.getListFollowCompany(employer.getId());
+
+            if (followCompany != null && !followCompany.isEmpty()) {
+                for (FollowCompany follow : followCompany) {
+                    Employee employee = employeeRepository.findById(follow.getEmployeeId()).orElse(null);
+
+                    User user1 = userRepository.findById(employee.getUserId()).orElse(null);
+
+//                        notificationService.createNotification(follow.getEmployeeId(), job.getId(), "FOLLOW");
+                    mailService.sendEmailFollow(user1.getEmail(), companyRepository.findById(employer.getCompany()).get().getCompanyName(), "https://deploy-hirexptit.io.vn/");
+                }
+            }
 
             return ResponseBuilder.okResponse(
                     languageService.getMessage("create.job.success"),
@@ -349,4 +357,85 @@ public class JobService {
             );
         }
     }
+
+    @Transactional
+    public ResponseEntity<ResponseDto<Object>> searchJobs(JobSearchRequest searchRequest) {
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Job> query = criteriaBuilder.createQuery(Job.class);
+        Root<Job> job = query.from(Job.class);
+
+        List<Predicate> predicates = new ArrayList<>();
+
+        // Apply filters based on input parameters
+        if (searchRequest.getSearchQuery() != null) {
+            predicates.add(criteriaBuilder.like(criteriaBuilder.lower(job.get("title")), "%" + searchRequest.getSearchQuery().toLowerCase() + "%"));
+        }
+        if (searchRequest.getCity() != null) {
+            predicates.add(criteriaBuilder.equal(job.get("cityId"), searchRequest.getCity()));
+        }
+        if (searchRequest.getExperienceIds() != null && !searchRequest.getExperienceIds().isEmpty()) {
+            predicates.add(job.get("yearExperience").in(searchRequest.getExperienceIds()));
+        }
+        if (searchRequest.getIndustryIds() != null && !searchRequest.getIndustryIds().isEmpty()) {
+            predicates.add(job.get("industryId").in(searchRequest.getIndustryIds()));
+        }
+        if (searchRequest.getJobTypeIds() != null && !searchRequest.getJobTypeIds().isEmpty()) {
+            predicates.add(job.get("jobTypeId").in(searchRequest.getJobTypeIds()));
+        }
+        if (searchRequest.getPositionIds() != null && !searchRequest.getPositionIds().isEmpty()) {
+            predicates.add(job.get("positionId").in(searchRequest.getPositionIds()));
+        }
+        if (searchRequest.getContractTypeIds() != null && !searchRequest.getContractTypeIds().isEmpty()) {
+            predicates.add(job.get("contractTypeId").in(searchRequest.getContractTypeIds()));
+        }
+        if (searchRequest.getEducationIds() != null && !searchRequest.getEducationIds().isEmpty()) {
+            predicates.add(job.get("educationLevelId").in(searchRequest.getEducationIds()));
+        }
+
+        query.where(criteriaBuilder.and(predicates.toArray(new Predicate[0])));
+
+        // Sử dụng Pageable để lấy phân trang
+        TypedQuery<Job> typedQuery = entityManager.createQuery(query);
+
+        List<Job> jobEntities = typedQuery.getResultList();
+        List<JobWithCompanyResponse> jobs = jobEntities.stream()
+                .map(jobItem -> {
+                    // Mapping job to JobWithCompanyResponse
+                    String districtName = districtRepository.findById(jobItem.getDistrictId())
+                            .map(District::getName)
+                            .orElse("");
+                    String cityName = cityRepository.findById(jobItem.getCityId())
+                            .map(City::getName)
+                            .orElse("");
+                    String contractTypeName = contractTypeRepository.findById(jobItem.getContractTypeId())
+                            .map(ContractType::getName)
+                            .orElse("");
+                    Employer employer = employerRepository.findById(jobItem.getEmployer()).orElse(null);
+                    Company company = employer != null ? companyRepository.findById(employer.getCompany()).orElse(null) : null;
+
+                    return JobWithCompanyResponse.builder()
+                            .id(jobItem.getId())
+                            .title(jobItem.getTitle())
+                            .location(jobItem.getLocation())
+                            .district(districtName)
+                            .city(cityName)
+                            .contractType(contractTypeName)
+                            .deadline(jobItem.getDeadline())
+                            .createdAt(jobItem.getCreatedAt())
+                            .companyName(company != null ? company.getCompanyName() : null)
+                            .companyLogo(company != null ? company.getLogo() : null)
+                            .companyDescription(company != null ? company.getDescription() : null)
+                            .description(jobItem.getDescription())
+                            .salary(jobItem.getSalary())
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        return ResponseBuilder.okResponse(
+                languageService.getMessage("get.all.jobs.success"),
+                jobs,
+                StatusCodeEnum.JOB1001
+        );
+    }
+
 }
