@@ -97,16 +97,19 @@ interface JobRecommend {
     companyLogo: string;
     jobDescription: string;
     companyId: number;
-    jobDeadline: string; 
-    nameSkill: string[]; 
+    jobDeadline: string;
+    nameSkill: string[];
     jobSalary: string;
-    similarity: number; 
+    similarity: number;
 }
 
 export default function Findjob() {
     const [isExpanded, setIsExpanded] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [bookmarkedJobs, setBookmarkedJobs] = useState<number[]>([]);
+
+    const rawRole = sessionStorage.getItem('role');
+    const role = rawRole ? rawRole.replace(/"/g, '') : null;
 
     function calculateDaysLeft(deadline: string): number {
         const deadlineDate = new Date(deadline);
@@ -718,122 +721,123 @@ export default function Findjob() {
                     }
                 </Box>
             </Stack>
-
-            <Stack my={4} mx={5} gap={4}>
-                <Stack>
-                    <Typography level="h4">Gợi ý việc làm phù hợp</Typography>
-                    <Typography level="body-md">
-                        Gợi ý việc làm dựa trên nghề nghiệp và kĩ năng của bạn
-                    </Typography>
-                </Stack>
-                <Box
-                    sx={{
-                        display: "grid",
-                        gridTemplateColumns: {
-                            xs: "1fr",
-                            sm: "1fr 1fr",
-                            md: "1fr 1fr",
-                        },
-                        gap: 3,
-                    }}
-                >
-                    {!isLoading ?
-                        jobRecommends.map((job, index) => (
-                            <Card
-                                key={index}
-                                variant="outlined"
-                                sx={{
-                                    transition: "border 0.3s, box-shadow 0.3s",
-                                    "&:hover": {
-                                        borderColor: "#00B14F",
-                                        boxShadow: "0 1px 3px #00B14F",
-                                        "& .hover-text": {
-                                            color: "#00B14F",
+            {role == 'EMPLOYEE' &&
+                <Stack my={4} mx={5} gap={4}>
+                    <Stack>
+                        <Typography level="h4">Gợi ý việc làm phù hợp</Typography>
+                        <Typography level="body-md">
+                            Gợi ý việc làm dựa trên nghề nghiệp và kĩ năng của bạn
+                        </Typography>
+                    </Stack>
+                    <Box
+                        sx={{
+                            display: "grid",
+                            gridTemplateColumns: {
+                                xs: "1fr",
+                                sm: "1fr 1fr",
+                                md: "1fr 1fr",
+                            },
+                            gap: 3,
+                        }}
+                    >
+                        {!isLoading ?
+                            jobRecommends.map((job, index) => (
+                                <Card
+                                    key={index}
+                                    variant="outlined"
+                                    sx={{
+                                        transition: "border 0.3s, box-shadow 0.3s",
+                                        "&:hover": {
+                                            borderColor: "#00B14F",
+                                            boxShadow: "0 1px 3px #00B14F",
+                                            "& .hover-text": {
+                                                color: "#00B14F",
+                                            },
                                         },
-                                    },
-                                }}
-                            >
-                                <Stack gap={0.5}>
-                                    <Stack
-                                        direction={"row"}
-                                        justifyContent={"space-between"}
-                                        alignItems={"start"}
-                                    >
-                                        <Stack direction={"row"} gap={2} mr={3}>
-                                            <img
-                                                src={`${job?.companyLogo}`}
-                                                alt="Company Logo"
-                                                style={{
-                                                    width: 64,
-                                                    height: 64,
-                                                    borderRadius: "5px",
-                                                }}
-                                            />
-                                            <Stack gap={0.5}>
-                                                <Typography
-                                                    level="title-lg"
-                                                    className="hover-text"
-                                                    sx={{
-                                                        transition: "color 0.3s",
+                                    }}
+                                >
+                                    <Stack gap={0.5}>
+                                        <Stack
+                                            direction={"row"}
+                                            justifyContent={"space-between"}
+                                            alignItems={"start"}
+                                        >
+                                            <Stack direction={"row"} gap={2} mr={3}>
+                                                <img
+                                                    src={`${job?.companyLogo}`}
+                                                    alt="Company Logo"
+                                                    style={{
+                                                        width: 64,
+                                                        height: 64,
+                                                        borderRadius: "5px",
                                                     }}
-                                                >
-                                                    <p className="line-clamp-1">
-                                                        {job?.jobTitle}
-                                                    </p>
-                                                </Typography>
-                                                <Typography
-                                                    startDecorator={
-                                                        <BusinessIcon sx={{ fontSize: "medium" }} />
-                                                    }
-                                                    level="body-md"
-                                                >
-                                                    <p className="line-clamp-1 text-sm">
-                                                        {job?.companyName}
-                                                    </p>
-                                                </Typography>
-                                                <Typography level="body-xs">
-                                                    💰&nbsp;&nbsp;{job?.jobSalary}
-                                                </Typography>
+                                                />
+                                                <Stack gap={0.5}>
+                                                    <Typography
+                                                        level="title-lg"
+                                                        className="hover-text"
+                                                        sx={{
+                                                            transition: "color 0.3s",
+                                                        }}
+                                                    >
+                                                        <p className="line-clamp-1">
+                                                            {job?.jobTitle}
+                                                        </p>
+                                                    </Typography>
+                                                    <Typography
+                                                        startDecorator={
+                                                            <BusinessIcon sx={{ fontSize: "medium" }} />
+                                                        }
+                                                        level="body-md"
+                                                    >
+                                                        <p className="line-clamp-1 text-sm">
+                                                            {job?.companyName}
+                                                        </p>
+                                                    </Typography>
+                                                    <Typography level="body-xs">
+                                                        💰&nbsp;&nbsp;{job?.jobSalary}
+                                                    </Typography>
+                                                </Stack>
                                             </Stack>
+                                            <IconButton variant="outlined" onClick={() => handleDeleteSave(job?.jobId)}>
+                                                {bookmarkedJobs.includes(job?.jobId) ? (
+                                                    <BookmarkIcon color="success" />
+                                                ) : (
+                                                    <BookmarkBorderIcon color="success" />
+                                                )}
+                                            </IconButton>
                                         </Stack>
-                                        <IconButton variant="outlined" onClick={() => handleDeleteSave(job?.jobId)}>
-                                            {bookmarkedJobs.includes(job?.jobId) ? (
-                                                <BookmarkIcon color="success" />
-                                            ) : (
-                                                <BookmarkBorderIcon color="success" />
-                                            )}
-                                        </IconButton>
-                                    </Stack>
-                                    <p className="text-gray-700 text-sm line-clamp-2">
-                                        {job?.jobDescription}
-                                    </p>
-                                    <Divider />
-                                    <Stack direction={"row"} justifyContent={"space-between"} mt={1}>
-                                        <Stack direction={"row"} gap={2}>
-                                            {job?.nameSkill.map((skill, index) => (
-                                                <Chip
-                                                    variant="solid"
-                                                    color="primary"
-                                                    size="sm"
-                                                >
-                                                    {skill}
-                                                </Chip>
-                                            ))}
+                                        <p className="text-gray-700 text-sm line-clamp-2">
+                                            {job?.jobDescription}
+                                        </p>
+                                        <Divider />
+                                        <Stack direction={"row"} justifyContent={"space-between"} mt={1}>
+                                            <Stack direction={"row"} gap={2}>
+                                                {job?.nameSkill.map((skill, index) => (
+                                                    <Chip
+                                                        variant="solid"
+                                                        color="primary"
+                                                        size="sm"
+                                                    >
+                                                        {skill}
+                                                    </Chip>
+                                                ))}
+                                            </Stack>
+                                            <Chip variant="plain" color="neutral" size="sm">
+                                                Còn {calculateDaysLeft(job?.jobDeadline)} ngày ứng tuyển
+                                            </Chip>
                                         </Stack>
-                                        <Chip variant="plain" color="neutral" size="sm">
-                                            Còn {calculateDaysLeft(job?.jobDeadline)} ngày ứng tuyển
-                                        </Chip>
                                     </Stack>
-                                </Stack>
-                            </Card>
-                        ))
-                        : (
-                            <div className="flex items-center justify-center h-[200px] w-screen">
-                                <Spin size="large" />
-                            </div>
-                        )}
-                </Box>
-            </Stack>
+                                </Card>
+                            ))
+                            : (
+                                <div className="flex items-center justify-center h-[200px] w-screen">
+                                    <Spin size="large" />
+                                </div>
+                            )}
+                    </Box>
+                </Stack>
+            }
         </Box>
     );
 }
