@@ -120,7 +120,7 @@ const Messenger: React.FC = () => {
             sender: String(userId),
             receiver: String(currentConver?.userId),
             message: 'Đã yêu cầu cuộc gọi video.',
-            sentTime: new Date().toISOString(),
+            sentTime: new Date().toLocaleString(),
             status: Status.VIDEO_CALL_REQUEST,
             direction: 'outgoing',
             position: 'normal',

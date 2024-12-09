@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebRTC Test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"
+            integrity="sha512-iKDtgDyTHjAitUDdLljGhenhPwrbBfqTKWO1mkhSFH3A7blITC9MhYon6SjnMhp4o0rADGw9yAC6EW4t5a4K3g=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"
+            integrity="sha512-1QvjE7BtotQjkq8PxLeF6P46gEpBRXuskzIVgjFpekzFVF4yjRgrQvTG1MTOJ3yQgvTteKAcO7DSZI92+u/yZw=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+<style>
+    body, html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+        background-color: black;
+        font-family: Arial, sans-serif;
+    }
+
+    /* Fullscreen remote video */
+    #remoteVideo {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    /* Smaller local video in the bottom-right corner */
+    #localVideo {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        width: 200px;
+        height: 150px;
+        border: 2px solid white;
+        background-color: black;
+        object-fit: cover;
+        z-index: 1;
+    }
+
+    /* Control buttons container */
+    .call-controls {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 15px;
+        z-index: 2;
+    }
+
+    /* Button styles */
+    .control-btn {
+        background-color: rgba(255,255,255,0.2);
+        border: none;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .control-btn:hover {
+        background-color: rgba(255,255,255,0.4);
+    }
+
+    .control-btn.active {
+        background-color: #4CAF50;
+    }
+
+    .control-btn.inactive {
+        background-color: #ff4444;
+    }
+
+    .control-btn svg {
+        width: 24px;
+        height: 24px;
+        fill: white;
+    }
+
+    #endCallBtn {
+        background-color: #ff4444;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 25px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background-color 0.3s ease;
+    }
+
+    #endCallBtn:hover {
+        background-color: #ff1111;
+    }
+
+    #shareScreenBtn.active {
+        background-color: #2196F3; /* Blue background when active */
+    }
+
+    .control-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+</style>
+
+<video id="localVideo" autoplay muted></video>
+<video id="remoteVideo" autoplay></video>
+
+<div class="call-controls">
+    <button id="micToggleBtn" class="control-btn active">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+            <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+        </svg>
+    </button>
+    <button id="camToggleBtn" class="control-btn active">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M15 8v8H5V8h10m1-2H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4V7c0-.55-.45-1-1-1z"/>
+        </svg>
+    </button>
+    <!-- Add this button to your call-controls div -->
+    <button id="shareScreenBtn" class="control-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4v2h8v-2h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H4V4h16v12z"/>
+            <path d="M10 12l5 3-5 3z"/>
+        </svg>
+    </button>
+    <button id="endCallBtn">End Call</button>
+</div>
+
+<script th:inline="javascript">
+    let fromUser = /*[[${fromUser}]]*/ 'defaultUser';
+    let toUser = /*[[${toUser}]]*/ 'defaultFriend';
+    let isCallee = /*[[${isCallee}]]*/ '0';
+</script>
+<script>
+    const elements = {
+        localVideo: document.getElementById("localVideo"),
+        remoteVideo: document.getElementById("remoteVideo"),
+        micToggleBtn: document.getElementById("micToggleBtn"),
+        camToggleBtn: document.getElementById("camToggleBtn"),
+        endCallBtn: document.getElementById("endCallBtn"),
+        shareScreenBtn: document.getElementById("shareScreenBtn")
+    };
+
+    let localStream, localPeer, stompClient, originalStream;
+    let isMicActive = true;
+    let isCamActive = true;
+    let isScreenSharing = false;
+
+    const mediaState = {
+        originalCameraStream: null,
+        currentStream: null,
+        screenStream: null
+    };
+
+    const url = 'http://192.168.33.200:8080'
+
+    const iceServers = {iceServers: [{urls: "stun:stun.l.google.com:19302"}]};
+
+    async function initLocalPeer() {
+        localPeer = new RTCPeerConnection(iceServers);
+        const stream = await navigator.mediaDevices.getUserMedia({video: true, audio: true});
+        localStream = stream;
+        elements.localVideo.srcObject = stream;
+        console.log("Local stream setup complete!!!");
+        connectToWebSocket();
+
+        // Add event listeners for control buttons
+        elements.micToggleBtn.addEventListener('click', toggleMicrophone);
+        elements.camToggleBtn.addEventListener('click', toggleCamera);
+        elements.endCallBtn.addEventListener('click', endCall);
+        elements.shareScreenBtn.addEventListener('click', toggleScreenSharing);
+
+        // Additional error handling for screen sharing
+        window.addEventListener('unhandledrejection', (event) => {
+            if (event.reason.name === 'NotAllowedError') {
+                stopScreenSharing();
+            }
+        });
+    }
+
+    async function toggleScreenSharing() {
+        // Prevent screen sharing if camera is off
+        if (!isCamActive) {
+            alert("Please turn on camera before screen sharing.");
+            return;
+        }
+
+        if (!isScreenSharing) {
+            try {
+                // Capture screen stream
+                const screenStream = await navigator.mediaDevices.getDisplayMedia({
+                    video: true,
+                    audio: false
+                });
+
+                // Store the original camera stream if not already stored
+                if (!mediaState.originalCameraStream) {
+                    mediaState.originalCameraStream = localStream;
+                }
+
+                // Store screen stream
+                mediaState.screenStream = screenStream;
+
+                // Replace video track in peer connection
+                replaceVideoTrack(screenStream.getVideoTracks()[0]);
+
+                // Update local video display
+                elements.localVideo.srcObject = screenStream;
+                localStream = screenStream;
+
+                // Update UI
+                elements.shareScreenBtn.classList.add('active');
+                elements.camToggleBtn.disabled = true;
+                isScreenSharing = true;
+
+                // Handle screen sharing ending
+                screenStream.getVideoTracks()[0].onended = stopScreenSharing;
+
+            } catch (err) {
+                console.error("Screen sharing error:", err);
+
+                // Reset if user cancels
+                if (err.name === 'NotAllowedError') {
+                    return;
+                }
+            }
+        } else {
+            stopScreenSharing();
+        }
+    }
+
+    function stopScreenSharing() {
+        if (isScreenSharing && mediaState.originalCameraStream) {
+            // Restore original camera stream
+            replaceVideoTrack(mediaState.originalCameraStream.getVideoTracks()[0]);
+
+            // Update local video back to camera stream
+            elements.localVideo.srcObject = mediaState.originalCameraStream;
+            localStream = mediaState.originalCameraStream;
+
+            // Clean up
+            if (mediaState.screenStream) {
+                mediaState.screenStream.getTracks().forEach(track => track.stop());
+                mediaState.screenStream = null;
+            }
+
+            // Reset UI
+            elements.shareScreenBtn.classList.remove('active');
+            elements.camToggleBtn.disabled = false;
+            isScreenSharing = false;
+        }
+    }
+
+    function replaceVideoTrack(newVideoTrack) {
+        // Find video sender in peer connection
+        const sender = localPeer.getSenders().find(s => s.track.kind === 'video');
+
+        if (sender) {
+            sender.replaceTrack(newVideoTrack).then(r => {});
+        }
+    }
+
+    function toggleMicrophone() {
+        isMicActive = !isMicActive;
+        const audioTracks = localStream.getAudioTracks();
+
+        audioTracks.forEach(track => {
+            track.enabled = isMicActive;
+        });
+
+        // Update button style
+        if (isMicActive) {
+            elements.micToggleBtn.classList.remove('inactive');
+            elements.micToggleBtn.classList.add('active');
+        } else {
+            elements.micToggleBtn.classList.remove('active');
+            elements.micToggleBtn.classList.add('inactive');
+        }
+    }
+
+    function toggleCamera() {
+        // Prevent camera toggle during screen sharing
+        if (isScreenSharing) {
+            alert("Please stop screen sharing first.");
+            return;
+        }
+
+        isCamActive = !isCamActive;
+        const videoTracks = localStream.getVideoTracks();
+
+        videoTracks.forEach(track => {
+            track.enabled = isCamActive;
+        });
+
+        // Update button style and video visibility
+        if (isCamActive) {
+            elements.camToggleBtn.classList.remove('inactive');
+            elements.camToggleBtn.classList.add('active');
+            elements.localVideo.style.display = 'block';
+        } else {
+            elements.camToggleBtn.classList.remove('active');
+            elements.camToggleBtn.classList.add('inactive');
+            elements.localVideo.style.display = 'none';
+        }
+    }
+
+    function endCall(isReceiver) {
+        // Close the peer connection
+        if (localPeer) {
+            localPeer.close();
+        }
+
+        if (isScreenSharing) {
+            stopScreenSharing();
+        }
+
+        // Stop all tracks in the local stream
+        if (localStream) {
+            localStream.getTracks().forEach(track => track.stop());
+        }
+
+        // Send end call signal to the other user (optional)
+        if (stompClient && fromUser && toUser && !(isReceiver === true)) {
+            console.log("SENDING END CALL SIGNAL......");
+            stompClient.send("/app/end-call", {}, JSON.stringify({
+                fromUser: fromUser,
+                toUser: toUser
+            }));
+        }
+
+        // Disconnect from WebSocket
+        if (stompClient) {
+            stompClient.disconnect();
+        }
+
+        // Close the window or redirect
+        window.close(); // or window.location.href = 'some_page.html';
+    }
+
+    function connectToWebSocket() {
+        console.log("Connecting to websocket:", url);
+        const socket = new SockJS(url + '/ws');
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, frame => {
+            console.log("Connected to WebSocket:", isCallee);
+
+            stompClient.subscribe(`/user/${fromUser}/topic/end-call`, message => {
+                alert('Cuộc gọi đã được tắt bởi người khác.');
+                endCall(true);
+            });
+
+            stompClient.subscribe(`/user/${fromUser}/topic/call`, message => {
+                toUser = message.body;
+
+                localPeer.ontrack = event => {
+                    elements.remoteVideo.srcObject = event.streams[0];
+                };
+
+                localPeer.onicecandidate = event => {
+                    if (event.candidate) {
+                        const candidate = {
+                            type: "candidate",
+                            label: event.candidate.sdpMLineIndex,
+                            id: event.candidate.candidate
+                        };
+                        stompClient.send("/app/candidate", {}, JSON.stringify({
+                            toUser: toUser,
+                            fromUser: fromUser,
+                            candidate: candidate
+                        }));
+                    }
+                };
+
+                localStream.getTracks().forEach(track => localPeer.addTrack(track, localStream));
+
+                localPeer.createOffer().then(description => {
+                    localPeer.setLocalDescription(description);
+                    stompClient.send("/app/offer", {}, JSON.stringify({
+                        toUser: toUser,
+                        fromUser: fromUser,
+                        offer: description
+                    }));
+                });
+            });
+
+            stompClient.subscribe(`/user/${fromUser}/topic/offer`, message => {
+                const offer = JSON.parse(message.body).offer;
+
+                localPeer.ontrack = (event) => {
+                    elements.remoteVideo.srcObject = event.streams[0]
+                }
+
+                localPeer.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        var candidate = {
+                            type: "candidate",
+                            label: event.candidate.sdpMLineIndex,
+                            id: event.candidate.candidate,
+                        }
+                        console.log("Sending Candidate")
+                        console.log(candidate)
+                        stompClient.send("/app/candidate", {}, JSON.stringify({
+                            "toUser": toUser,
+                            "fromUser": fromUser,
+                            "candidate": candidate
+                        }))
+                    }
+                }
+
+                localStream.getTracks().forEach(track => {
+                    localPeer.addTrack(track, localStream);
+                });
+
+                localPeer.setRemoteDescription(new RTCSessionDescription(offer));
+
+                localPeer.createAnswer().then(description => {
+                    localPeer.setLocalDescription(description);
+                    console.log("Setting Local Description", description);
+                    stompClient.send("/app/answer", {}, JSON.stringify({
+                        toUser: toUser,
+                        fromUser: fromUser,
+                        answer: description
+                    }));
+                });
+            });
+
+            stompClient.subscribe(`/user/${fromUser}/topic/answer`, message => {
+                const offer = JSON.parse(message.body).answer;
+                localPeer.setRemoteDescription(new RTCSessionDescription(offer));
+            });
+
+            stompClient.subscribe(`/user/${fromUser}/topic/candidate`, message => {
+                const offer = JSON.parse(message.body).candidate;
+                const iceCandidate = new RTCIceCandidate({
+                    sdpMLineIndex: offer.label,
+                    candidate: offer.id
+                });
+                localPeer.addIceCandidate(iceCandidate);
+            });
+
+            stompClient.subscribe(`/user/${fromUser}/topic/accept`, message => {
+                const status = JSON.parse(message.body).status;
+                if (status === 'VIDEO_CALL_RESPONSE_ACCEPT') {
+                    console.log("====ACCEPT READY SIGNAL====")
+                    initiateCall();
+                } else {
+                    alert("Người nhận từ chối nhận cuộc gọi. Đóng cửa sổ?");
+                    endCall(true);
+                }
+            });
+
+            if (isCallee == '1') {
+                const acceptPayload = {
+                    fromUser: fromUser,
+                    toUser: toUser,
+                    status: 'VIDEO_CALL_RESPONSE_ACCEPT',
+                };
+                stompClient.send("/app/accept", {}, JSON.stringify(acceptPayload));
+                console.log('SENDING READY SIGNAL..........');
+            }
+        });
+    }
+
+    function initiateCall() {
+        console.log("Sending call request from", fromUser, "to", toUser);
+        stompClient.send("/app/call", {}, JSON.stringify({
+            callTo: toUser,
+            callFrom: fromUser
+        }));
+    }
+
+    // elements.callBtn.addEventListener('click', initiateCall);
+
+    initLocalPeer();
+</script>
+
+<script>
+    // Mic Toggle Button
+    const micToggleBtn = document.getElementById('micToggleBtn');
+    let isMicActive = true;
+
+    micToggleBtn.addEventListener('click', function() {
+        isMicActive = !isMicActive;
+
+        // Update button style
+        if (isMicActive) {
+            micToggleBtn.classList.remove('inactive');
+            micToggleBtn.classList.add('active');
+        } else {
+            micToggleBtn.classList.remove('active');
+            micToggleBtn.classList.add('inactive');
+        }
+
+        // updateMicrophoneState(isMicActive);
+    });
+
+    const camToggleBtn = document.getElementById('camToggleBtn');
+    let isCamActive = true;
+
+    camToggleBtn.addEventListener('click', function() {
+        isCamActive = !isCamActive;
+
+        if (isCamActive) {
+            camToggleBtn.classList.remove('inactive');
+            camToggleBtn.classList.add('active');
+            document.getElementById('localVideo').style.display = 'block';
+        } else {
+            camToggleBtn.classList.remove('active');
+            camToggleBtn.classList.add('inactive');
+            document.getElementById('localVideo').style.display = 'none';
+        }
+
+        // You'll need to implement actual camera toggling in your WebRTC logic
+        // For example:
+        // updateCameraState(isCamActive);
+    });
+
+    // End Call Button
+    document.getElementById('endCallBtn').addEventListener('click', function() {
+
+    });
+</script>
+</body>
+</html>

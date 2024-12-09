@@ -11,7 +11,8 @@ import Messenger, { ChatMessage, Status, VIDEO_CALL_RESPONSE } from "./Messenger
 import { Client, Message as MessageStompjs, over } from 'stompjs';
 import { addMessage, closeMessenger, setToCaller } from "../../redux/slice/messageSlice";
 import { applicationLists } from '../../services/applicationApi';
-import { Empty, Spin } from "antd";
+import VideoCallRequest from "./VideoCallRequest";
+import { Empty, Modal, Spin } from "antd";
 
 export default function Chat() {
     const [isLoading, setIsLoading] = useState(true);
@@ -67,6 +68,14 @@ export default function Chat() {
         }
     }, [userId]);
 
+    const handleRefuseCall = () => {
+        const acceptPayload = {
+            fromUser: userId,
+            toUser: toCaller?.id,
+            status: VIDEO_CALL_RESPONSE.REFUSE,
+        };
+        websocketService.sendMessage(acceptPayload, '/app/accept');
+    };
 
     useEffect(() => {
         websocketService.subscribe('messenger', onReceive);
@@ -184,6 +193,19 @@ export default function Chat() {
                     )}
                 </Stack>
             </Stack>
+            <Modal
+                open={showCallRqModal}
+                closable={false}
+                footer={null}
+            >
+                <VideoCallRequest
+                    fromUser={toCaller?.id}
+                    toUser={userId + ''}
+                    fromUserFullname={toCaller?.fullname}
+                    setShowCallRequestModal={setShowCallRqModal}
+                    handleRefuseCall={handleRefuseCall}
+                />
+            </Modal>
         </Stack>
     )
 }
