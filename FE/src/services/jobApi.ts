@@ -58,6 +58,17 @@ export const jobDelete = createAsyncThunk<any, number>(
     }
 );
 
+export const jobRecommend = createAsyncThunk<any>(
+    'job/recommend',
+    async (id) => {
+        return axiosIns.get(`/job-recommend`, {
+            includeToken: true
+        })
+            .then(response => { return { response: response.data } })
+            .catch(error => { });
+    }
+);
+
 export const getFullJobById = async (id: number) => {
     return axiosIns.get(`/job/full-job/${id}`)
         .then(response => response.data)

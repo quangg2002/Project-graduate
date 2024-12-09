@@ -2,6 +2,7 @@ package com.example.bejob.service;
 
 import com.example.bejob.dto.JobRecommendDto;
 import com.example.bejob.dto.UserRecommendDto;
+import com.example.bejob.dto.response.JobRecommendResponse;
 import com.example.bejob.entity.*;
 import com.example.bejob.enums.StatusCodeEnum;
 import com.example.bejob.model.ResponseBuilder;
@@ -28,30 +29,48 @@ public class CosineSimilarityService {
     private final JobRepository jobRepository;
     private final PositionRepository positionRepository;
     private final JobSkillRepository jobSkillRepository;
+    private final CompanyRepository companyRepository;
+    private final EmployerRepository employerRepository;
 
     // Hàm tính điểm tương đồng giữa User và Job
     public double calculateSimilarity(UserRecommendDto user, JobRecommendDto job) {
-        String userDescription = user.getPositionWorkEmployee() + " " +
-                user.getSkillsEmployee().stream().map(Skill::getName).collect(Collectors.joining(" "));
-        System.out.println("userDescription" + userDescription);
-        String jobDescription = job.getPositionWorkJob() + " " +
-                job.getSkillsJob().stream().map(Skill::getName).collect(Collectors.joining(" "));
-        System.out.println("jobDescription" + jobDescription);
-        return cosineSimilarity(tokenize(userDescription), tokenize(jobDescription));
+        List<String> userTokens = tokenizePositionAndSkills(
+                user.getPositionWorkEmployee(),
+                user.getSkillsEmployee()
+        );
+        System.out.println("userTokens: " + userTokens);
+        List<String> jobTokens = tokenizePositionAndSkills(
+                job.getPositionWorkJob(),
+                job.getSkillsJob()
+        );
+
+        System.out.println("jobTokens: " + jobTokens);
+
+        return cosineSimilarity(tokenize(userTokens), tokenize(jobTokens));
+    }
+
+    // Kết hợp các từ từ positionWork và skill.getName()
+    private List<String> tokenizePositionAndSkills(String position, List<Skill> skills) {
+        List<String> tokens = new ArrayList<>();
+        tokens.addAll(Arrays.asList(position.split("\\s+")));
+        tokens.addAll(skills.stream().map(Skill::getName).collect(Collectors.toList()));
+        return tokens;
     }
 
     // Tính Cosine Similarity giữa hai vector
-    private double cosineSimilarity(Map<CharSequence, Integer> vectorA, Map<CharSequence, Integer> vectorB) {
-        Set<CharSequence> allKeys = new HashSet<>(vectorA.keySet());
+    private double cosineSimilarity(Map<String, Integer> vectorA, Map<String, Integer> vectorB) {
+        Set<String> allKeys = new HashSet<>(vectorA.keySet());
         allKeys.addAll(vectorB.keySet());
 
         double dotProduct = 0.0;
         double magnitudeA = 0.0;
         double magnitudeB = 0.0;
 
-        for (CharSequence key : allKeys) {
+        for (String key : allKeys) {
             int valueA = vectorA.getOrDefault(key, 0);
+            System.out.println("valueA: " + valueA);
             int valueB = vectorB.getOrDefault(key, 0);
+            System.out.println("valueB: " + valueB);
 
             dotProduct += valueA * valueB;
             magnitudeA += Math.pow(valueA, 2);
@@ -61,17 +80,17 @@ public class CosineSimilarityService {
         return dotProduct / (Math.sqrt(magnitudeA) * Math.sqrt(magnitudeB));
     }
 
-    // Tokenize văn bản thành vector tần suất từ
-    private Map<CharSequence, Integer> tokenize(String text) {
-        Map<CharSequence, Integer> frequencyMap = new HashMap<>();
-        for (String word : text.toLowerCase().split("\\s+")) {
-            frequencyMap.put(word, frequencyMap.getOrDefault(word, 0) + 1);
+    // Chuyển danh sách từ thành vector tần suất từ
+    private Map<String, Integer> tokenize(List<String> tokens) {
+        Map<String, Integer> frequencyMap = new HashMap<>();
+        for (String word : tokens) {
+            frequencyMap.put(word.toLowerCase(), frequencyMap.getOrDefault(word.toLowerCase(), 0) + 1);
         }
-        System.out.println("frequencyMap" + frequencyMap);
+        System.out.println("frequencyMap: " + frequencyMap);
         return frequencyMap;
     }
 
-    // Gợi ý danh sách công việc
+    // Gợi ý danh sách công việc và trả về tối đa 5 công việc
     public List<JobRecommendDto> recommendJobs(UserRecommendDto user, List<JobRecommendDto> jobs) {
         return jobs.stream()
                 .map(job -> {
@@ -79,8 +98,8 @@ public class CosineSimilarityService {
                     job.setSimilarity(similarity);
                     return job;
                 })
-                .sorted((a, b) -> Double.compare(b.getSimilarity(), a.getSimilarity())) // Sắp xếp theo độ tương đồng
-                .limit(5)
+                .sorted((a, b) -> Double.compare(b.getSimilarity(), a.getSimilarity())) // Sắp xếp theo độ tương đồng giảm dần
+                .limit(4) // Giới hạn 5 công việc cao nhất
                 .collect(Collectors.toList());
     }
 
@@ -141,7 +160,36 @@ public class CosineSimilarityService {
         return jobRecommendDtos;
     }
 
-    public List<JobRecommendDto> recommendJob(){
-        return recommendJobs(userRecommend(), jobRecommendDto());
+    public List<JobRecommendResponse> jobRecommendResponses(){
+        List<JobRecommendDto> jobRecommendDtos = recommendJobs(userRecommend(), jobRecommendDto());
+
+        List<JobRecommendResponse> jobRecommendResponses = jobRecommendDtos.stream()
+                .map(jobRecommendDto -> {
+                    Job job = jobRepository.findById(jobRecommendDto.getIdJob()).orElse(null);
+
+                    Employer employer = employerRepository.findById(job.getEmployer()).orElse(null);
+
+                    Company company = companyRepository.findById(employer.getCompany()).orElse(null);
+
+                    JobRecommendResponse jobRecommendResponse = JobRecommendResponse.builder()
+                            .jobId(job.getId())
+                            .companyId(company.getId())
+                            .companyLogo(company.getLogo())
+                            .companyName(company.getCompanyName())
+                            .jobDeadline(job.getDeadline())
+                            .jobSalary(job.getSalary())
+                            .jobDescription(job.getDescription())
+                            .jobTitle(job.getTitle())
+                            .nameSkill(jobRecommendDto.getSkillsJob().stream()
+                                    .map(Skill::getName)
+                                    .collect(Collectors.toList())
+                            )
+                            .similarity(jobRecommendDto.getSimilarity())
+                            .build();
+                    return jobRecommendResponse;
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        return jobRecommendResponses;
     }
 }

@@ -47,8 +47,8 @@ import {
     educationList,
 } from "../../services/autofillApi";
 
-import { jobSearch } from "../../services/jobApi";
-import { Spin } from "antd";
+import { jobSearch, jobRecommend } from "../../services/jobApi";
+import { Empty, Spin } from "antd";
 
 
 
@@ -90,6 +90,19 @@ export interface Job {
     contractType: string;
 }
 
+interface JobRecommend {
+    jobId: number;
+    jobTitle: string;
+    companyName: string;
+    companyLogo: string;
+    jobDescription: string;
+    companyId: number;
+    jobDeadline: string; 
+    nameSkill: string[]; 
+    jobSalary: string;
+    similarity: number; 
+}
+
 export default function Findjob() {
     const [isExpanded, setIsExpanded] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -106,6 +119,8 @@ export default function Findjob() {
     const dispatch = useAppDispatch();
 
     const [jobs, setJobs] = useState<Job[]>([]);
+    const [jobRecommends, setJobRecommends] = useState<JobRecommend[]>([])
+
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [selectedCity, setSelectedCity] = useState<number>();
 
@@ -129,23 +144,23 @@ export default function Findjob() {
 
     const handleSearch = async () => {
         try {
-          const result = await dispatch(jobSearch({
-            searchQuery,
-            ...(selectedCity && { city: selectedCity }),
-            industryIds: selectedJobFieldIds,
-            positionIds: selectedJobLevelIds,
-            experienceIds: selectedExperienceIds,
-            educationIds: selectedEducationIds,
-            jobTypeIds: selectedJobTypeIds,
-            contractTypeIds: selectedContractTypeIds,
-          })).unwrap();
-          if (result && result.response && result.response.success) {
-            setJobs(result.response.data);
-          }
+            const result = await dispatch(jobSearch({
+                searchQuery,
+                ...(selectedCity && { city: selectedCity }),
+                industryIds: selectedJobFieldIds,
+                positionIds: selectedJobLevelIds,
+                experienceIds: selectedExperienceIds,
+                educationIds: selectedEducationIds,
+                jobTypeIds: selectedJobTypeIds,
+                contractTypeIds: selectedContractTypeIds,
+            })).unwrap();
+            if (result && result.response && result.response.success) {
+                setJobs(result.response.data);
+            }
         } catch (error) {
-          console.error('Error fetching jobs:', error);
+            console.error('Error fetching jobs:', error);
         }
-      }
+    }
 
     useEffect(() => {
         const fetchJobs = async () => {
@@ -276,10 +291,34 @@ export default function Findjob() {
         }
     };
 
-    return (
-        <Box>
-            <Header />
+    useEffect(() => {
+        const fetchJobs = async () => {
+            setIsLoading(true)
+            try {
+                dispatch(startLoading());
+                const result = await dispatch(jobRecommend())
 
+                if (jobRecommend.fulfilled.match(result)) {
+                    const response = result.payload.response;
+
+                    if (response) setJobRecommends(response)
+                }
+
+            } catch (error) {
+                console.error('Error fetching jobs:', error);
+            } finally {
+                dispatch(stopLoading());
+                console.log("jobRecommends" + jobRecommends)
+                setIsLoading(false)
+            }
+        };
+
+        fetchJobs();
+    }, [dispatch]);
+
+    return (
+        <Box bgcolor={'#f4f5f5'}>
+            <Header />
             <Stack
                 sx={{ background: "linear-gradient(11deg,#A7D676,#85CBCC)" }}
                 py={3}
@@ -579,7 +618,127 @@ export default function Findjob() {
                     }}
                 >
                     {!isLoading ?
-                        jobs.map((job, index) => (
+                        jobs.length !== 0 ?
+                            jobs.map((job, index) => (
+                                <Card
+                                    key={index}
+                                    variant="outlined"
+                                    sx={{
+                                        transition: "border 0.3s, box-shadow 0.3s",
+                                        "&:hover": {
+                                            borderColor: "#00B14F",
+                                            boxShadow: "0 1px 3px #00B14F",
+                                            "& .hover-text": {
+                                                color: "#00B14F",
+                                            },
+                                        },
+                                    }}
+                                >
+                                    <Stack gap={0.5}>
+                                        <Stack
+                                            direction={"row"}
+                                            justifyContent={"space-between"}
+                                            alignItems={"start"}
+                                        >
+                                            <Stack direction={"row"} gap={2} mr={3}>
+                                                <img
+                                                    src={`${job?.companyLogo}`}
+                                                    alt="Company Logo"
+                                                    style={{
+                                                        width: 64,
+                                                        height: 64,
+                                                        borderRadius: "5px",
+                                                    }}
+                                                />
+                                                <Stack gap={0.5}>
+                                                    <Typography
+                                                        level="title-lg"
+                                                        className="hover-text"
+                                                        sx={{
+                                                            transition: "color 0.3s",
+                                                        }}
+                                                    >
+                                                        <p className="line-clamp-1">
+                                                            {job?.title}
+                                                        </p>
+                                                    </Typography>
+                                                    <Typography
+                                                        startDecorator={
+                                                            <BusinessIcon sx={{ fontSize: "medium" }} />
+                                                        }
+                                                        level="body-md"
+                                                    >
+                                                        <p className="line-clamp-1 text-sm">
+                                                            {job?.companyName}
+                                                        </p>
+                                                    </Typography>
+                                                    <Typography level="body-xs">
+                                                        💰&nbsp;&nbsp;{job?.salary}
+                                                    </Typography>
+                                                </Stack>
+                                            </Stack>
+                                            <IconButton variant="outlined" onClick={() => handleDeleteSave(job?.id)}>
+                                                {bookmarkedJobs.includes(job?.id) ? (
+                                                    <BookmarkIcon color="success" />
+                                                ) : (
+                                                    <BookmarkBorderIcon color="success" />
+                                                )}
+                                            </IconButton>
+                                        </Stack>
+                                        <p className="text-gray-700 text-sm line-clamp-2">
+                                            {job?.description}
+                                        </p>
+                                        <Divider />
+                                        <Stack direction={"row"} justifyContent={"space-between"} mt={1}>
+                                            <Chip
+                                                variant="plain"
+                                            // color="primary"
+                                            // size="sm"
+                                            >
+                                                📍 {job?.city}
+                                            </Chip>
+                                            <Chip variant="plain" color="neutral" size="sm">
+                                                Còn {calculateDaysLeft(job?.deadline)} ngày ứng tuyển
+                                            </Chip>
+                                        </Stack>
+                                    </Stack>
+                                </Card>
+                            ))
+                            :
+                            <div className="flex items-center justify-center h-[200px] w-screen">
+                                <Empty
+                                    description="Không có công việc phù hợp"
+                                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                />
+                            </div>
+                        :
+                        <div className="flex items-center justify-center h-[200px] w-screen">
+                            <Spin size="large" />
+                        </div>
+                    }
+                </Box>
+            </Stack>
+
+            <Stack my={4} mx={5} gap={4}>
+                <Stack>
+                    <Typography level="h4">Gợi ý việc làm phù hợp</Typography>
+                    <Typography level="body-md">
+                        Gợi ý việc làm dựa trên nghề nghiệp và kĩ năng của bạn
+                    </Typography>
+                </Stack>
+                <Box
+                    sx={{
+                        display: "grid",
+                        gridTemplateColumns: {
+                            xs: "1fr",
+                            sm: "1fr 1fr",
+                            md: "1fr 1fr",
+                        },
+                        gap: 3,
+                    }}
+                >
+                    {!isLoading ?
+                        jobRecommends.map((job, index) => (
                             <Card
                                 key={index}
                                 variant="outlined"
@@ -619,7 +778,7 @@ export default function Findjob() {
                                                     }}
                                                 >
                                                     <p className="line-clamp-1">
-                                                        {job?.title}
+                                                        {job?.jobTitle}
                                                     </p>
                                                 </Typography>
                                                 <Typography
@@ -633,12 +792,12 @@ export default function Findjob() {
                                                     </p>
                                                 </Typography>
                                                 <Typography level="body-xs">
-                                                    💰&nbsp;&nbsp;{job?.salary}
+                                                    💰&nbsp;&nbsp;{job?.jobSalary}
                                                 </Typography>
                                             </Stack>
                                         </Stack>
-                                        <IconButton variant="outlined" onClick={() => handleDeleteSave(job?.id)}>
-                                            {bookmarkedJobs.includes(job?.id) ? (
+                                        <IconButton variant="outlined" onClick={() => handleDeleteSave(job?.jobId)}>
+                                            {bookmarkedJobs.includes(job?.jobId) ? (
                                                 <BookmarkIcon color="success" />
                                             ) : (
                                                 <BookmarkBorderIcon color="success" />
@@ -646,29 +805,33 @@ export default function Findjob() {
                                         </IconButton>
                                     </Stack>
                                     <p className="text-gray-700 text-sm line-clamp-2">
-                                        {job?.companyDescription}
+                                        {job?.jobDescription}
                                     </p>
                                     <Divider />
                                     <Stack direction={"row"} justifyContent={"space-between"} mt={1}>
-                                        <Chip
-                                            variant="plain"
-                                        // color="primary"
-                                        // size="sm"
-                                        >
-                                            📍 {job?.city}
-                                        </Chip>
+                                        <Stack direction={"row"} gap={2}>
+                                            {job?.nameSkill.map((skill, index) => (
+                                                <Chip
+                                                    variant="solid"
+                                                    color="primary"
+                                                    size="sm"
+                                                >
+                                                    {skill}
+                                                </Chip>
+                                            ))}
+                                        </Stack>
                                         <Chip variant="plain" color="neutral" size="sm">
-                                            Còn {calculateDaysLeft(job?.deadline)} ngày ứng tuyển
+                                            Còn {calculateDaysLeft(job?.jobDeadline)} ngày ứng tuyển
                                         </Chip>
                                     </Stack>
                                 </Stack>
                             </Card>
                         ))
-                        :
-                        <div className="flex items-center justify-center h-[200px] w-screen">
-                            <Spin size="large" />
-                        </div>
-                    }
+                        : (
+                            <div className="flex items-center justify-center h-[200px] w-screen">
+                                <Spin size="large" />
+                            </div>
+                        )}
                 </Box>
             </Stack>
         </Box>

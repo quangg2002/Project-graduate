@@ -1,6 +1,7 @@
 package com.example.bejob.controller;
 
 import com.example.bejob.dto.JobRecommendDto;
+import com.example.bejob.dto.response.JobRecommendResponse;
 import com.example.bejob.service.CosineSimilarityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,7 +18,7 @@ public class JobRecommendationController {
     private final CosineSimilarityService cosineSimilarityService;
 
     @GetMapping
-    public List<JobRecommendDto> recommendJobs() {
-        return cosineSimilarityService.recommendJob();
+    public List<JobRecommendResponse> recommendJobs() {
+        return cosineSimilarityService.jobRecommendResponses();
     }
 }
