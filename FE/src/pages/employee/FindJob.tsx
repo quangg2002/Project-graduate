@@ -12,6 +12,7 @@ import {
     Select,
     selectClasses,
     Stack,
+    Tooltip,
     Typography,
 } from "@mui/joy";
 import citis from "../../utils/citis.json";
@@ -73,6 +74,7 @@ interface Option {
 }
 
 export interface Job {
+    companyId: string;
     id: number;
     title: string;
     location: string;
@@ -654,27 +656,35 @@ export default function Findjob() {
                                                     }}
                                                 />
                                                 <Stack gap={0.5}>
-                                                    <Typography
-                                                        level="title-lg"
-                                                        className="hover-text"
-                                                        sx={{
-                                                            transition: "color 0.3s",
-                                                        }}
-                                                    >
-                                                        <p className="line-clamp-1">
-                                                            {job?.title}
-                                                        </p>
-                                                    </Typography>
-                                                    <Typography
-                                                        startDecorator={
-                                                            <BusinessIcon sx={{ fontSize: "medium" }} />
-                                                        }
-                                                        level="body-md"
-                                                    >
-                                                        <p className="line-clamp-1 text-sm">
-                                                            {job?.companyName}
-                                                        </p>
-                                                    </Typography>
+                                                    <Tooltip title={job?.title} placement="top" arrow>
+                                                        <Link href={`/job-details/${job.id}`} underline="none">
+                                                            <Typography
+                                                                level="title-lg"
+                                                                className="hover-text"
+                                                                sx={{
+                                                                    transition: "color 0.3s",
+                                                                }}
+                                                            >
+                                                                <p className="line-clamp-1">
+                                                                    {job?.title}
+                                                                </p>
+                                                            </Typography>
+                                                        </Link>
+                                                    </Tooltip>
+                                                    <Tooltip title={job?.companyName} placement="top" arrow>
+                                                        <Typography
+                                                            startDecorator={
+                                                                <BusinessIcon sx={{ fontSize: "medium" }} />
+                                                            }
+                                                            level="body-md"
+                                                        >
+                                                            <Link href={`/company-details/${job.companyId}`}>
+                                                                <p className="line-clamp-1 text-sm">
+                                                                    {job?.companyName}
+                                                                </p>
+                                                            </Link>
+                                                        </Typography>
+                                                    </Tooltip>
                                                     <Typography level="body-xs">
                                                         💰&nbsp;&nbsp;{job?.salary}
                                                     </Typography>
@@ -773,27 +783,35 @@ export default function Findjob() {
                                                     }}
                                                 />
                                                 <Stack gap={0.5}>
-                                                    <Typography
-                                                        level="title-lg"
-                                                        className="hover-text"
-                                                        sx={{
-                                                            transition: "color 0.3s",
-                                                        }}
-                                                    >
-                                                        <p className="line-clamp-1">
-                                                            {job?.jobTitle}
-                                                        </p>
-                                                    </Typography>
-                                                    <Typography
-                                                        startDecorator={
-                                                            <BusinessIcon sx={{ fontSize: "medium" }} />
-                                                        }
-                                                        level="body-md"
-                                                    >
-                                                        <p className="line-clamp-1 text-sm">
-                                                            {job?.companyName}
-                                                        </p>
-                                                    </Typography>
+                                                    <Tooltip title={job?.jobTitle} placement="top" arrow>
+                                                        <Link href={`/job-details/${job.jobId}`} underline="none">
+                                                            <Typography
+                                                                level="title-lg"
+                                                                className="hover-text"
+                                                                sx={{
+                                                                    transition: "color 0.3s",
+                                                                }}
+                                                            >
+                                                                <p className="line-clamp-1">
+                                                                    {job?.jobTitle}
+                                                                </p>
+                                                            </Typography>
+                                                        </Link>
+                                                    </Tooltip>
+                                                    <Tooltip title={job?.companyName} placement="top" arrow>
+                                                        <Typography
+                                                            startDecorator={
+                                                                <BusinessIcon sx={{ fontSize: "medium" }} />
+                                                            }
+                                                            level="body-md"
+                                                        >
+                                                            <Link href={`/company-details/${job.companyId}`}>
+                                                                <p className="line-clamp-1 text-sm">
+                                                                    {job?.companyName}
+                                                                </p>
+                                                            </Link>
+                                                        </Typography>
+                                                    </Tooltip>
                                                     <Typography level="body-xs">
                                                         💰&nbsp;&nbsp;{job?.jobSalary}
                                                     </Typography>

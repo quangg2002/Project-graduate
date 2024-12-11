@@ -415,6 +415,7 @@ public class JobService {
 
                     return JobWithCompanyResponse.builder()
                             .id(jobItem.getId())
+                            .companyId(company.getId())
                             .title(jobItem.getTitle())
                             .location(jobItem.getLocation())
                             .district(districtName)
