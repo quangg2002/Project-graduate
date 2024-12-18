@@ -31,6 +31,7 @@ public class CosineSimilarityService {
     private final JobSkillRepository jobSkillRepository;
     private final CompanyRepository companyRepository;
     private final EmployerRepository employerRepository;
+    private final CityRepository cityRepository;
 
     // Hàm tính điểm tương đồng giữa User và Job
     public double calculateSimilarity(UserRecommendDto user, JobRecommendDto job) {
@@ -175,6 +176,10 @@ public class CosineSimilarityService {
                             .jobId(job.getId())
                             .companyId(company.getId())
                             .companyLogo(company.getLogo())
+                            .companyCity(cityRepository.findById(company.getCity())
+                                    .map(City::getName)
+                                    .orElse(null)
+                            )
                             .companyName(company.getCompanyName())
                             .jobDeadline(job.getDeadline())
                             .jobSalary(job.getSalary())

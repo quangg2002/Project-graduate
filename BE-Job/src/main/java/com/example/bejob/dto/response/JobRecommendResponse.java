@@ -16,6 +16,7 @@ public class JobRecommendResponse {
     public String jobTitle;
     public String companyName;
     public String companyLogo;
+    public String companyCity;
     public String jobDescription;
     public Long companyId;
     public String jobDeadline;

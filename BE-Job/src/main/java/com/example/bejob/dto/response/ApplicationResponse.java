@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 public class ApplicationResponse {
     private Long id;
     private Long jobId;
+    private Long companyId;
     private String companyName;
     private String companyAvata;
     private String jobTitle;

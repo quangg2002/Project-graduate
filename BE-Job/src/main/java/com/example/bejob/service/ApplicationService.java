@@ -240,6 +240,7 @@ public class ApplicationService {
                         return ApplicationResponse.builder()
                                 .id(application.getId())
                                 .jobId(job.getId())
+                                .companyId(company.getId())
                                 .jobTitle(job.getTitle())
                                 .salary(job.getSalary())
                                 .address(job.getLocation())
