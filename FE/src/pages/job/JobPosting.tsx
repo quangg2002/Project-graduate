@@ -1,4 +1,5 @@
 import { useCallback, useState, useEffect } from "react";
+import { useParams } from 'react-router-dom';
 import {
     Box,
     Button,
@@ -6,41 +7,25 @@ import {
     Typography,
     Stack,
     Divider,
-    List,
-    ListItem,
-    Breadcrumbs,
-    Link,
     IconButton,
-    Select,
-    Option,
-    Input,
     ModalClose,
     CardCover,
     Textarea,
-    Snackbar
 } from '@mui/joy';
-import { Formik, Form, Field, FieldProps } from 'formik';
-import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
+import { Formik, Form, Field } from 'formik';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import BusinessIcon from '@mui/icons-material/Business';
 import Header from '../../components/Header';
-import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
-import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import HourglassFullIcon from '@mui/icons-material/HourglassFull';
 import WatchLaterIcon from '@mui/icons-material/WatchLater';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import SendIcon from '@mui/icons-material/Send';
-import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import MilitaryTechIcon from '@mui/icons-material/MilitaryTech';
 import PeopleIcon from '@mui/icons-material/People';
 import BusinessCenterIcon from '@mui/icons-material/BusinessCenter';
 import LaunchIcon from '@mui/icons-material/Launch';
-import FilterListIcon from '@mui/icons-material/FilterList';
-import SearchIcon from '@mui/icons-material/Search';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import RoomOutlinedIcon from '@mui/icons-material/RoomOutlined';
-import { selectClasses } from '@mui/joy/Select';
+
 import * as Yup from "yup";
 import { Transition } from 'react-transition-group';
 import Modal from '@mui/joy/Modal';
@@ -53,15 +38,41 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import BorderColorOutlinedIcon from '@mui/icons-material/BorderColorOutlined';
 import { applicationCreate } from '../../services/applicationApi';
+import { jobDetails } from '../../services/jobApi';
 import useAppDispatch from '../../hooks/useAppDispatch';
 import { toast } from 'react-toastify';
-import city from '../../utils/citis.json';
 
-const FindJobSchema = Yup.object().shape({
-    jobCategory: Yup.string(),
-    jobPosition: Yup.string(),
-    location: Yup.string(),
-});
+
+interface Job {
+    id: number;
+    userId: number | null;
+    companyId: number;
+    quantityApplication: number | null;
+    title: string;
+    position: string;
+    location: string;
+    district: string;
+    city: string;
+    deadline: string;
+    createdAt: string;
+    jobType: string;
+    contractType: string;
+    salary: string;
+    companyName: string;
+    companyLogo: string;
+    companyScale: string;
+    companyDescription: string | null;
+    companyAddress: string;
+    companyCity: string;
+    companyDistrict: string | null;
+    quantity: number;
+    description: string;
+    requirement: string;
+    benefit: string;
+    workingTime: string;
+    yearExperience: string;
+}
+
 
 const validationSchema = Yup.object({
     coverLetter: Yup.string().required('Thư giới thiệu là bắt buộc'),
@@ -77,10 +88,14 @@ const validationSchema = Yup.object({
 });
 
 function JobPosting() {
+    const { jobId } = useParams();
+    console.log(jobId)
+
     const [open, setOpen] = useState<boolean>(false)
     const dispatch = useAppDispatch();
     const [loading, setLoading] = useState(false);
- 
+    const [job, setJob] = useState<Job | null>(null);
+
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
         const file = acceptedFiles[0];
@@ -123,109 +138,29 @@ function JobPosting() {
         }
     };
 
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const action = await dispatch(jobDetails(jobId));
+                if (jobDetails.fulfilled.match(action)) {
+                    const response = action.payload.response?.data;
+                    if (response) setJob(response)
+                }
+            }
+            catch (error) {
+                console.error('Failed to fetch applications data:', error);
+            }
+            finally{
+                console.log(job)
+            }
+        };
+        fetchData();
+    }, [dispatch]);
+
     return (
         <Box bgcolor={'#f4f5f5'} flexWrap={'wrap'}>
             <Header />
-            <Formik
-                initialValues={{
-                    jobCategory: '',
-                    jobPosition: '',
-                    location: '',
-                }}
-                validationSchema={FindJobSchema}
-                onSubmit={(values) => {
-                    console.log('Search Data:', values);
-                }}
-            >
-                {({ handleSubmit, setFieldValue }) => (
-                    <Form >
-                        <Stack bgcolor={'#19734e'} py={3} alignItems={'center'}>
-                            <Stack direction={'row'} width={'80%'} gap={1} flexWrap={'wrap'}>
-                                <Stack flex={2}>
-                                    <Field name="jobPosition" as={Input} placeholder="Vị trí tuyển dụng" />
-                                </Stack>
-                                <Field name="jobCategory">
-                                    {({ field, form }: FieldProps) => (
-                                        <Select
-                                            {...field}
-                                            onChange={(event, newValue) => {
-                                                setFieldValue(field.name, newValue)
-                                            }}
-                                            startDecorator={<RoomOutlinedIcon sx={{ fontSize: 'medium' }} />}
-                                            // indicator={<KeyboardArrowDownIcon/>}
-                                            sx={{
-                                                [`& .${selectClasses.indicator}`]: {
-                                                    transition: '0.2s',
-                                                    [`&.${selectClasses.expanded}`]: {
-                                                        transform: 'rotate(-180deg)',
-                                                    },
-                                                },
-                                            }}
-                                            value={field.value}
-                                        >
-                                            <Option value="" disabled>
-                                                Địa điểm
-                                            </Option>
-                                            {city.map(city => (
-                                                <Option key={city.id} value={city.name}>
-                                                    {city.name}
-                                                </Option>
-                                            ))}
-                                        </Select>
-                                    )}
-                                </Field>
-                                <Button type="submit" startDecorator={<SearchIcon />}
-                                    sx={{
-                                        bgcolor: '#00b14f',
-                                        '&:hover': {
-                                            bgcolor: '#008f3e',
-                                        },
-                                    }}>
-                                    Tìm kiếm
-                                </Button>
-                                <Button
-                                    startDecorator={<FilterListIcon />}
-                                    endDecorator={<KeyboardArrowDownIcon />}
-                                    variant="solid"
-                                    sx={{
-                                        bgcolor: '#145c3e',
-                                        '&:hover': {
-                                            bgcolor: '#0f4d31',
-                                        },
-                                    }}
-                                >
-                                    <Typography sx={{ color: '#FFF' }}>Lọc nâng cao</Typography>
-                                </Button>
-                            </Stack>
-                        </Stack>
-                    </Form>
-                )}
-            </Formik>
             <Box width={'90%'} justifySelf={'center'} alignSelf={'center'} my={2}>
-                <Breadcrumbs
-                    size="sm"
-                    aria-label="breadcrumbs"
-                    separator={<ChevronRightRoundedIcon fontSize="small" />}
-                    sx={{ pl: 0 }}
-                >
-                    <Link
-                        underline="none"
-                        color="neutral"
-                        href="#some-link"
-                        aria-label="Home"
-                    >
-                        <HomeRoundedIcon /> &nbsp;
-                        <Typography level="body-xs">
-                            Trang chủ
-                        </Typography>
-                    </Link>
-                    <Typography color="primary" level="body-xs">
-                        Tên Nghề nghiệp
-                    </Typography>
-                    <Typography color="primary" level="body-xs">
-                        Tên vị trí chuyên môn
-                    </Typography>
-                </Breadcrumbs>
                 <Stack
                     direction={'row'}
                     gap={2}
@@ -234,65 +169,43 @@ function JobPosting() {
                     <Stack gap={2} flex={2}>
                         <Card variant="outlined">
                             <Stack spacing={2} sx={{ padding: 2 }}>
-                                <Typography level="h4">
-                                    Nhân Viên Kinh Doanh/Tư Vấn Tuyển Sinh Khóa Học Tại Trung Tâm (Data Sẵn, Tỷ Lệ Chốt Cao) - Thu Nhập 15-30 Triệu
-                                </Typography>
+                                <Typography level="h4">{job?.title}</Typography>
                                 <Stack direction="row" justifyContent={'space-between'}>
                                     <Stack direction="row" spacing={1} alignItems="center">
-                                        <IconButton
-                                            sx={{
-                                                borderRadius: '50%',
-                                                p: 1,
-                                                background: 'linear-gradient(11deg,#00bf5d,#00907c)'
-                                            }}
-                                        >
-                                            <MonetizationOnIcon sx={{ color: '#FFF' }} />
+                                        <IconButton variant="outlined" sx={{ borderRadius: '50%', borderColor: "#077b42" }}>
+                                            <MonetizationOnIcon sx={{ color: '#077b42' }} />
                                         </IconButton>
-
                                         <Stack>
-                                            <Typography>Mức lương</Typography>
-                                            <Typography fontWeight="bold">9 - 30 triệu</Typography>
+                                            <Typography level="title-md">Mức lương</Typography>
+                                            <Typography level="body-sm" fontWeight="bold">{job?.salary}</Typography>
                                         </Stack>
                                     </Stack>
                                     <Stack direction="row" spacing={1} alignItems="center">
-                                        <IconButton
-                                            sx={{
-                                                borderRadius: '50%',
-                                                p: 1,
-                                                background: 'linear-gradient(11deg,#00bf5d,#00907c)'
-                                            }}
-                                        >
-                                            <LocationOnIcon sx={{ color: '#FFF' }} />
+                                        <IconButton variant="outlined" sx={{ borderRadius: '50%', borderColor: "#077b42" }}>
+                                            <LocationOnIcon sx={{ color: '#077b42' }} />
                                         </IconButton>
 
                                         <Stack>
-                                            <Typography>Địa điểm</Typography>
-                                            <Typography fontWeight="bold">Hà Nội</Typography>
+                                            <Typography level="title-md">Địa điểm</Typography>
+                                            <Typography level="body-sm" fontWeight="bold">{job?.city}</Typography>
                                         </Stack>
                                     </Stack>
                                     <Stack direction="row" spacing={1} alignItems="center">
-                                        <IconButton
-                                            sx={{
-                                                borderRadius: '50%',
-                                                p: 1,
-                                                background: 'linear-gradient(11deg,#00bf5d,#00907c)'
-                                            }}
-                                        >
-                                            <HourglassFullIcon sx={{ color: '#FFF' }} />
+                                        <IconButton variant="outlined" sx={{ borderRadius: '50%', borderColor: "#077b42" }}>
+                                            <HourglassFullIcon sx={{ color: '#077b42' }} />
                                         </IconButton>
 
                                         <Stack>
-                                            <Typography>Kinh nghiệm</Typography>
-                                            <Typography fontWeight="bold">Không yêu cầu kinh nghiệm</Typography>
+                                            <Typography level="title-md">Kinh nghiệm</Typography>
+                                            <Typography level="body-sm" fontWeight="bold">{job?.yearExperience}</Typography>
                                         </Stack>
                                     </Stack>
                                 </Stack>
-                                <Typography color="neutral" bgcolor={'#f2f4f5'} width={'fit-content'} px={1} borderRadius={5}>
-                                    <WatchLaterIcon sx={{ fontSize: 'medium', mb: '3px' }} />&nbsp;
-                                    Hạn nộp hồ sơ: 29/11/2024
+                                <Typography startDecorator={<WatchLaterIcon />} level="body-sm" color="neutral" bgcolor={'#f2f4f5'} width={'fit-content'} px={1} borderRadius={5}>
+                                    Hạn nộp hồ sơ: {job?.deadline}
                                 </Typography>
                                 <Stack direction="row" spacing={2}>
-                                    <Button color="success" variant="solid" sx={{ flex: 4 }} startDecorator={<SendIcon sx={{ transform: 'rotate(-45deg)' }} />}>
+                                    <Button color="success" variant="solid" sx={{ flex: 4 }} startDecorator={<SendIcon sx={{ transform: 'rotate(-45deg)' }} />} onClick={() => setOpen(true)}>
                                         Ứng tuyển ngay
                                     </Button>
                                     <Button variant="outlined" sx={{ flex: 1 }} startDecorator={<FavoriteBorderIcon />}>
@@ -304,42 +217,26 @@ function JobPosting() {
                         <Card variant="outlined" sx={{ marginBottom: 2 }}>
                             <Stack spacing={2} sx={{ padding: 2 }}>
                                 <Stack direction="row" spacing={2} borderLeft={'6px solid #00b14f'}>
-
                                     <Typography level="h4" flex={4} pl={1}>Chi tiết tin tuyển dụng</Typography>
-                                    <Button variant="outlined" startDecorator={<NotificationsNoneIcon />}>Gửi tôi việc làm tương tự</Button>
                                 </Stack>
                                 <Divider />
                                 <Box>
                                     <Typography level='title-lg'>Mô tả công việc</Typography>
-                                    <List>
-                                        <ListItem>Tìm kiếm Phụ huynh và Học sinh thông qua các kênh mạng xã hội và làm hoạt động tại các khu vực.</ListItem>
-                                        <ListItem>Gọi điện và tư vấn sản phẩm giáo dục đến Phụ huynh (data Trung tâm cấp thêm).</ListItem>
-                                        <ListItem>Báo cáo công việc trực tiếp cho Trưởng phòng tư vấn tuyển sinh (ECL).</ListItem>
-                                        <ListItem>Hỗ trợ công tác tuyển sinh, thực hiện học thử, kiểm tra đầu vào, xếp lớp cho Học sinh.</ListItem>
-                                        <ListItem>Hỗ trợ người đăng ký viên đảm bảo học sinh nhận được trải nghiệm học tập tốt nhất.</ListItem>
-                                    </List>
+                                    <p>{job?.description}</p>
                                 </Box>
                                 <Box>
-                                    <Typography level='title-lg'>Mô tả công việc</Typography>
-                                    <List>
-                                        <ListItem>Tìm kiếm Phụ huynh và Học sinh thông qua các kênh mạng xã hội và làm hoạt động tại các khu vực.</ListItem>
-                                        <ListItem>Gọi điện và tư vấn sản phẩm giáo dục đến Phụ huynh (data Trung tâm cấp thêm).</ListItem>
-                                        <ListItem>Báo cáo công việc trực tiếp cho Trưởng phòng tư vấn tuyển sinh (ECL).</ListItem>
-                                        <ListItem>Hỗ trợ công tác tuyển sinh, thực hiện học thử, kiểm tra đầu vào, xếp lớp cho Học sinh.</ListItem>
-                                        <ListItem>Hỗ trợ người đăng ký viên đảm bảo học sinh nhận được trải nghiệm học tập tốt nhất.</ListItem>
-                                    </List>
+                                    <Typography level='title-lg'>Yêu cầu ứng viên</Typography>
+                                    <p>{job?.requirement}</p>
                                 </Box>
                                 <Box>
-                                    <Typography level='title-lg'>Địa điểm</Typography>
-                                    <List>
-                                        <ListItem>Địa điểm: Tầng 18, Tòa nhà HCO, 44B phố Lý Thường Kiệt, Phường..</ListItem>
-                                    </List>
+                                    <Typography level='title-lg'>Quyền lợi được hưởng</Typography>
+                                    <p>{job?.benefit}</p>
                                 </Box>
                                 <Stack gap={1}>
                                     <Typography level='title-lg'>Cách thức ứng tuyển</Typography>
                                     <Typography>Ứng viên nộp hồ sơ trực tuyến bằng cách bấm <b>Ứng tuyển</b> ngay dưới đây.</Typography>
                                 </Stack>
-                                <Typography>Hạn nộp hồ sơ: 29/11/2024</Typography>
+                                <Typography>Hạn nộp hồ sơ: {job?.deadline}</Typography>
                                 <Stack direction="row" spacing={2}>
                                     <Button color="success" variant="solid" onClick={() => setOpen(true)}>
                                         Ứng tuyển ngay
@@ -354,19 +251,12 @@ function JobPosting() {
                     <Stack gap={2} flex={1}>
                         <Card variant="outlined">
                             <Stack spacing={1} sx={{ padding: 2 }}>
-                                <Typography level="h4">CÔNG TY CỔ PHẦN GIÁO DỤC HỌC VIỆN ANH NGỮ VIỆT NAM</Typography>
-                                <Stack direction="row" spacing={1} alignItems="center">
-                                    <BusinessIcon />
-                                    <Typography>Quy mô: 100-499 nhân viên</Typography>
-                                </Stack>
-                                <Stack direction="row" spacing={1} alignItems="center">
-                                    <WorkOutlineIcon />
-                                    <Typography>Lĩnh vực: Tư vấn</Typography>
-                                </Stack>
+                                <Typography level="h4">{job?.companyName}</Typography>
+                                <Typography startDecorator={<BusinessIcon />}>Quy mô: {job?.companyScale}</Typography>
                                 <Stack direction="row" spacing={1} alignItems="center">
                                     <LocationOnIcon />
                                     <Typography>
-                                        Địa điểm: Tầng 18, Tòa nhà HCO, 44B phố Lý Thường Kiệt, Phường...
+                                        Địa điểm: {job?.companyAddress} {job?.companyDistrict} {job?.companyCity}
                                     </Typography>
                                 </Stack>
                                 <Button variant="outlined" endDecorator={<LaunchIcon />}>Xem trang công ty</Button>
@@ -387,7 +277,7 @@ function JobPosting() {
                                     </IconButton>
                                     <Stack>
                                         <Typography>Cấp bậc</Typography>
-                                        <Typography>Nhân viên</Typography>
+                                        <Typography>{job?.position}</Typography>
                                     </Stack>
                                 </Stack>
                                 <Stack direction="row" spacing={2} alignItems="center">
@@ -401,7 +291,7 @@ function JobPosting() {
                                     </IconButton>
                                     <Stack>
                                         <Typography>Kinh nghiệm</Typography>
-                                        <Typography>Không yêu cầu kinh nghiệm</Typography>
+                                        <Typography>{job?.yearExperience}</Typography>
                                     </Stack>
                                 </Stack>
                                 <Stack direction="row" spacing={2} alignItems="center">
@@ -415,7 +305,7 @@ function JobPosting() {
                                     </IconButton>
                                     <Stack>
                                         <Typography>Số lượng tuyển</Typography>
-                                        <Typography>6 người</Typography>
+                                        <Typography>{job?.quantity}</Typography>
                                     </Stack>
                                 </Stack>
                                 <Stack direction="row" spacing={2} alignItems="center">
@@ -429,7 +319,7 @@ function JobPosting() {
                                     </IconButton>
                                     <Stack>
                                         <Typography>Hình thức làm việc</Typography>
-                                        <Typography>Toàn thời gian</Typography>
+                                        <Typography>{job?.contractType}</Typography>
                                     </Stack>
                                 </Stack>
                             </Stack>
@@ -467,11 +357,15 @@ function JobPosting() {
                             sx={{
                                 width: '80%',
                                 maxWidth: '800px',
+                                position: 'fixed',
+                                top: '50%',
+                                left: '50%',
+                                transform: 'translate(0%, 100px)', // Bắt đầu từ vị trí thấp hơn
                                 opacity: 0,
-                                transition: `opacity 300ms`,
+                                transition: `opacity 300ms, transform 300ms`,
                                 ...{
-                                    entering: { opacity: 1 },
-                                    entered: { opacity: 1 },
+                                    entering: { opacity: 1, transform: 'translate(-50%, -50%)' }, // Di chuyển lên chính giữa
+                                    entered: { opacity: 1, transform: 'translate(-50%, -50%)' },
                                 }[state],
                             }}
                         >
@@ -522,7 +416,7 @@ function JobPosting() {
                                                                     <Typography level="body-sm">Hỗ trợ định dạng .doc, .docx, pdf có kích thước dưới 5MB</Typography>
 
                                                                     <Stack direction={'row'} gap={1} alignItems={'center'}>
-                                                                        {values.selectedFile  &&
+                                                                        {values.selectedFile &&
                                                                             <Stack direction={'row'} alignItems={'center'}>
                                                                                 <DescriptionOutlinedIcon color="success" sx={{ fontSize: '30px' }} />
                                                                                 <Typography color="success">{values.selectedFile.name}</Typography>

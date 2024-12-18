@@ -2,6 +2,8 @@ package com.example.bejob.controller;
 
 import com.example.bejob.dto.EmployeeDto;
 import com.example.bejob.dto.request.EmployeeRequest;
+import com.example.bejob.dto.request.EmployeeSkillRequest;
+import com.example.bejob.entity.Skill;
 import com.example.bejob.model.ResponseDto;
 import com.example.bejob.service.EmployeeService;
 import jakarta.validation.Valid;
@@ -9,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -30,5 +34,15 @@ public class EmployeeController {
     @PatchMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ResponseDto<Object>> updateEmployee(@Valid @ModelAttribute EmployeeDto employeeDTO) {
         return employeeService.updateEmployee(employeeDTO);
+    }
+
+    @PutMapping("/skill")
+    public ResponseEntity<ResponseDto<Object>> updateSkills(@RequestBody EmployeeSkillRequest request) {
+        return employeeService.updateEmployeeSkills(request);
+    }
+
+    @GetMapping("/skills")
+    public ResponseEntity<ResponseDto<List<Skill>>> getEmployeeSkills() {
+        return employeeService.getEmployeeSkills();
     }
 }

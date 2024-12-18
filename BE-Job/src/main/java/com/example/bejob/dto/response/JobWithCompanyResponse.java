@@ -30,7 +30,11 @@ public class JobWithCompanyResponse {
     private String salary;
     private String companyName;
     private String companyLogo;
+    private String companyScale;
     private String companyDescription;
+    private String companyAddress;
+    private String companyCity;
+    private String companyDistrict;
     private Long quantity;
     private String description;
     private String requirement;

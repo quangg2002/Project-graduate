@@ -22,6 +22,7 @@ import Setting from "./pages/company/Setting";
 import Findjob from "./pages/employee/Findjob";
 import CompanyDetails from "./pages/company/CompanyDetails";
 import Chat from "./pages/chat/Chat";
+import Home from "./pages/employee/Home";
 
 const customTheme = extendTheme({
   fontFamily: {
@@ -47,7 +48,7 @@ function App() {
         <Route path="/layout1" element={<Layout1 />} />
         <Route path="/upcv" element={<Uploadcv />} />
         <Route path="/info" element={<Info />} />
-        <Route path="/jobposting" element={<JobPosting />} />
+        <Route path="/job-details/:jobId" element={<JobPosting />} />
         <Route path="/jobapplied" element={<JobApplied />} />
         <Route path="/jobsaved" element={<JobSaved />} />
         <Route path="/view-cv" element={<ViewPdf />} />
@@ -55,6 +56,7 @@ function App() {
         <Route path="/find-job" element={<Findjob />} />
         <Route path="/company-details/:companyId" element={<CompanyDetails />}/>
         <Route path="/chat" element={<Chat/>}/>
+        <Route path="/home" element={<Home/>}/>
       </Routes>
 
       <ToastContainer

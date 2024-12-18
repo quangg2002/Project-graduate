@@ -3,7 +3,7 @@ import { CssVarsProvider } from "@mui/joy/styles";
 import CssBaseline from "@mui/joy/CssBaseline";
 import Header from "../../components/Header";
 import Navigation from "../../components/Navigation";
-import { Typography, Card, CardCover, CardContent, Link, Tooltip, IconButton, Breadcrumbs, Stack, CardOverflow, Input, Snackbar, Divider } from "@mui/joy";
+import { Typography, Card, CardCover, CardContent, Link, Tooltip, IconButton, Breadcrumbs, Stack, CardOverflow, Input, Snackbar, Divider, Avatar } from "@mui/joy";
 
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
@@ -14,14 +14,14 @@ import NearMeIcon from '@mui/icons-material/NearMe';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import TaskIcon from '@mui/icons-material/Task';
-import NoteAddIcon from '@mui/icons-material/NoteAdd';
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
 import InsertLinkIcon from '@mui/icons-material/InsertLink';
 import useAppDispatch from '../../hooks/useAppDispatch';
 import { startLoading, stopLoading } from '../../redux/slice/loadingSlice';
 import { useState, useEffect } from "react";
 import { getCompany } from '../../services/companyApi';
-import { Image } from "antd";
+import { denormalizeTextAreaContent } from '../../utils/utils';
+
 
 export default function Overview() {
 
@@ -161,7 +161,7 @@ export default function Overview() {
                                     gridTemplateColumns: {
                                         xs: "repeat(1fr)",
                                         sm: "repeat(2, 1fr)",
-                                        md: "repeat(4, 1fr)",
+                                        md: "repeat(3, 1fr)",
                                     },
                                     gap: 3,
                                 }}
@@ -199,53 +199,90 @@ export default function Overview() {
                                         </Stack>
                                     </Stack>
                                 </Stack>
-
-                                <Image src={company.logo} style={{ borderRadius: 10 }} />
                             </Box>
+
+                            <Card
+                                sx={{
+                                    position: "relative",
+                                    overflow: "hidden",
+                                    minHeight: '270px'
+                                }}
+                            >
+                                <Box
+                                    sx={{
+                                        position: "absolute",
+                                        top: 0,
+                                        left: 0,
+                                        width: "100%",
+                                        height: "150px",
+                                        backgroundImage: "url('https://cdn-new.topcv.vn/unsafe/https://static.topcv.vn/v4/image/normal-company/cover/company_cover_1.jpg')",
+                                        backgroundSize: "cover",
+                                        backgroundPosition: "center",
+                                        zIndex: 1,
+                                    }}
+                                />
+
+                                <Avatar
+                                    src={company?.logo}
+                                    alt="Logoo"
+                                    sx={{
+                                        width: 160,
+                                        height: 160,
+                                        position: "absolute",
+                                        top: 80,
+                                        left: 40,
+                                        zIndex: 2,
+                                        border: "4px solid white",
+                                    }}
+                                />
+
+                                <Stack
+                                    sx={{
+                                        background: 'linear-gradient(90deg, #1c4742, #22c96d)',
+                                        zIndex: 1,
+                                        position: "absolute",
+                                        top: 150,
+                                        left: 0,
+                                        width: "100%",
+                                        height: 120,
+                                    }}
+                                    direction={'row'}
+                                >
+                                    <Stack flex={3} />
+                                    <Stack direction={'row'} flex={8} justifyContent={'space-between'} alignItems={'center'} gap={1} mr={4}>
+                                        <Stack gap={1}>
+                                            <Typography level="h3" sx={{ color: '#FFF' }}>{company?.companyName}</Typography>
+                                            <Stack direction={'row'} gap={4}>
+                                                <Typography sx={{ color: '#FFF' }} startDecorator={<LanguageIcon sx={{ color: '#FFF', fontSize: 18 }} />}> {company?.website}</Typography>
+                                                <Typography sx={{ color: '#FFF' }} startDecorator={<BusinessIcon sx={{ color: '#FFF', fontSize: 18 }} />}> {company?.scale}</Typography>
+                                            </Stack>
+                                        </Stack>
+                                    </Stack>
+                                </Stack>
+                            </Card>
+
                             <Stack gap={3}>
                                 <Stack
                                     direction={'row'}
                                     gap={2}
                                     flexWrap={'wrap'}
                                 >
-                                    <Stack flex={2}>
-                                        <Card>
-                                            <CardOverflow sx={{ pt: 1 }} >
-                                                <Typography level="h4">Thông tin công ty</Typography>
-                                            </CardOverflow>
-                                            <Divider />
-                                            <Stack>
-                                                <Typography fontWeight={'600'}>Tổng quan</Typography>
-                                                <Stack justifyContent={'center'} alignItems={'center'} gap={2}>
-                                                    <Typography level="h4">{company.companyName}</Typography>
-                                                    <Stack direction={'row'} gap={4}>
-                                                        <Stack direction={'row'}>
-                                                            <LanguageIcon sx={{ color: '#000' }} /> &nbsp;
-                                                            <Typography level="title-md" >{company.website}</Typography>
-                                                        </Stack>
 
-                                                        <Stack direction={'row'}>
-                                                            <BusinessIcon sx={{ color: '#000' }} /> &nbsp;
-                                                            <Typography level="title-md">{company.scale}</Typography>
-                                                        </Stack>
-                                                    </Stack>
-                                                </Stack>
-                                            </Stack>
-                                            <Stack>
-                                                <Typography fontWeight={'600'}>Mô tả</Typography>
-                                                <Typography>{company.description}</Typography>
-                                            </Stack>
+                                    <Stack flex={2} >
+                                        <Card>
+                                            <CardOverflow sx={{ background: "linear-gradient(90deg, #22c96d, #BFFFC7)", py: 1 }} >
+                                                <Typography level="h4">Giới thiệu công ty</Typography>
+                                            </CardOverflow>
+                                            <p dangerouslySetInnerHTML={{ __html: denormalizeTextAreaContent(company?.description) || '' }} />
                                         </Card>
                                     </Stack>
                                     <Stack flex={1}>
                                         <Card>
-                                            <CardOverflow sx={{ pt: 1 }} >
-                                                <Typography level="h4">Liên hệ</Typography>
+                                            <CardOverflow sx={{ background: "linear-gradient(90deg, #22c96d, #BFFFC7)", py: 1 }} >
+                                                <Typography level="h4">Thông tin liên hệ</Typography>
                                             </CardOverflow>
-                                            <Divider />
                                             <Typography level="title-md"><LocationOnIcon sx={{ color: '#00b14f' }} />Địa chỉ công ty</Typography>
-                                            <Typography ml={1}>{company.address}, {company.district}, {company.city} </Typography>
-
+                                            <Typography ml={1}>{company?.address}, {company?.district}, {company?.city}</Typography>
                                             <Typography level="title-md"><NearMeIcon sx={{ color: '#00b14f' }} />Sao chép đường dẫn</Typography>
                                             <Input
                                                 size="sm"
@@ -254,7 +291,7 @@ export default function Overview() {
                                                         <ContentCopyIcon />
                                                     </IconButton>
                                                 }
-                                                value={company.website}
+                                                value={company?.website}
                                             />
                                         </Card>
                                     </Stack>

@@ -2,10 +2,8 @@ import { useCallback, useState, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import { confirmAlert } from 'react-confirm-alert'; // Import thư viện
 import 'react-confirm-alert/src/react-confirm-alert.css';
-import { Box, Breadcrumbs, Button, Card, CardCover, Divider, FormControl, FormLabel, IconButton, Input, Link, Modal, ModalClose, Radio, RadioGroup, Sheet, Stack, Tab, TabList, TabPanel, Tabs, Typography } from "@mui/joy";
+import { Autocomplete, Box, Button, Card, CardCover, Chip, Divider, FormControl, FormLabel, IconButton, Input, Radio, RadioGroup, Stack, Tab, TabList, TabPanel, Tabs, Typography } from "@mui/joy";
 import Header from "../../components/Header";
-import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
-import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import BorderColorIcon from '@mui/icons-material/BorderColor';
 import { Field, Form, Formik } from "formik";
 import * as Yup from "yup";
@@ -15,10 +13,12 @@ import { updateEmployee } from '../../services/employeeApi';
 import { changePassword } from '../../services/authApi';
 import { getEmployees } from '../../services/employeeApi';
 import { startLoading, stopLoading } from '../../redux/slice/loadingSlice';
-import { useNavigate } from 'react-router-dom';
 import EyeOutlined from '@ant-design/icons/EyeOutlined';
 import EyeInvisibleOutlined from '@ant-design/icons/EyeInvisibleOutlined';
 import authService from '../../services/authService';
+import CustomModal from "../../components/CustomModal";
+import { skillList } from '../../services/autofillApi';
+import { getSkills, updateSkill } from '../../services/employeeApi';
 
 const SignUpSchema = Yup.object().shape({
     fullName: Yup.string()
@@ -46,13 +46,16 @@ const SignUpSchema2 = Yup.object().shape({
     confirmPassword: Yup.string()
         .oneOf([Yup.ref('newPassword')], 'Mật khẩu không khớp')
         .required('Nhập lại mật khẩu là bắt buộc'),
-    });
-    
-    
+});
+
+
 export default function Info() {
     const [openEdit, setOpenEdit] = useState<boolean>(false);
+    const [skills, setSkills] = useState([]);
+    const [skillCurrent, setSkillCurrent] = useState([]);
+    const [openEditSkill, setOpenEditSkill] = useState<boolean>(false);
     const dispatch = useAppDispatch();
-    
+
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [passwordVisibility, setPasswordVisibility] = useState({
         currentPassword: false,
@@ -72,7 +75,6 @@ export default function Info() {
     const [employeeData, setEmployeeData] = useState({
         fullName: '',
         gender: '',
-        dateOfBirth: '',
         address: '',
         email: '',
         phoneNumber: '',
@@ -88,7 +90,7 @@ export default function Info() {
                     style={{
                         width: '400px',
                         backgroundColor: '#282c34',
-                        color: 'white', 
+                        color: 'white',
                         padding: '20px',
                         borderRadius: '10px',
                         textAlign: 'center',
@@ -97,13 +99,13 @@ export default function Info() {
                 >
                     <p style={{ color: '#ffcc00', fontSize: '18px' }}>Xác nhận</p>
                     <p>Bạn có chắc chắn muốn cập nhật thông tin cá nhân với hình ảnh mới này không?</p>
-                    <br/>
+                    <br />
                     <div style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
                         <button
                             onClick={async () => {
                                 const formData = new FormData();
                                 formData.append('avatar', file);
-        
+
                                 const result = await dispatch(updateEmployee(formData));
                                 if (result?.payload?.response?.success === true) {
                                     setPreviewUrl(URL.createObjectURL(file));
@@ -140,7 +142,7 @@ export default function Info() {
                     </div>
                 </div>
             ),
-        });        
+        });
     }, []);
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -149,6 +151,63 @@ export default function Info() {
             'image/*': ['.jpg', '.jpeg', '.png', '.gif']
         }
     });
+
+    const handleUpdateSkill = async (values, setSubmitting) => {
+        try {
+            setSubmitting(true);
+            await dispatch(updateSkill({ skillIds: values.skills })).unwrap();
+
+            const updatedSkills = skills.filter(skill => values.skills.includes(skill.id));
+            setSkillCurrent(updatedSkills);
+
+            toast.success('Cập nhật kỹ năng thành công');
+        } catch (error) {
+            toast.error('Có lỗi xảy ra khi lưu kỹ năng');
+        } finally {
+            setSubmitting(false);
+            setOpenEditSkill(false)
+        }
+    };
+
+    const handleUpdateEmployee = async (values, setSubmitting) => {
+        try {
+            dispatch(startLoading());
+
+            const formData = new FormData();
+            formData.append('fullName', values.fullName);
+            formData.append('email', values.email);
+            formData.append('phoneNumber', values.phoneNumber);
+            formData.append('gender', values.gender);
+            formData.append('career', values.career);
+            formData.append('address', values.address);
+
+            const result = await dispatch(updateEmployee(formData));
+
+            dispatch(stopLoading());
+
+            console.log(result?.payload?.response?.success)
+            if (result?.payload?.response?.success == true) {
+                toast.success('Cập nhật thành công');
+
+                setEmployeeData({
+                    fullName: values.fullName,
+                    gender: values.gender,
+                    address: values.address,
+                    email: values.email,
+                    phoneNumber: values.phoneNumber,
+                    career: values.career
+                });
+            } else {
+                toast.error('Cập nhật thất bại');
+            }
+
+        } catch (error) {
+            toast.error('Đã có lỗi xảy ra.');
+        } finally {
+            setSubmitting(false);
+            setOpenEdit(false)
+        }
+    };
 
 
     useEffect(() => {
@@ -161,7 +220,6 @@ export default function Info() {
                         setEmployeeData({
                             fullName: response.fullName,
                             gender: response.gender,
-                            dateOfBirth: response.dateOfBirth,
                             address: response.address,
                             email: response.email,
                             phoneNumber: response.phoneNumber,
@@ -178,24 +236,42 @@ export default function Info() {
         fetchEmployeeData();
     }, [dispatch]);
 
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [skillResult, skillCurrentResult] = await Promise.all([
+                    dispatch(skillList()).unwrap(),
+                    dispatch(getSkills()).unwrap(),
+                ]);
+
+                if (skillResult.response?.data) {
+                    setSkills(skillResult.response.data);
+                }
+
+                if (skillCurrentResult.response?.data) {
+                    setSkillCurrent(skillCurrentResult.response.data);
+                }
+            } catch (error) {
+                toast.error('Lỗi khi tải dữ liệu. Vui lòng thử lại sau.');
+            }
+        };
+
+        fetchData();
+    }, [dispatch, updateSkill]);
 
     return (
         <Box bgcolor={'#f0F0F0'} minHeight={'100vh'}>
             <Header />
 
-            <Box component="main" className="MainContent" width={'80%'} alignSelf={'center'} justifySelf={'center'} mt={4}>
+            <Box component="main" className="MainContent" width={'65%'} alignSelf={'center'} justifySelf={'center'} mt={4} pb={4}>
                 <Box
                     borderRadius={10}
-                    boxShadow={'xl'}
+                    boxShadow={'0px 4px 10px rgba(0, 0, 0, 0.25)'}
                     border={'2px solid #FFF'}
                     sx={{
                         bgcolor: "#FFF",
                         px: { xs: 2, md: 6 },
-                        pt: {
-                            xs: 'calc(12px + var(--Header-height))',
-                            sm: 'calc(12px + var(--Header-height))',
-                            md: 3,
-                        },
+                        pt: { xs: 2, sm: 2, md: 3 },
                         pb: { xs: 2, sm: 2, md: 5 },
                         maxWidth: "100vw",
                     }}>
@@ -210,16 +286,16 @@ export default function Info() {
                             display: "grid",
                             gridTemplateColumns: {
                                 xs: "1fr",
-                                md: "minmax(250px, 300px) minmax(400px, 1fr)",
+                                md: "minmax(200px, 210px) minmax(400px, 1fr)",
                             },
-                            gap: { xs: 2, sm: 2, md: 2},
+                            gap: { xs: 2, sm: 2, md: 1 },
                             width: "100%",
                             maxWidth: "100vw",
                         }}
                     >
                         <Box>
-                            <Box {...getRootProps()} sx={{ position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                                <Card sx={{ width: "250px", height: "250px" , borderRadius: 0, justifyContent: 'center', alignItems: 'center' }}>
+                            <Box {...getRootProps()} sx={{ position: 'relative' }}>
+                                <Card sx={{ width: "200px", height: "200px", borderRadius: 0 }}>
                                     <input {...getInputProps()} />
                                     <CardCover>
                                         {previewUrl ? (
@@ -238,7 +314,7 @@ export default function Info() {
                                         sx={{
                                             background: 'linear-gradient(to top, rgba(0,0,0,0.6), rgba(0,0,0,0)), linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0))',
                                             padding: 2,
-                                            // width: '100%'
+                                            width: '200px'
                                         }}
                                         position={'absolute'}
                                         bottom={0}
@@ -457,19 +533,95 @@ export default function Info() {
                         </Box>
                     </Box>
                 </Box>
+                <Box
+                    borderRadius={10}
+                    boxShadow={'0px 4px 10px rgba(0, 0, 0, 0.25)'}
+                    border={'2px solid #FFF'}
+                    mt={2}
+                    sx={{
+                        bgcolor: "#FFF",
+                        px: { xs: 2, md: 6 },
+                        pt: { xs: 2, sm: 2, md: 3 },
+                        pb: { xs: 2, sm: 2, md: 3 },
+                        maxWidth: "100vw",
+                    }}>
+                    <Stack gap={2}>
+                        <Stack direction={'row'} justifyContent={'space-between'} alignItems={'center'}>
+                            <Stack>
+                                <Typography level="title-lg">Kĩ năng cá nhân</Typography>
+                                <Typography level="body-xs">
+                                    Hệ thống sẽ gợi ý việc làm phú hợp dựa theo kĩ năng và nghề nghiệp của bạn.
+                                </Typography>
+                            </Stack>
+                            <Button variant="soft" color="primary" size="sm" onClick={() => setOpenEditSkill(true)} startDecorator={<BorderColorIcon sx={{ fontSize: 'sm' }} />}>
+                                <Typography level="body-sm">Chỉnh sửa</Typography>
+                            </Button>
+
+                        </Stack>
+                        <Stack direction={'row'} gap={2} flexWrap={'wrap'}>
+                            {skillCurrent.map((skillCurrent, index) => (
+                                <Chip color="primary">{skillCurrent?.name}</Chip>
+                            ))}
+                        </Stack>
+                    </Stack>
+
+                </Box>
             </Box>
-            <Modal
-                aria-labelledby="modal-title"
-                aria-describedby="modal-desc"
+
+            <CustomModal
+                open={openEditSkill}
+                onClose={() => setOpenEditSkill(false)}
+                width="40%"
+            >
+                <>
+                    <Typography
+                        component="h2"
+                        id="modal-title"
+                        level="h4"
+                        textColor="inherit"
+                    >
+                        Thay đổi kĩ năng của bạn
+                    </Typography>
+                    <Box id="modal-desc" mt={2} gap={3}>
+                        <Formik
+                            initialValues={{
+                                skills: skillCurrent.map((skill) => skill.id)
+                            }}
+                            enableReinitialize
+                            onSubmit={(values, { setSubmitting }) => handleUpdateSkill(values, setSubmitting)}
+                        >
+                            {({ isSubmitting, errors, touched, values, setFieldValue }) => (
+                                <Form>
+                                    <Autocomplete
+                                        placeholder="Kĩ năng"
+                                        options={skills}
+                                        multiple
+                                        getOptionLabel={(option: any) => option.name}
+                                        value={skills.filter((skill) => values.skills.includes(skill.id))}
+                                        onChange={(event, options: any[]) => {
+                                            const selectedIds = options.map(option => option.id);
+                                            setFieldValue("skills", selectedIds);
+                                        }}
+                                    />
+
+                                    <Box display="flex" alignItems={"flex-end"} justifyContent={"right"} mt={2} >
+                                        <Button type="submit" size="md" variant="solid" color='success' disabled={isSubmitting}>
+                                            Cập nhật
+                                        </Button>
+                                    </Box>
+                                </Form>
+                            )}
+                        </Formik>
+                    </Box>
+                </>
+            </CustomModal>
+
+            <CustomModal
                 open={openEdit}
                 onClose={() => setOpenEdit(false)}
-                sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+                width="80%"
             >
-                <Sheet
-                    variant="outlined"
-                    sx={{ width: '70%', borderRadius: 'md', p: 3, boxShadow: 'lg' }}
-                >
-                    <ModalClose variant="plain" sx={{ m: 1 }} />
+                <>
                     <Typography
                         component="h2"
                         id="modal-title"
@@ -488,37 +640,9 @@ export default function Info() {
                                 career: employeeData.career,
                                 gender: employeeData.gender,
                             }}
+                            enableReinitialize
                             validationSchema={SignUpSchema}
-                            onSubmit={async (values, { setSubmitting }) => {
-                                try {
-                                    dispatch(startLoading());
-
-                                    const formData = new FormData();
-                                    formData.append('fullName', values.fullName);
-                                    formData.append('email', values.email);
-                                    formData.append('phoneNumber', values.phoneNumber);
-                                    formData.append('gender', values.gender);
-                                    formData.append('career', values.career);
-                                    formData.append('address', values.address);
-
-                                    const result = await dispatch(updateEmployee(formData));
-
-                                    dispatch(stopLoading());
-
-                                    console.log(result?.payload?.response?.success)
-                                    if (result?.payload?.response?.success == true) {
-                                        toast.success('Cập nhật thành công');
-                                        window.location.reload();
-                                    } else {
-                                        toast.error('Cập nhật thất bại');
-                                    }
-
-                                } catch (error) {
-                                    toast.error('Đã có lỗi xảy ra.');
-                                } finally {
-                                    setSubmitting(false);
-                                }
-                            }}
+                            onSubmit={(values, { setSubmitting }) => handleUpdateEmployee(values, setSubmitting)}
                         >
                             {({ isSubmitting, errors, touched }) => (
                                 <Form>
@@ -593,8 +717,8 @@ export default function Info() {
                             )}
                         </Formik>
                     </Box>
-                </Sheet>
-            </Modal>
+                </>
+            </CustomModal>
         </Box>
     );
 }

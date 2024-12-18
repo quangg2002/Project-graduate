@@ -1,4 +1,4 @@
-import * as React from "react";
+import { useState, useEffect } from "react";
 import Box from "@mui/joy/Box";
 import Typography from "@mui/joy/Typography";
 import IconButton from "@mui/joy/IconButton";
@@ -33,19 +33,29 @@ import FolderOpenOutlinedIcon from '@mui/icons-material/FolderOpenOutlined';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import { openMessenger } from "../redux/slice/messageSlice";
 import useAppDispatch from "../hooks/useAppDispatch";
+import { getEmployees } from '../services/employeeApi';
 
 export default function Header() {
-    const [open, setOpen] = React.useState(false);
+    const [open, setOpen] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
-    const [openDropdown, setOpenDropdown] = React.useState(null);
+    const [openDropdown, setOpenDropdown] = useState(null);
+    const [employeeData, setEmployeeData] = useState({
+        fullName: '',
+        gender: '',
+        address: '',
+        email: '',
+        phoneNumber: '',
+        career: '',
+        avatar: ''
+    })
 
     const items = ['Công việc', 'Hồ sơ & CV', 'Danh sách công ty'];
 
     const isSelected = (item) => {
         const paths = {
-            'Công việc': ['/info', '/jobapplied', '/jobsaved'],
+            'Công việc': ['/find-job', '/jobapplied', '/jobsaved', '/job-details'],
             'Hồ sơ & CV': ['/cv', '/resume'],
             'Danh sách công ty': ['/company'],
         };
@@ -55,12 +65,38 @@ export default function Header() {
 
     const getLinkForItem = (item) => {
         const paths = {
-            'Công việc': '/info',
-            'Hồ sơ & CV': '/cv',
+            'Công việc': '/find-job',
+            'Hồ sơ & CV': '/layout1',
             'Danh sách công ty': '/company',
         };
         return paths[item] || '/';
     };
+
+    useEffect(() => {
+        const fetchEmployeeData = async () => {
+            try {
+                const action = await dispatch(getEmployees());
+                if (getEmployees.fulfilled.match(action)) {
+                    const response = action.payload.response?.data;
+                    if (response) {
+                        setEmployeeData({
+                            fullName: response.fullName,
+                            gender: response.gender,
+                            address: response.address,
+                            email: response.email,
+                            phoneNumber: response.phoneNumber,
+                            career: response.career,
+                            avatar:response.avatar
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to fetch employee data:', error);
+            }
+        };
+
+        fetchEmployeeData();
+    }, [dispatch]);
 
     return (
         <CssVarsProvider disableTransitionOnChange>
@@ -335,7 +371,7 @@ export default function Header() {
                             >
                                 <Stack direction={'row'} justifyContent={'space-between'} alignItems={'center'}>
                                     <Typography level="title-md">Thông báo</Typography>
-                                    <Tooltip title="Đánh dấu tất cả đã đọc" variant="outlined" color="success" sx={{zIndex: '999999999999999'}}>
+                                    <Tooltip title="Đánh dấu tất cả đã đọc" variant="outlined" color="success" sx={{ zIndex: '999999999999999' }}>
                                         <IconButton
                                             size="sm"
                                             sx={{ borderRadius: '50%' }}
@@ -344,10 +380,10 @@ export default function Header() {
                                         </IconButton>
                                     </Tooltip>
                                 </Stack>
-                                <Divider/>
+                                <Divider />
                                 <MenuItem>
                                     <Stack direction={'row'} alignItems={'center'} gap={2}>
-                                        <Avatar/>
+                                        <Avatar />
                                         <Stack>
                                             <Typography level="title-sm">Công ty đã xác nhận thư xin việc của bạn</Typography>
                                             <Typography level="body-xs">2 ago</Typography>
@@ -357,7 +393,7 @@ export default function Header() {
                                 </MenuItem>
                                 <MenuItem selected>
                                     <Stack direction={'row'} alignItems={'center'} gap={2}>
-                                        <Avatar/>
+                                        <Avatar />
                                         <Stack>
                                             <Typography level="title-sm">Công ty đã xác nhận thư xin việc của bạn</Typography>
                                             <Typography level="body-xs">2 ago</Typography>
@@ -365,7 +401,7 @@ export default function Header() {
                                         <Typography level="body-xs">3:00AM</Typography>
                                     </Stack>
                                 </MenuItem>
-                                
+
                             </Menu>
                         </Dropdown>
 
@@ -384,9 +420,9 @@ export default function Header() {
                                         size="sm"
                                         variant="soft"
                                         sx={{ alignSelf: "center", borderRadius: '50%' }}
-                                        onClick={() => { 
+                                        onClick={() => {
                                             window.open('http://localhost:3000/chat')
-                                            dispatch(openMessenger()) 
+                                            dispatch(openMessenger())
                                         }}
                                     >
                                         <ForumIcon color="success" />
@@ -397,17 +433,18 @@ export default function Header() {
 
                         <Dropdown>
                             <MenuButton
-                                variant="plain"
+                                variant="solid"
                                 size="sm"
                                 sx={{
-                                    maxWidth: "32px",
-                                    maxHeight: "32px",
+                                    maxWidth: "34px",
+                                    maxHeight: "34px",
                                     borderRadius: "9999999px",
+                                    border: '2px solid #bebebe'
                                 }}
                             >
                                 <Avatar
-                                    src="https://i.pravatar.cc/40?img=2"
-                                    srcSet="https://i.pravatar.cc/80?img=2"
+                                    src={employeeData.avatar}
+                                    srcSet={employeeData.avatar}
                                     sx={{ maxWidth: "32px", maxHeight: "32px" }}
                                 />
                             </MenuButton>

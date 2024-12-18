@@ -49,7 +49,7 @@ import {
 } from "../../services/autofillApi";
 
 import { jobSearch, jobRecommend } from "../../services/jobApi";
-import { Empty, Spin } from "antd";
+import { Empty, Pagination, Spin } from "antd";
 
 
 
@@ -604,7 +604,7 @@ export default function Findjob() {
                 </Stack>
             </Stack>
 
-            <Stack my={4} mx={5} gap={4}>
+            <Stack mt={4} mx={5} gap={4}>
                 <Stack>
                     <Typography level="h4">Khám phá việc làm</Typography>
                     <Typography level="body-md">
@@ -730,9 +730,12 @@ export default function Findjob() {
                         </div>
                     }
                 </Box>
+                <Stack alignItems={'center'} justifyContent={'center'}>
+                <Pagination current={1} total={1} />
+                </Stack>
             </Stack>
             {role == 'EMPLOYEE' &&
-                <Stack my={4} mx={5} gap={4}>
+                <Stack mb={4} mx={5} gap={4}>
                     <Stack>
                         <Typography level="h4">Gợi ý việc làm phù hợp</Typography>
                         <Typography level="body-md">
@@ -829,8 +832,8 @@ export default function Findjob() {
                                             {job?.jobDescription}
                                         </p>
                                         <Divider />
-                                        <Stack direction={"row"} justifyContent={"space-between"} mt={1}>
-                                            <Stack direction={"row"} gap={2}>
+                                        <Stack direction={"row"} justifyContent={"space-between"} mt={1} alignItems={"flex-start"}>
+                                            <Stack direction={"row"} gap={2} flexWrap={'wrap'}>
                                                 {job?.nameSkill.map((skill, index) => (
                                                     <Chip
                                                         variant="solid"

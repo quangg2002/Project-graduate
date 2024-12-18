@@ -55,6 +55,7 @@ public class JobService {
     private final MailService mailService;
     private final YearExperienceRepository yearExperienceRepository;
     private final ApplicationRepository applicationRepository;
+    private final ScaleRepository scaleRepository;
 
     public ResponseEntity<ResponseDto<Object>> createJob(JobRequest jobRequest) {
 
@@ -269,12 +270,11 @@ public class JobService {
         }
     }
 
-    public ResponseEntity<ResponseDto<Object>> getJobDetail(Long id) {
+    public ResponseEntity<ResponseDto<Object>>  getJobDetail(Long id) {
         try {
             Job job = jobRepository.findById(id)
                     .orElseThrow(() -> new NoSuchElementException(languageService.getMessage("not.found.job")));
 
-            // Lấy thông tin employer và company
             Employer employer = employerRepository.findById(job.getEmployer())
                     .orElse(null);
 
@@ -284,17 +284,7 @@ public class JobService {
                         .orElse(null);
             }
 
-            User user = userRepository.findById(employer.getUserId()).orElse(null);
-
-            EmployerResponse employerResponse = EmployerResponse.builder()
-                    .userId(user.getId())
-                    .email(user.getEmail())
-                    .avatar(user.getAvatar())
-                    .fullName(user.getFullName())
-                    .phoneNumber(user.getPhoneNumber())
-                    .build();
-
-            JobResponse jobResponse = JobResponse.builder()
+            JobWithCompanyResponse jobResponse = JobWithCompanyResponse.builder()
                     .id(job.getId())
                     .title(job.getTitle())
                     .location(job.getLocation())
@@ -311,8 +301,19 @@ public class JobService {
                     .jobType(jobTypeRepository.findById(job.getJobTypeId()).get().getName())
                     .contractType(contractTypeRepository.findById(job.getContractTypeId()).get().getName())
                     .createdAt(job.getCreatedAt())
-                    .company(company)
-                    .employer(employerResponse)
+                    .quantity(job.getQuantity())
+                    .companyLogo(company.getLogo())
+                    .companyId(company.getId())
+                    .companyName(company.getCompanyName())
+                    .companyCity(cityRepository.findById(company.getCity())
+                            .map(City::getName)
+                            .orElse(null)
+                    )
+                    .companyScale(scaleRepository.findById(company.getScale())
+                            .map(Scale::getName)
+                            .orElse(null)
+                    )
+                    .companyAddress(company.getAddress())
                     .build();
 
             return ResponseBuilder.okResponse(

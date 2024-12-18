@@ -30,7 +30,7 @@ public class JobController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ResponseDto<Object>> getJob(@PathVariable Long id) {
-        return jobService.getJob(id);
+        return jobService.getJobDetail(id);
     }
 
 

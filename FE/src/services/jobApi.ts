@@ -46,6 +46,17 @@ export const jobGetWithCompany = createAsyncThunk<any>(
     }
 );
 
+export const jobDetails = createAsyncThunk<any, any>(
+    'job/details',
+    async (id) => {
+        return axiosIns.get(`/job/${id}`, {
+            includeToken: true
+        })
+            .then(response => { return { response: response.data } })
+            .catch(error => { });
+    }
+);
+
 // Delete job
 export const jobDelete = createAsyncThunk<any, number>(
     'job/delete',

@@ -28,6 +28,7 @@ import { getFollowCompany } from '../../services/followCompanyApi';
 import { followCompany } from '../../services/followCompanyApi';
 import { getCompanyDetails } from '../../services/companyApi';
 import { toast } from 'react-toastify';
+import { denormalizeTextAreaContent } from '../../utils/utils';
 import { css, keyframes } from "@emotion/react";
 
 dayjs.extend(relativeTime);
@@ -168,6 +169,7 @@ export default function CompanyDetails() {
             } catch (error) {
                 console.error('Failed to fetch data:', error);
             } finally {
+                console.log("aaaaaaaaaaaa" + data?.companyResponse.description)
                 setIsLoading(false)
             }
         };
@@ -320,7 +322,7 @@ export default function CompanyDetails() {
                                     <CardOverflow sx={{ background: "linear-gradient(90deg, #22c96d, #BFFFC7)", py: 1 }} >
                                         <Typography level="h4">Giới thiệu công ty</Typography>
                                     </CardOverflow>
-                                    <Typography>{data?.companyResponse?.description}</Typography>
+                                    <p dangerouslySetInnerHTML={{ __html: denormalizeTextAreaContent(data?.companyResponse?.description) || '' }} />
                                 </Card>
 
                                 <Card>

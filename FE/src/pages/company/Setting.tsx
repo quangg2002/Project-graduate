@@ -140,7 +140,7 @@ export default function Setting() {
 
     const denormalizeTextAreaContent = (content: string): string => {
         if (!content) return '';
-        return content.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
+        return content.replace(/\\n/g, '</br>').replace(/\\t/g, '$nbsp;&nbsp;');
     }
 
     useEffect(() => {
@@ -239,6 +239,7 @@ export default function Setting() {
     const handleSubmitChangeCompany = async (values) => {
         try {
             dispatch(startLoading());
+            console.log(denormalizeTextAreaContent(values.description))
 
             const formData = new FormData();
             formData.append('companyName', values.companyName);

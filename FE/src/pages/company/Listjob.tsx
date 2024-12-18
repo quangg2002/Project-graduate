@@ -182,7 +182,7 @@ export default function Listjob() {
                     <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap', my: 1 }}>
                         <Input
                             startDecorator={<SearchIcon />}
-                            placeholder="Tên công việc, vị trí ứng tuyển..."
+                            placeholder="Tên công việc"
                             sx={{ width: 300 }}
                             value={jobTitle}
                             onChange={(e) => setJobTitle(e.target.value)}
@@ -198,6 +198,7 @@ export default function Listjob() {
                                 }
                             }}
                             sx={{ width: 150 }}
+                            placeholder="Địa điểm"
                         >
                             <Option value="Ha Noi">Hà Nội</Option>
                             <Option value="Ho Chi Minh">Hồ Chí Minh</Option>

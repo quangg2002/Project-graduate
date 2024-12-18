@@ -24,3 +24,23 @@ export const updateEmployee = createAsyncThunk<any, FormData>(
             .catch(error => { })
     }
 );
+
+export const updateSkill = createAsyncThunk<any, any>(
+  'employee/updateSkill',
+  async (formData) => {
+    return axiosIns.put('/employee/skill', formData, {
+      includeToken: true,
+    }).then(response => { return { response: response.data } })
+      .catch(error => { })
+  }
+);
+
+export const getSkills = createAsyncThunk<any>(
+  'employee/getSkills',
+  async () => {
+    return axiosIns.get('/employee/skills', {
+      includeToken: true,
+    }).then(response => { return { response: response.data } })
+      .catch(error => { })
+  }
+);
