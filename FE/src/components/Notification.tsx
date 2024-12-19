@@ -33,6 +33,9 @@ export default function Notification() {
     const dispatch = useAppDispatch();
     const [open, setOpen] = useState(false);
 
+    const rawRole = sessionStorage.getItem('role');
+    const role = rawRole ? rawRole.replace(/"/g, '') : null;
+
     const navigate = useNavigate();
 
     const handleReadNotification = () => {
@@ -145,10 +148,10 @@ export default function Notification() {
                 </Stack>
                 <Divider />
                 {notifications.map((notification, index) => (
-                    <MenuItem key={notification.id} selected={!notification.read} onClick={() => navigate(`/job-details/${notification?.jobId}`)}>
+                    <MenuItem key={notification.id} selected={!notification.read} >
                         <Stack direction="row" alignItems="center" gap={2}>
                             <Avatar src={notification?.avatar} />
-                            <Stack>
+                            <Stack onClick={() => navigate(role === 'EMPLOYEE' ? `/job-details/${notification?.jobId}` : '/candidate')}>
                                 <Typography level="title-sm">{notification.content}</Typography>
                                 <Typography level="body-xs">{dayjs(notification?.createdAt).fromNow()}</Typography>
                             </Stack>
