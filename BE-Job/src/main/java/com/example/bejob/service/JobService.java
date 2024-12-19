@@ -87,8 +87,6 @@ public class JobService {
 
             Job savedJob = jobRepository.save(job);
 
-            notificationService.createNotification(employer.getUserId(), job.getId(), "JOB_POSTED");
-
             if (jobRequest.getSkills() != null && !jobRequest.getSkills().isEmpty()) {
                 List<JobSkill> jobSkills = jobRequest.getSkills().stream()
                         .map(skillId -> JobSkill.builder()
@@ -109,7 +107,19 @@ public class JobService {
 
                     User user1 = userRepository.findById(employee.getUserId()).orElse(null);
 
-//                        notificationService.createNotification(follow.getEmployeeId(), job.getId(), "FOLLOW");
+                    Company company = companyRepository.findById(follow.getCompanyId()).orElse(null);
+
+                    Notification notification = Notification.builder()
+                            .avatar(company.getLogo())
+                            .userId(user1.getId())
+                            .content("Công ty " +  company.getCompanyName() + " đã đăng tuyển việc làm mới.")
+                            .jobId(savedJob.getId())
+                            .companyId(company.getId())
+                            .read(false)
+                            .build();
+
+                    notificationService.createNotification(notification);
+
                     mailService.sendEmailFollow(user1.getEmail(), companyRepository.findById(employer.getCompany()).get().getCompanyName(), "https://deploy-hirexptit.io.vn/");
                 }
             }

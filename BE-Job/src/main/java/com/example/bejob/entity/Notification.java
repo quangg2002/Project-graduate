@@ -2,14 +2,12 @@ package com.example.bejob.entity;
 
 import com.example.bejob.base.Auditable;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class Notification extends Auditable {
@@ -18,9 +16,13 @@ public class Notification extends Auditable {
     private Long id;
 
     @Column(nullable = false)
-    private Long toUserId;
+    private Long userId;
 
-    private String title;
+    private Long jobId;
+
+    private Long companyId;
+
+    private String avatar;
 
     private String content;
 

@@ -109,6 +109,18 @@ public class ApplicationService {
 
             applicationRepository.save(application);
 
+            Employer employer = employerRepository.findById(job.get().getEmployer()).get();
+
+            Notification notification = Notification.builder()
+                    .userId(employer.getUserId())
+                    .content(user.getFullName() + " đã gửi thư ứng tuyển mới tại " + job.get().getTitle())
+                    .jobId(applicationRequest.getJobId())
+                    .avatar(user.getAvatar())
+                    .read(false)
+                    .build();
+
+            notificationService.createNotification(notification);
+
             return ResponseBuilder.okResponse(
                     languageService.getMessage("application.create.success"),
                     application,
@@ -293,8 +305,6 @@ public class ApplicationService {
             );
         }
 
-        notificationService.createNotification(employee.get().getUserId(), application.getJobId(), String.valueOf(application.getStatus()));
-
         Optional<Job> jobOptional = jobRepository.findById(application.getJobId());
         if (jobOptional.isEmpty()) {
             return ResponseBuilder.badRequestResponse(
@@ -302,6 +312,19 @@ public class ApplicationService {
                     StatusCodeEnum.JOB4000
             );
         }
+
+        Company company = companyRepository.findById(application.getCompanyId()).orElse(null);
+
+        Notification notification = Notification.builder()
+                .userId(employee.get().getUserId())
+                .avatar(company.getLogo())
+                .companyId(company.getId())
+                .jobId(jobOptional.get().getId())
+                .content("Công ty " + company.getCompanyName() + " đã phản hồi thư đăng tuyển của bạn.")
+                .read(false)
+                .build();
+
+        notificationService.createNotification(notification);
 
         Job job = jobOptional.get();
 

@@ -17,18 +17,23 @@ public class NotificationController {
 
     private final NotificationService notificationService;
 
-    @PostMapping("/create")
-    public void createNotification() {
-        notificationService.createNotification(13L, 30L, "REJECTED");
+    @GetMapping()
+    public ResponseEntity<ResponseDto<Object>> getNotifications() {
+        return notificationService.getNotification();
     }
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<ResponseDto<Object>> getNotifications(@PathVariable Long userId) {
-        return notificationService.getNotification(userId);
+    @PatchMapping("/mark-read")
+    public ResponseEntity<ResponseDto<Object>> markAllNotificationsAsRead() {
+        return notificationService.markAllNotifications();
     }
 
-    @PatchMapping("/mark-read/{userId}")
-    public ResponseEntity<ResponseDto<Object>> markAllNotificationsAsRead(@PathVariable Long userId) {
-        return notificationService.markAllNotifications(userId);
+    @PatchMapping("/mark-read/{id}")
+    public ResponseEntity<ResponseDto<Object>> markNotificationsAsRead(@PathVariable Long id) {
+        return notificationService.markNotification(id);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ResponseDto<Object>> deleteNotification(@PathVariable Long id) {
+        return notificationService.deleteNotification(id);
     }
 }

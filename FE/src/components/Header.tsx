@@ -20,7 +20,6 @@ import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
 import TeamNav from './Navigation'
 import { Divider } from "@mui/joy";
-import NotificationsIcon from '@mui/icons-material/Notifications';
 import ForumIcon from '@mui/icons-material/Forum';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
@@ -30,10 +29,21 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import TaskOutlinedIcon from '@mui/icons-material/TaskOutlined';
 import NoteAddOutlinedIcon from '@mui/icons-material/NoteAddOutlined';
 import FolderOpenOutlinedIcon from '@mui/icons-material/FolderOpenOutlined';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import { openMessenger } from "../redux/slice/messageSlice";
 import useAppDispatch from "../hooks/useAppDispatch";
 import { getEmployees } from '../services/employeeApi';
+import Notification from "./Notification";
+
+
+interface EmployeeData {
+    fullName: string;
+    gender: string;
+    address: string;
+    email: string;
+    phoneNumber: string;
+    career: string;
+    avatar: string;
+}
 
 export default function Header() {
     const [open, setOpen] = useState(false);
@@ -41,15 +51,7 @@ export default function Header() {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
     const [openDropdown, setOpenDropdown] = useState(null);
-    const [employeeData, setEmployeeData] = useState({
-        fullName: '',
-        gender: '',
-        address: '',
-        email: '',
-        phoneNumber: '',
-        career: '',
-        avatar: ''
-    })
+    const [employeeData, setEmployeeData] = useState<EmployeeData>();
 
     const items = ['Công việc', 'Hồ sơ & CV', 'Danh sách công ty'];
 
@@ -79,15 +81,7 @@ export default function Header() {
                 if (getEmployees.fulfilled.match(action)) {
                     const response = action.payload.response?.data;
                     if (response) {
-                        setEmployeeData({
-                            fullName: response.fullName,
-                            gender: response.gender,
-                            address: response.address,
-                            email: response.email,
-                            phoneNumber: response.phoneNumber,
-                            career: response.career,
-                            avatar:response.avatar
-                        });
+                        setEmployeeData(response);
                     }
                 }
             } catch (error) {
@@ -336,100 +330,21 @@ export default function Header() {
                         direction={'row'}
                         gap={2}
                     >
-                        <Dropdown>
-                            <MenuButton
-                                variant="plain"
+                        <Notification />
+
+                        <Tooltip title="Tin nhắn" variant="outlined">
+                            <IconButton
                                 size="sm"
-                                sx={{
-                                    maxWidth: "32px",
-                                    maxHeight: "32px",
-                                    borderRadius: "9999999px",
-                                }}
-
-                            >
-                                <Tooltip title="Thông báo" variant="outlined">
-                                    <IconButton
-                                        size="sm"
-                                        variant="soft"
-                                        sx={{ alignSelf: "center", borderRadius: '50%' }}
-                                    >
-                                        <NotificationsIcon color="success" />
-                                    </IconButton>
-                                </Tooltip>
-                            </MenuButton>
-                            <Menu
-                                sx={{
-                                    zIndex: "99999",
-                                    maxHeight: '400px',
-                                    minWidth: '300px',
-                                    maxWidth: '300px',
-                                    p: 1,
-                                    gap: 1,
-                                    "--ListItem-radius": "var(--joy-radius-sm)",
-                                }}
-                                placement="bottom-end"
-                            >
-                                <Stack direction={'row'} justifyContent={'space-between'} alignItems={'center'}>
-                                    <Typography level="title-md">Thông báo</Typography>
-                                    <Tooltip title="Đánh dấu tất cả đã đọc" variant="outlined" color="success" sx={{ zIndex: '999999999999999' }}>
-                                        <IconButton
-                                            size="sm"
-                                            sx={{ borderRadius: '50%' }}
-                                        >
-                                            <CheckCircleOutlineIcon color="success" />
-                                        </IconButton>
-                                    </Tooltip>
-                                </Stack>
-                                <Divider />
-                                <MenuItem>
-                                    <Stack direction={'row'} alignItems={'center'} gap={2}>
-                                        <Avatar />
-                                        <Stack>
-                                            <Typography level="title-sm">Công ty đã xác nhận thư xin việc của bạn</Typography>
-                                            <Typography level="body-xs">2 ago</Typography>
-                                        </Stack>
-                                        <Typography level="body-xs">3:00AM</Typography>
-                                    </Stack>
-                                </MenuItem>
-                                <MenuItem selected>
-                                    <Stack direction={'row'} alignItems={'center'} gap={2}>
-                                        <Avatar />
-                                        <Stack>
-                                            <Typography level="title-sm">Công ty đã xác nhận thư xin việc của bạn</Typography>
-                                            <Typography level="body-xs">2 ago</Typography>
-                                        </Stack>
-                                        <Typography level="body-xs">3:00AM</Typography>
-                                    </Stack>
-                                </MenuItem>
-
-                            </Menu>
-                        </Dropdown>
-
-                        <Dropdown>
-                            <MenuButton
-                                variant="plain"
-                                size="sm"
-                                sx={{
-                                    maxWidth: "32px",
-                                    maxHeight: "32px",
-                                    borderRadius: "9999999px",
+                                variant="soft"
+                                sx={{ alignSelf: "center", borderRadius: '50%' }}
+                                onClick={() => {
+                                    window.open('http://localhost:3000/chat')
+                                    dispatch(openMessenger())
                                 }}
                             >
-                                <Tooltip title="Tin nhắn" variant="outlined">
-                                    <IconButton
-                                        size="sm"
-                                        variant="soft"
-                                        sx={{ alignSelf: "center", borderRadius: '50%' }}
-                                        onClick={() => {
-                                            window.open('http://localhost:3000/chat')
-                                            dispatch(openMessenger())
-                                        }}
-                                    >
-                                        <ForumIcon color="success" />
-                                    </IconButton>
-                                </Tooltip>
-                            </MenuButton>
-                        </Dropdown>
+                                <ForumIcon color="success" />
+                            </IconButton>
+                        </Tooltip>
 
                         <Dropdown>
                             <MenuButton
@@ -443,8 +358,8 @@ export default function Header() {
                                 }}
                             >
                                 <Avatar
-                                    src={employeeData.avatar}
-                                    srcSet={employeeData.avatar}
+                                    src={employeeData?.avatar}
+                                    srcSet={employeeData?.avatar}
                                     sx={{ maxWidth: "32px", maxHeight: "32px" }}
                                 />
                             </MenuButton>
