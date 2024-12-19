@@ -3,7 +3,6 @@ import Box from "@mui/joy/Box";
 import Typography from "@mui/joy/Typography";
 import IconButton from "@mui/joy/IconButton";
 import Stack from "@mui/joy/Stack";
-import Avatar from "@mui/joy/Avatar";
 import Tooltip from "@mui/joy/Tooltip";
 import Dropdown from "@mui/joy/Dropdown";
 import Menu from "@mui/joy/Menu";
@@ -15,8 +14,6 @@ import ModalClose from "@mui/joy/ModalClose";
 import DialogTitle from "@mui/joy/DialogTitle";
 import CssBaseline from "@mui/joy/CssBaseline";
 import { CssVarsProvider } from "@mui/joy/styles";
-import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
-import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
 import TeamNav from './Navigation'
 import { Divider } from "@mui/joy";
@@ -30,34 +27,23 @@ import TaskOutlinedIcon from '@mui/icons-material/TaskOutlined';
 import NoteAddOutlinedIcon from '@mui/icons-material/NoteAddOutlined';
 import FolderOpenOutlinedIcon from '@mui/icons-material/FolderOpenOutlined';
 import { openMessenger } from "../redux/slice/messageSlice";
-import useAppDispatch from "../hooks/useAppDispatch";
-import { getEmployees } from '../services/employeeApi';
 import Notification from "./Notification";
+import useAppDispatch from "../hooks/useAppDispatch";
+import User from "./User";
 
-
-interface EmployeeData {
-    fullName: string;
-    gender: string;
-    address: string;
-    email: string;
-    phoneNumber: string;
-    career: string;
-    avatar: string;
-}
 
 export default function Header() {
     const [open, setOpen] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
-    const dispatch = useAppDispatch();
     const [openDropdown, setOpenDropdown] = useState(null);
-    const [employeeData, setEmployeeData] = useState<EmployeeData>();
+    const dispatch = useAppDispatch();
 
     const items = ['Công việc', 'Hồ sơ & CV', 'Danh sách công ty'];
 
     const isSelected = (item) => {
         const paths = {
-            'Công việc': ['/find-job', '/jobapplied', '/jobsaved', '/job-details'],
+            'Công việc': ['/home', '/jobapplied', '/jobsaved', '/job-details'],
             'Hồ sơ & CV': ['/cv', '/resume'],
             'Danh sách công ty': ['/company'],
         };
@@ -67,30 +53,12 @@ export default function Header() {
 
     const getLinkForItem = (item) => {
         const paths = {
-            'Công việc': '/find-job',
+            'Công việc': '/home',
             'Hồ sơ & CV': '/layout1',
             'Danh sách công ty': '/company',
         };
         return paths[item] || '/';
     };
-
-    useEffect(() => {
-        const fetchEmployeeData = async () => {
-            try {
-                const action = await dispatch(getEmployees());
-                if (getEmployees.fulfilled.match(action)) {
-                    const response = action.payload.response?.data;
-                    if (response) {
-                        setEmployeeData(response);
-                    }
-                }
-            } catch (error) {
-                console.error('Failed to fetch employee data:', error);
-            }
-        };
-
-        fetchEmployeeData();
-    }, [dispatch]);
 
     return (
         <CssVarsProvider disableTransitionOnChange>
@@ -346,62 +314,7 @@ export default function Header() {
                             </IconButton>
                         </Tooltip>
 
-                        <Dropdown>
-                            <MenuButton
-                                variant="solid"
-                                size="sm"
-                                sx={{
-                                    maxWidth: "34px",
-                                    maxHeight: "34px",
-                                    borderRadius: "9999999px",
-                                    border: '2px solid #bebebe'
-                                }}
-                            >
-                                <Avatar
-                                    src={employeeData?.avatar}
-                                    srcSet={employeeData?.avatar}
-                                    sx={{ maxWidth: "32px", maxHeight: "32px" }}
-                                />
-                            </MenuButton>
-                            <Menu
-                                placement="bottom-end"
-                                size="sm"
-                                sx={{
-                                    zIndex: "99999",
-                                    p: 1,
-                                    gap: 1,
-                                    "--ListItem-radius": "var(--joy-radius-sm)",
-                                }}
-                            >
-                                <MenuItem>
-                                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                                        <Avatar
-                                            src="https://i.pravatar.cc/40?img=2"
-                                            srcSet="https://i.pravatar.cc/80?img=2"
-                                            sx={{ borderRadius: "50%" }}
-                                        />
-                                        <Box sx={{ ml: 1.5 }}>
-                                            <Typography level="title-sm" textColor="text.primary">
-                                                Rick Sanchez
-                                            </Typography>
-                                            <Typography level="body-xs" textColor="text.tertiary">
-                                                rick@email.com
-                                            </Typography>
-                                        </Box>
-                                    </Box>
-                                </MenuItem>
-                                <ListDivider />
-                                <MenuItem>
-                                    <SettingsRoundedIcon />
-                                    Cài đặt thông tin cá nhân
-                                </MenuItem>
-                                <Divider />
-                                <MenuItem>
-                                    <LogoutRoundedIcon />
-                                    Đăng xuất
-                                </MenuItem>
-                            </Menu>
-                        </Dropdown>
+                        <User />
                     </Stack>
                 </Box>
             </Box>
