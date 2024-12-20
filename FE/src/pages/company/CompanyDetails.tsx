@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Avatar, Box, Button, Card, CardContent, CardCover, CardOverflow, Chip, Divider, IconButton, Input, Option, Select, selectClasses, Snackbar, Stack, Typography } from "@mui/joy";
+import { useNavigate } from 'react-router-dom';
+import { Avatar, Box, Button, Card, CardOverflow, Chip, Divider, IconButton, Input, Link, Option, Select, selectClasses, Snackbar, Stack, Tooltip, Typography } from "@mui/joy";
 import Header from "../../components/Header";
 import AddIcon from '@mui/icons-material/Add';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
@@ -16,7 +17,7 @@ import BusinessIcon from '@mui/icons-material/Business';
 import DoneIcon from '@mui/icons-material/Done';
 import InsertLinkIcon from '@mui/icons-material/InsertLink';
 import LanguageIcon from '@mui/icons-material/Language';
-import { Empty, Spin } from 'antd';
+import { Empty, Pagination, Spin } from 'antd';
 import city from '../../utils/citis.json';
 import { Field, FieldProps, Form, Formik } from "formik";
 import { startLoading, stopLoading } from '../../redux/slice/loadingSlice';
@@ -81,9 +82,23 @@ export default function CompanyDetails() {
     const { companyId } = useParams();
     const [bookmarkedJobs, setBookmarkedJobs] = useState<number[]>([]);
     const [followCompanies, setFollowCompanies] = useState<number[]>([]);
+    const navigate = useNavigate();
 
     const [open, setOpen] = useState(false);
     const [message, setMessage] = useState('');
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const pageSize = 4;
+
+    const onPageChange = (page: number, pageSize?: number) => {
+        setCurrentPage(page);
+        console.log(`Current page: ${page}, Page size: ${pageSize}`);
+    };
+
+    const currentJobs = data?.listJob.slice(
+        (currentPage - 1) * pageSize,
+        currentPage * pageSize
+    );
 
     const handleClose = () => {
         setOpen(false);
@@ -413,7 +428,7 @@ export default function CompanyDetails() {
                                     ) :
                                         originalData?.listJob.length !== 0 ? (
                                             data?.listJob.length !== 0 ? (
-                                                data?.listJob.map((job, index) => (
+                                                currentJobs.map((job, index) => (
                                                     <Card
                                                         key={index}
                                                         variant="outlined"
@@ -432,19 +447,22 @@ export default function CompanyDetails() {
                                                             <img src={data?.companyResponse?.logo} alt="Company Logo" style={{ width: 100, height: 100, border: '1px solid #e9eaec', borderRadius: '5px' }} />
                                                             <Stack flexGrow={1} gap={1}>
                                                                 <Stack direction={'row'} justifyContent={'space-between'}>
-                                                                    <Typography
-                                                                        level="title-lg"
-                                                                        className="hover-text"
-                                                                        sx={{
-                                                                            transition: 'color 0.3s',
-                                                                        }}
-                                                                    >
-                                                                        {job?.jobTitle}
-                                                                    </Typography>
+                                                                    <Tooltip title={job?.jobTitle} placement="top" arrow>
+                                                                        <Link href={`/job-details/${job?.jobId}`} underline="none">
+                                                                            <Typography
+                                                                                level="title-lg"
+                                                                                className="hover-text"
+                                                                                sx={{
+                                                                                    transition: 'color 0.3s',
+                                                                                }}
+                                                                            >
+                                                                                {job?.jobTitle}
+                                                                            </Typography>
+                                                                        </Link>
+                                                                    </Tooltip>
                                                                     <Typography color="success" fontWeight={'600'}>{job?.jobSalary}</Typography>
-
                                                                 </Stack>
-                                                                <Typography>{data?.companyResponse?.companyName}</Typography>
+                                                                <p className="line-clamp-1">{data?.companyResponse?.companyName}</p>
                                                                 <Stack direction={'row'} justifyContent={'space-between'} alignItems="center" flexWrap={'wrap'} gap={1}>
                                                                     <Stack direction={'row'} gap={1}>
                                                                         <Chip
@@ -472,7 +490,9 @@ export default function CompanyDetails() {
                                                                                     bgcolor: '#008f3e',
                                                                                 },
                                                                             }}
-                                                                            size="sm">
+                                                                            size="sm"
+                                                                            onClick={() => navigate(`/job-details/${job?.jobId}`)}
+                                                                        >
                                                                             Ứng tuyển
                                                                         </Button>
                                                                         <IconButton variant="outlined" onClick={() => handleDeleteSave(job?.jobId)}>
@@ -491,7 +511,7 @@ export default function CompanyDetails() {
                                             ) : (
                                                 <Stack>
                                                     <Empty
-                                                        description="Không tìm thấy công việc nào!"
+                                                        description="Không tìm thấy công việc phù hợp!"
                                                         image={Empty.PRESENTED_IMAGE_SIMPLE}
                                                     />
                                                     <Stack justifyContent={'center'} alignItems="center">
@@ -500,17 +520,26 @@ export default function CompanyDetails() {
                                                 </Stack>
                                             )
                                         ) : (
-                                                <Stack>
-                                                    <Empty
-                                                        description="Không có chưa công việc tuyển dụng!"
-                                                        image={Empty.PRESENTED_IMAGE_SIMPLE}
-                                                    />
-                                                    <Stack justifyContent={'center'} alignItems="center">
-                                                        <Button color="success">Tìm việc ngay</Button>
-                                                    </Stack>
+                                            <Stack>
+                                                <Empty
+                                                    description="Không có công việc tuyển dụng!"
+                                                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                                />
+                                                <Stack justifyContent={'center'} alignItems="center">
+                                                    <Button color="success">Tìm việc ngay</Button>
                                                 </Stack>
-                                            )
+                                            </Stack>
+                                        )
                                     }
+                                    <Stack alignItems={'center'} justifyContent={'center'}>
+                                        <Pagination
+                                            current={currentPage} // Trang hiện tại
+                                            total={data?.listJob.length} // Tổng số mục
+                                            pageSize={pageSize} // Số mục trên mỗi trang
+                                            onChange={onPageChange} // Hàm xử lý khi thay đổi trang
+                                            showSizeChanger={false} // Không cho phép thay đổi số mục trên mỗi trang
+                                        />
+                                    </Stack>
                                 </Card>
                             </Stack>
                         </Stack>
