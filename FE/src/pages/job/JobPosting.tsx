@@ -1,5 +1,5 @@
 import { useCallback, useState, useEffect } from "react";
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
     Box,
     Button,
@@ -8,7 +8,6 @@ import {
     Stack,
     Divider,
     IconButton,
-    ModalClose,
     CardCover,
     Textarea,
 } from '@mui/joy';
@@ -20,6 +19,7 @@ import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import HourglassFullIcon from '@mui/icons-material/HourglassFull';
 import WatchLaterIcon from '@mui/icons-material/WatchLater';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 import SendIcon from '@mui/icons-material/Send';
 import MilitaryTechIcon from '@mui/icons-material/MilitaryTech';
 import PeopleIcon from '@mui/icons-material/People';
@@ -27,9 +27,6 @@ import BusinessCenterIcon from '@mui/icons-material/BusinessCenter';
 import LaunchIcon from '@mui/icons-material/Launch';
 
 import * as Yup from "yup";
-import { Transition } from 'react-transition-group';
-import Modal from '@mui/joy/Modal';
-import ModalDialog from '@mui/joy/ModalDialog';
 import DialogTitle from '@mui/joy/DialogTitle';
 import DialogContent from '@mui/joy/DialogContent';
 import FolderSharedIcon from '@mui/icons-material/FolderShared';
@@ -41,7 +38,9 @@ import { applicationCreate } from '../../services/applicationApi';
 import { jobDetails } from '../../services/jobApi';
 import useAppDispatch from '../../hooks/useAppDispatch';
 import { toast } from 'react-toastify';
-
+import { favoriteJobCreate, getFavoriteJob } from '../../services/favoriteJobApi';
+import { startLoading, stopLoading } from "../../redux/slice/loadingSlice";
+import CustomModal from "../../components/CustomModal";
 
 interface Job {
     id: number;
@@ -78,8 +77,8 @@ const validationSchema = Yup.object({
     coverLetter: Yup.string().required('Thư giới thiệu là bắt buộc'),
     selectedFile: Yup.mixed()
         .required('Vui lòng chọn file CV')
-        .test('fileSize', 'Kích thước file không được vượt quá 5MB', (value) => {
-            return value && (value as File).size <= 5 * 1024 * 1024; // 5MB
+        .test('fileSize', 'Kích thước file không được vượt quá 10MB', (value) => {
+            return value && (value as File).size <= 10 * 1024 * 1024; // 10 MB
         })
         .test('fileType', 'Chỉ hỗ trợ định dạng .doc, .docx, .pdf', (value) => {
             const file = value as File;
@@ -89,13 +88,13 @@ const validationSchema = Yup.object({
 
 function JobPosting() {
     const { jobId } = useParams();
-    console.log(jobId)
 
+    const navigate = useNavigate();
     const [open, setOpen] = useState<boolean>(false)
     const dispatch = useAppDispatch();
     const [loading, setLoading] = useState(false);
     const [job, setJob] = useState<Job | null>(null);
-
+    const [bookmarkedJobs, setBookmarkedJobs] = useState<number[]>([]);
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
         const file = acceptedFiles[0];
@@ -131,7 +130,6 @@ function JobPosting() {
                 toast.error('Failed to submit application');
             }
         } catch (error) {
-            console.log(error);
             toast.error('Something went wrong. Please try again.');
         } finally {
             setLoading(false);
@@ -150,12 +148,53 @@ function JobPosting() {
             catch (error) {
                 console.error('Failed to fetch applications data:', error);
             }
-            finally{
-                console.log(job)
-            }
         };
         fetchData();
     }, [dispatch]);
+
+
+    useEffect(() => {
+        const fetchCompanyData = async () => {
+            try {
+                dispatch(startLoading)
+                const action = await dispatch(getFavoriteJob());
+                if (getFavoriteJob.fulfilled.match(action)) {
+                    const response = action.payload.response?.data;
+                    if (response) {
+                        const jobIds = response.map(job => job.jobId);
+                        setBookmarkedJobs(jobIds);
+                    }
+                }
+                dispatch(stopLoading)
+            } catch (error) {
+                console.error('Failed to fetch data:', error);
+            }
+        };
+
+        fetchCompanyData();
+    }, []);
+
+    const handleDeleteSave = async (jobId) => {
+        try {
+            const result = await dispatch(favoriteJobCreate(jobId));
+            if (result?.payload?.response?.success) {
+                if (bookmarkedJobs.includes(jobId)) {
+                    toast.success('Đã gỡ công việc khỏi danh sách đã lưu!');
+                } else {
+                    toast.success('Đã lưu công việc vào danh sách đã lưu!');
+                };
+
+                setBookmarkedJobs((prev) =>
+                    prev.includes(jobId) ? prev.filter((id) => id !== jobId) : [...prev, jobId]
+                );
+
+            } else {
+                toast.error('Đã có lỗi xảy ra');
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
     return (
         <Box bgcolor={'#f4f5f5'} flexWrap={'wrap'}>
@@ -208,7 +247,18 @@ function JobPosting() {
                                     <Button color="success" variant="solid" sx={{ flex: 4 }} startDecorator={<SendIcon sx={{ transform: 'rotate(-45deg)' }} />} onClick={() => setOpen(true)}>
                                         Ứng tuyển ngay
                                     </Button>
-                                    <Button variant="outlined" sx={{ flex: 1 }} startDecorator={<FavoriteBorderIcon />}>
+                                    <Button
+                                        variant="outlined"
+                                        sx={{ flex: 1 }}
+                                        startDecorator={
+                                            bookmarkedJobs.includes(job?.id) ? (
+                                                <FavoriteIcon />
+                                            ) : (
+                                                <FavoriteBorderIcon />
+                                            )
+                                        }
+                                        onClick={() => handleDeleteSave(job?.id)}
+                                    >
                                         Lưu tin
                                     </Button>
                                 </Stack>
@@ -241,7 +291,7 @@ function JobPosting() {
                                     <Button color="success" variant="solid" onClick={() => setOpen(true)}>
                                         Ứng tuyển ngay
                                     </Button>
-                                    <Button variant="outlined">
+                                    <Button variant="outlined" onClick={() => handleDeleteSave(job?.id)}>
                                         Lưu tin
                                     </Button>
                                 </Stack>
@@ -259,7 +309,7 @@ function JobPosting() {
                                         Địa điểm: {job?.companyAddress} {job?.companyDistrict} {job?.companyCity}
                                     </Typography>
                                 </Stack>
-                                <Button variant="outlined" endDecorator={<LaunchIcon />}>Xem trang công ty</Button>
+                                <Button variant="outlined" endDecorator={<LaunchIcon />} onClick={() => navigate(`/company-details/${job.companyId}`)}>Xem trang công ty</Button>
                             </Stack>
                         </Card>
 
@@ -328,137 +378,98 @@ function JobPosting() {
                 </Stack>
             </Box>
 
-            <Transition in={open} timeout={400}>
-                {(state: string) => (
-                    <Modal
-                        keepMounted
-                        open={!['exited', 'exiting'].includes(state)}
-                        onClose={() => setOpen(false)}
-                        slotProps={{
-                            backdrop: {
-                                sx: {
-                                    opacity: 0,
-                                    backdropFilter: 'none',
-                                    transition: `opacity 400ms, backdrop-filter 400ms`,
-                                    ...{
-                                        entering: { opacity: 1, backdropFilter: 'blur(8px)' },
-                                        entered: { opacity: 1, backdropFilter: 'blur(8px)' },
-                                    }[state],
-                                },
-                            },
+            <CustomModal
+                open={open}
+                onClose={() => setOpen(false)}
+                width="80%"
+            >
+                <DialogTitle><Typography level='h4'>Ứng tuyển</Typography></DialogTitle>
+
+                <DialogContent>
+                    <Formik
+                        initialValues={{
+                            coverLetter: '',
+                            selectedFile: null as File | null,
                         }}
-                        sx={[
-                            state === 'exited'
-                                ? { visibility: 'hidden' }
-                                : { visibility: 'visible' },
-                        ]}
+                        validationSchema={validationSchema}
+                        onSubmit={handleSubmit}
                     >
-                        <ModalDialog
-                            sx={{
-                                width: '80%',
-                                maxWidth: '800px',
-                                position: 'fixed',
-                                top: '50%',
-                                left: '50%',
-                                transform: 'translate(0%, 100px)', // Bắt đầu từ vị trí thấp hơn
-                                opacity: 0,
-                                transition: `opacity 300ms, transform 300ms`,
-                                ...{
-                                    entering: { opacity: 1, transform: 'translate(-50%, -50%)' }, // Di chuyển lên chính giữa
-                                    entered: { opacity: 1, transform: 'translate(-50%, -50%)' },
-                                }[state],
-                            }}
-                        >
-                            <DialogTitle><Typography level='h4'>Ứng tuyển</Typography></DialogTitle>
-                            <ModalClose></ModalClose>
-                            <DialogContent>
-                                <Formik
-                                    initialValues={{
-                                        coverLetter: '',
-                                        selectedFile: null as File | null,
-                                    }}
-                                    validationSchema={validationSchema}
-                                    onSubmit={handleSubmit}
-                                >
-                                    {({ isSubmitting, values, setFieldValue, errors, touched }) => (
-                                        <Form>
-                                            <Stack gap={2}>
-                                                <Stack gap={1}>
-                                                    <Stack direction={'row'} alignItems={'center'}>
-                                                        <FolderSharedIcon color='success' sx={{ fontSize: '30px' }} /> &nbsp;
-                                                        <Typography level='title-md'>Chọn CV để ứng tuyển</Typography>
-                                                    </Stack>
+                        {({ isSubmitting, values, setFieldValue, errors, touched }) => (
+                            <Form>
+                                <Stack gap={2}>
+                                    <Stack gap={1}>
+                                        <Stack direction={'row'} alignItems={'center'}>
+                                            <FolderSharedIcon color='success' sx={{ fontSize: '30px' }} /> &nbsp;
+                                            <Typography level='title-md'>Chọn CV để ứng tuyển</Typography>
+                                        </Stack>
 
-                                                    <Box {...getRootProps()} style={{ position: 'relative' }}>
-                                                        <Card
-                                                            sx={{
-                                                                height: '150px',
-                                                                borderStyle: 'dashed',
-                                                                borderWidth: '1.5px',
-                                                                borderColor: '#00b14f'
-                                                            }}
-                                                        >
-                                                            <input
-                                                                {...getInputProps()}
-                                                                onChange={(e) => {
-                                                                    const file = e.target.files?.[0];
-                                                                    if (file) {
-                                                                        setFieldValue('selectedFile', file);
-                                                                    }
-                                                                }}
-                                                            />
-                                                            <CardCover>
-                                                                <Stack gap={1}>
-                                                                    <Stack direction={'row'} gap={1} alignItems={'center'}>
-                                                                        <CloudUploadIcon sx={{ fontSize: '30px' }} />
-                                                                        <Typography level="title-md">Tải CV từ máy tính, chọn hoặc kéo thả</Typography>
-                                                                    </Stack>
-                                                                    <Typography level="body-sm">Hỗ trợ định dạng .doc, .docx, pdf có kích thước dưới 5MB</Typography>
+                                        <Box {...getRootProps()} style={{ position: 'relative' }}>
+                                            <Card
+                                                sx={{
+                                                    height: '150px',
+                                                    borderStyle: 'dashed',
+                                                    borderWidth: '1.5px',
+                                                    borderColor: '#00b14f'
+                                                }}
+                                            >
+                                                <input
+                                                    {...getInputProps()}
+                                                    onChange={(e) => {
+                                                        const file = e.target.files?.[0];
+                                                        if (file) {
+                                                            setFieldValue('selectedFile', file);
+                                                        }
+                                                    }}
+                                                />
+                                                <CardCover>
+                                                    <Stack gap={1}>
+                                                        <Stack direction={'row'} gap={1} alignItems={'center'}>
+                                                            <CloudUploadIcon sx={{ fontSize: '30px' }} />
+                                                            <Typography level="title-md">Tải CV từ máy tính, chọn hoặc kéo thả</Typography>
+                                                        </Stack>
+                                                        <Typography level="body-sm">Hỗ trợ định dạng .doc, .docx, pdf có kích thước dưới 5MB</Typography>
 
-                                                                    <Stack direction={'row'} gap={1} alignItems={'center'}>
-                                                                        {values.selectedFile &&
-                                                                            <Stack direction={'row'} alignItems={'center'}>
-                                                                                <DescriptionOutlinedIcon color="success" sx={{ fontSize: '30px' }} />
-                                                                                <Typography color="success">{values.selectedFile.name}</Typography>
-                                                                            </Stack>
-                                                                        }
-                                                                        <Button color="success">Chọn CV</Button>
-                                                                    </Stack>
+                                                        <Stack direction={'row'} gap={1} alignItems={'center'}>
+                                                            {values.selectedFile &&
+                                                                <Stack direction={'row'} alignItems={'center'}>
+                                                                    <DescriptionOutlinedIcon color="success" sx={{ fontSize: '30px' }} />
+                                                                    <Typography color="success">{values.selectedFile.name}</Typography>
                                                                 </Stack>
-                                                            </CardCover>
-                                                        </Card>
-                                                    </Box>
-                                                    {typeof errors.selectedFile === 'string' && (
-                                                        <Typography color="danger">{errors.selectedFile}</Typography>
-                                                    )}
-                                                </Stack>
-                                                <Stack gap={1}>
-                                                    <Stack direction={'row'} alignItems={'end'}>
-                                                        <BorderColorOutlinedIcon color="success" sx={{ fontSize: '30px' }} /> &nbsp;
-                                                        <Typography level='title-md'>Thư giới thiệu:</Typography>
+                                                            }
+                                                            <Button color="success">Chọn CV</Button>
+                                                        </Stack>
                                                     </Stack>
-                                                    <Typography level="body-sm">Một thư giới thiệu ngắn gọn, chỉn chu sẽ giúp bạn trở nên chuyên nghiệp và gây ấn tượng hơn với nhà tuyển dụng.</Typography>
-                                                    <Field
-                                                        name="coverLetter"
-                                                        as={Textarea}
-                                                        minRows={3}
-                                                        placeholder="Viết giới thiệu ngắn gọn về bản thân (điểm mạnh, điểm yếu) và nêu rõ mong muốn, lý do bạn muốn ứng tuyển cho vị trí này."
-                                                        sx={{
-                                                            borderColor: '#00b14f'
-                                                        }}
-                                                    />
-                                                    {errors.coverLetter && <Typography color="danger">{errors.coverLetter}</Typography>}
-                                                </Stack>
-                                                <Button color="success" disabled={loading} type="submit"> {loading ? 'Nộp hồ sơ ứng tuyển...' : 'Nộp hồ sơ ứng tuyển'}</Button>
-                                            </Stack>
-                                        </Form>
-                                    )}
-                                </Formik>
-                            </DialogContent>
-                        </ModalDialog>
-                    </Modal>
-                )}
-            </Transition>
+                                                </CardCover>
+                                            </Card>
+                                        </Box>
+                                        {typeof errors.selectedFile === 'string' && (
+                                            <Typography color="danger">{errors.selectedFile}</Typography>
+                                        )}
+                                    </Stack>
+                                    <Stack gap={1}>
+                                        <Stack direction={'row'} alignItems={'end'}>
+                                            <BorderColorOutlinedIcon color="success" sx={{ fontSize: '30px' }} /> &nbsp;
+                                            <Typography level='title-md'>Thư giới thiệu:</Typography>
+                                        </Stack>
+                                        <Typography level="body-sm">Một thư giới thiệu ngắn gọn, chỉn chu sẽ giúp bạn trở nên chuyên nghiệp và gây ấn tượng hơn với nhà tuyển dụng.</Typography>
+                                        <Field
+                                            name="coverLetter"
+                                            as={Textarea}
+                                            minRows={3}
+                                            placeholder="Viết giới thiệu ngắn gọn về bản thân (điểm mạnh, điểm yếu) và nêu rõ mong muốn, lý do bạn muốn ứng tuyển cho vị trí này."
+                                            sx={{
+                                                borderColor: '#00b14f'
+                                            }}
+                                        />
+                                        {errors.coverLetter && <Typography color="danger">{errors.coverLetter}</Typography>}
+                                    </Stack>
+                                    <Button color="success" disabled={loading} type="submit"> {loading ? 'Nộp hồ sơ ứng tuyển...' : 'Nộp hồ sơ ứng tuyển'}</Button>
+                                </Stack>
+                            </Form>
+                        )}
+                    </Formik>
+                </DialogContent>
+            </CustomModal>
         </Box>
     );
 }
