@@ -1,51 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import { CssVarsProvider } from "@mui/joy/styles";
-import CssBaseline from "@mui/joy/CssBaseline";
+import { CssVarsProvider, ColorPaletteProp } from "@mui/joy/styles";
 import Header from "../../components/Header";
 import Navigation from "../../components/Navigation";
-import { Typography, IconButton, Input, Box, Button, CircularProgress, Stack } from "@mui/joy";
-
-import List from '@mui/joy/List';
-import ListItem from '@mui/joy/ListItem';
-import ListItemContent from '@mui/joy/ListItemContent';
-import ListItemDecorator from '@mui/joy/ListItemDecorator';
-import ListDivider from '@mui/joy/ListDivider';
-import Menu from '@mui/joy/Menu';
-import MenuButton from '@mui/joy/MenuButton';
-import MenuItem from '@mui/joy/MenuItem';
-import Dropdown from '@mui/joy/Dropdown';
-import Divider from '@mui/joy/Divider';
+import { Typography, IconButton, Input, Box, Button, CircularProgress, Stack, CssBaseline, Breadcrumbs, Link, Sheet, Modal, ModalDialog, ModalClose, Divider, FormControl, FormLabel, Select, Option, Table, Checkbox, Avatar, Chip, Dropdown, MenuButton, Menu, MenuItem, List, ListItemContent, ListItemDecorator, ListItem, ListDivider } from "@mui/joy";
 import MoreHorizRoundedIcon from '@mui/icons-material/MoreHorizRounded';
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import BlockIcon from '@mui/icons-material/Block';
 import AutorenewRoundedIcon from '@mui/icons-material/AutorenewRounded';
-import { ColorPaletteProp } from '@mui/joy/styles';
-import Avatar from '@mui/joy/Avatar';
-import Link from '@mui/joy/Link';
-import Chip from '@mui/joy/Chip';
-import Select from '@mui/joy/Select';
-import Option from '@mui/joy/Option';
-import Table from '@mui/joy/Table';
-import Sheet from '@mui/joy/Sheet';
-import Modal from '@mui/joy/Modal';
-import ModalDialog from '@mui/joy/ModalDialog';
-import ModalClose from '@mui/joy/ModalClose';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import SearchIcon from '@mui/icons-material/Search';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import FormControl from '@mui/joy/FormControl';
-import FormLabel from '@mui/joy/FormLabel';
-import Checkbox from '@mui/joy/Checkbox';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded';
-import Breadcrumbs from '@mui/joy/Breadcrumbs';
 import useAppDispatch from '../../hooks/useAppDispatch';
 import { toast } from 'react-toastify';
 import { applicationWithCompany, applicationUpdate, deleteApplication, ApplicationStatus } from '../../services/applicationApi';
 import { Drawer } from 'antd';
 import ForwardToInboxIcon from '@mui/icons-material/ForwardToInbox';
 import TelegramIcon from '@mui/icons-material/Telegram';
+import { openMessenger } from "../../redux/slice/messageSlice";
 
 type Order = 'asc' | 'desc';
 
@@ -129,6 +103,27 @@ export default function Candidate() {
         setSelected([]);
     };
 
+    const handleDownload = () => {
+        const selectedJobs = filteredApplications.filter((job) => selected.includes(job.id));
+
+        selectedJobs.forEach((job) => {
+            fetch(job.cvPdf)
+                .then((response) => response.blob())
+                .then((blob) => {
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement("a");
+                    link.href = url;
+                    link.download = `${job.jobTitle}_${job.position.replace(/[<>:"/\\|?*]+/g, "")}_${job.fullName.replace(/[<>:"/\\|?*]+/g, "")}.pdf`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                })
+                .catch((error) => {
+                    console.error("Failed to download file:", error);
+                });
+        });
+    };
 
     useEffect(() => {
         const fetchJobDetail = async () => {
@@ -214,8 +209,6 @@ export default function Candidate() {
             </div>
         );
     }
-
-    console.log(selected)
 
     return (
         <CssVarsProvider disableTransitionOnChange>
@@ -322,6 +315,7 @@ export default function Candidate() {
                             color="primary"
                             startDecorator={<DownloadRoundedIcon />}
                             size="sm"
+                            onClick={handleDownload}
                         >
                             Download PDF
                         </Button>
@@ -745,7 +739,14 @@ export default function Candidate() {
 
                     </Stack>
                     <Stack position={'sticky'} bottom={0} gap={2}>
-                        <Button startDecorator={<TelegramIcon />}>Nhắn tin</Button>
+                        <Button startDecorator={<TelegramIcon />}
+                            onClick={() => {
+                                window.open('http://localhost:3000/chat')
+                                dispatch(openMessenger())
+                            }}
+                        >
+                            Nhắn tin
+                        </Button>
                         <Button startDecorator={<ForwardToInboxIcon />}
                             onClick={() => {
                                 window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${jobSlected?.email}`, '_blank');
@@ -756,7 +757,6 @@ export default function Candidate() {
                     </Stack>
                 </Stack>
             </Drawer>
-
         </CssVarsProvider>
     );
 }

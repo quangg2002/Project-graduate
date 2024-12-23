@@ -179,7 +179,7 @@ public class ApplicationService {
                                 .id(application.getId())
                                 .jobId(job.getId())
                                 .jobTitle(job.getTitle())
-                                .position(positionRepository.findById(job.getId())
+                                .position(positionRepository.findById(job.getPositionId())
                                         .map(Position::getName)
                                         .orElse(null)
                                 )
