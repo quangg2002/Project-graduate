@@ -50,6 +50,17 @@ export const jobDetails = createAsyncThunk<any, any>(
     'job/details',
     async (id) => {
         return axiosIns.get(`/job/${id}`, {
+            // includeToken: true
+        })
+            .then(response => { return { response: response.data } })
+            .catch(error => { });
+    }
+);
+
+export const getJobDetails = createAsyncThunk<any, any>(
+    'job/details-update',
+    async (id) => {
+        return axiosIns.get(`/job/details/${id}`, {
             includeToken: true
         })
             .then(response => { return { response: response.data } })

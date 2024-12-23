@@ -148,6 +148,18 @@ public class JobService {
 
             jobRepository.save(job);
 
+            List<JobSkill> jobSkills = jobSkillRepository.findByJobId(id);
+            jobSkillRepository.deleteAll(jobSkills);
+
+            List<JobSkill> jobSkillList = jobRequest.getSkills().stream()
+                    .map(skillId -> JobSkill.builder()
+                            .jobId(job.getId())
+                            .skillId(skillId)
+                            .build())
+                    .collect(Collectors.toList());
+
+            jobSkillRepository.saveAll(jobSkillList);
+
             return ResponseBuilder.okResponse(
                     languageService.getMessage("update.job.success"),
                     job,
@@ -172,6 +184,14 @@ public class JobService {
                     .orElseThrow(() -> new NoSuchElementException(languageService.getMessage("not.found.job")));
 
             JobDTO jobResponse = modelMapper.map(job, JobDTO.class);
+
+            List<JobSkill> skills = jobSkillRepository.findByJobId(id);
+
+            List<Long> skillIds = skills.stream()
+                    .map(JobSkill::getSkillId)
+                    .collect(Collectors.toList());
+
+            jobResponse.setSkillsJob(skillIds);
 
             return ResponseBuilder.okResponse(
                     languageService.getMessage("get.job.success"),
@@ -250,9 +270,6 @@ public class JobService {
                                     .map(City::getName)
                                     .orElse(null))
                             .deadline(job.getDeadline())
-                            .jobType(jobTypeRepository.findById(job.getJobTypeId())
-                                    .map(JobType::getName)
-                                    .orElse(null))
                             .contractType(contractTypeRepository.findById(job.getContractTypeId())
                                     .map(ContractType::getName)
                                     .orElse(null))
@@ -308,7 +325,6 @@ public class JobService {
                     .benefit(job.getBenefit())
                     .workingTime(job.getWorkingTime())
                     .position(positionRepository.findById(job.getPositionId()).get().getName())
-                    .jobType(jobTypeRepository.findById(job.getJobTypeId()).get().getName())
                     .contractType(contractTypeRepository.findById(job.getContractTypeId()).get().getName())
                     .createdAt(job.getCreatedAt())
                     .quantity(job.getQuantity())

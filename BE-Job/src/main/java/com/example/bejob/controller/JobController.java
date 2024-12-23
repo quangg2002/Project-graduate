@@ -33,6 +33,11 @@ public class JobController {
         return jobService.getJobDetail(id);
     }
 
+    @GetMapping("/details/{id}")
+    public ResponseEntity<ResponseDto<Object>> getJobUpdate(@PathVariable Long id) {
+        return jobService.getJob(id);
+    }
+
 
     @GetMapping("/with-company")
     public ResponseEntity<ResponseDto<Object>> getJobWithCompany() {
