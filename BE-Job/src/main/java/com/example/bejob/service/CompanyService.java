@@ -1,9 +1,11 @@
 package com.example.bejob.service;
 
+import com.example.bejob.dto.response.CompanyBoardResponse;
 import com.example.bejob.dto.response.CompanyDetailsResponse;
 import com.example.bejob.dto.response.CompanyResponse;
 import com.example.bejob.dto.response.JobCompanyDetailsResponse;
 import com.example.bejob.entity.*;
+import com.example.bejob.enums.ApplicationStatus;
 import com.example.bejob.repository.*;
 import com.example.bejob.dto.request.CompanyRequest;
 import com.example.bejob.enums.StatusCodeEnum;
@@ -13,6 +15,7 @@ import com.example.bejob.security.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springdoc.core.parsers.ReturnTypeParser;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.web.mappings.MappingsEndpoint;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +37,8 @@ public class CompanyService {
     private final CityRepository cityRepository;
     private final ScaleRepository scaleRepository;
     private final JobRepository jobRepository;
+    private final ApplicationRepository applicationRepository;
+    private final ReturnTypeParser genericReturnTypeParser;
     @Value("${minio.url.public}")
     private String publicUrl;
 
@@ -245,6 +250,69 @@ public class CompanyService {
             return ResponseBuilder.okResponse(
                     languageService.getMessage("get.company.success"),
                     companyDetailsResponse,
+                    StatusCodeEnum.COMPANY1001
+            );
+        } catch (Exception e) {
+            return ResponseBuilder.badRequestResponse(
+                    languageService.getMessage("get.company.failed"),
+                    StatusCodeEnum.COMPANY0001
+            );
+        }
+    }
+
+    public ResponseEntity<ResponseDto<Object>> getDetailsCompanyBoard() {
+        String userName = authenticationService.getUserFromContext();
+
+        System.out.println("userName: " + userName);
+
+        Optional<User> user = userRepository.findByUsername(userName);
+
+        if (user.isEmpty()) {
+            return ResponseBuilder.badRequestResponse(
+                    languageService.getMessage("auth.signup.user.not.found"),
+                    StatusCodeEnum.AUTH0016
+            );
+        }
+
+        Employer employer = employerRepository.findByUserId(user.get().getId());
+
+        if (employer == null) {
+            return ResponseBuilder.badRequestResponse(
+                    languageService.getMessage("employer.not.found"),
+                    StatusCodeEnum.EMPLOYEE4000
+            );
+        }
+        try {
+            Optional<Company> company = companyRepository.findById(employer.getCompany());
+
+            List<Job> jobs = new ArrayList<>();
+
+            if (company.isPresent()) {
+                List<Employer> listEmployerWithCompany = employerRepository.findByCompany(company.get().getId());
+
+                for (Employer e : listEmployerWithCompany) {
+                    jobs.addAll(jobRepository.findByEmployer(e.getId()));
+                }
+            }
+
+            List<Application> applications = applicationRepository.findByCompanyId(company.get().getId());
+            long countPending = applications.stream()
+                    .filter(app -> app.getStatus() == ApplicationStatus.PENDING)
+                    .count();
+
+            long countAccepted = applications.stream()
+                    .filter(app -> app.getStatus() == ApplicationStatus.ACCEPTED)
+                    .count();
+
+            CompanyBoardResponse companyBroadResponse = CompanyBoardResponse.builder()
+                    .jobQuantity(jobs.size())
+                    .cvQuantity(countAccepted)
+                    .cvQuantityNew(countPending)
+                    .build();
+
+            return ResponseBuilder.okResponse(
+                    languageService.getMessage("get.company.success"),
+                    companyBroadResponse,
                     StatusCodeEnum.COMPANY1001
             );
         } catch (Exception e) {

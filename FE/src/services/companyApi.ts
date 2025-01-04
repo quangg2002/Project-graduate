@@ -35,6 +35,17 @@ export const getCompany = createAsyncThunk<any>(
     }
 );
 
+export const getBoardCompany = createAsyncThunk<any>(
+    'company/getBoardCompany',
+    async () => {
+        return axiosIns.get('/company/board', {
+            includeToken: true,
+        })
+            .then(response => { return { response: response.data } })
+            .catch(error => { })
+    }
+);
+
 export const getCompanyDetails = createAsyncThunk<any, any>(
     'company/getCompany',
     async (companyId) => {

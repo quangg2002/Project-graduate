@@ -34,4 +34,9 @@ public class CompanyController {
     public ResponseEntity<ResponseDto<Object>> getAllCompanies() {
         return companyService.getAllCompanies();
     }
+
+    @GetMapping("/board")
+    public ResponseEntity<ResponseDto<Object>> getBoardCompanies() {
+        return companyService.getDetailsCompanyBoard();
+    }
 }

@@ -19,14 +19,20 @@ import InsertLinkIcon from '@mui/icons-material/InsertLink';
 import useAppDispatch from '../../hooks/useAppDispatch';
 import { startLoading, stopLoading } from '../../redux/slice/loadingSlice';
 import { useState, useEffect } from "react";
-import { getCompany } from '../../services/companyApi';
+import { getCompany, getBoardCompany } from '../../services/companyApi';
 import { denormalizeTextAreaContent } from '../../utils/utils';
 
+interface CompanyBoardResponse {
+    jobQuantity: number;
+    cvQuantity: number;
+    cvQuantityNew: number;
+}
 
 export default function Overview() {
 
     const dispatch = useAppDispatch();
     const [openAlert, setOpenAlert] = useState(false);
+    const [companyBoard, setCompanyBoard] = useState<CompanyBoardResponse | null>(null);
     const [company, setCompany] = useState({
         companyName: '',
         description: '',
@@ -37,6 +43,25 @@ export default function Overview() {
         city: '',
         district: '',
     });
+
+    useEffect(() => {
+        const fetchCompanyData = async () => {
+            try {
+                dispatch(startLoading)
+                const action = await dispatch(getBoardCompany());
+                dispatch(stopLoading)
+                if (getBoardCompany.fulfilled.match(action)) {
+                    const response = action.payload.response?.data;
+                    if (response)
+                        setCompanyBoard(response)
+                }
+            } catch (error) {
+                console.error('Failed to fetch company data:', error);
+            }
+        };
+
+        fetchCompanyData();
+    }, [dispatch]);
 
     useEffect(() => {
         const fetchEmployeeData = async () => {
@@ -169,7 +194,7 @@ export default function Overview() {
                                 <Stack sx={{ bgcolor: '#FBFCFE' }} border={'1px solid #007bff'} borderRadius={10} p={1}>
                                     <Stack direction={'row'} justifyContent={'space-between'} alignItems={'center'} flexGrow={1} m={2}>
                                         <Stack flex={9}>
-                                            <Typography color='primary' level="h4">8</Typography>
+                                            <Typography color='primary' level="h4">{companyBoard?.jobQuantity}</Typography>
                                             <Typography color='primary' level="h4">Tin tuyển dụng</Typography>
                                         </Stack>
                                         <Stack flex={1}>
@@ -180,7 +205,7 @@ export default function Overview() {
                                 <Stack sx={{ bgcolor: '#F5FFF9' }} border={'1px solid #28a745'} borderRadius={10}>
                                     <Stack direction={'row'} justifyContent={'space-between'} alignItems={'center'} flexGrow={1} m={2}>
                                         <Stack flex={9}>
-                                            <Typography color='success' level="h4">8</Typography>
+                                            <Typography color='success' level="h4">{companyBoard?.cvQuantity}</Typography>
                                             <Typography color='success' level="h4">CV tiếp nhận</Typography>
                                         </Stack>
                                         <Stack flex={1}>
@@ -191,7 +216,7 @@ export default function Overview() {
                                 <Stack sx={{ bgcolor: '#FFF3F2' }} border={'1px solid red'} borderRadius={10}>
                                     <Stack direction={'row'} justifyContent={'space-between'} alignItems={'center'} flexGrow={1} m={2}>
                                         <Stack flex={9}>
-                                            <Typography color='danger' level="h4">8</Typography>
+                                            <Typography color='danger' level="h4">{companyBoard?.cvQuantityNew}</Typography>
                                             <Typography color='danger' level="h4">CV ứng tuyển mới</Typography>
                                         </Stack>
                                         <Stack flex={1}>
