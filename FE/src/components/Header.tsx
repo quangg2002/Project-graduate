@@ -16,7 +16,7 @@ import CssBaseline from "@mui/joy/CssBaseline";
 import { CssVarsProvider } from "@mui/joy/styles";
 import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
 import TeamNav from './Navigation'
-import { Divider } from "@mui/joy";
+import { Button, Divider } from "@mui/joy";
 import ForumIcon from '@mui/icons-material/Forum';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
@@ -39,12 +39,15 @@ export default function Header() {
     const [openDropdown, setOpenDropdown] = useState(null);
     const dispatch = useAppDispatch();
 
+    const rawRole = sessionStorage.getItem('role');
+    const role = rawRole ? rawRole.replace(/"/g, '') : null;
+
     const items = ['Công việc', 'Hồ sơ & CV', 'Danh sách công ty'];
 
     const isSelected = (item) => {
         const paths = {
             'Công việc': ['/home', '/jobapplied', '/jobsaved', '/job-details'],
-            'Hồ sơ & CV': ['/cv', '/resume'],
+            'Hồ sơ & CV': ['/cv', '/resume', '/layout1'],
             'Danh sách công ty': ['/company'],
         };
 
@@ -294,28 +297,45 @@ export default function Header() {
                             </Box>
                         </Drawer>
                     </Box>
-                    <Stack
-                        direction={'row'}
-                        gap={2}
-                    >
-                        <Notification />
+                    {role ? (
+                        <Stack
+                            direction={'row'}
+                            gap={2}
+                        >
+                            <Notification />
 
-                        <Tooltip title="Tin nhắn" variant="outlined">
-                            <IconButton
-                                size="sm"
-                                variant="soft"
-                                sx={{ alignSelf: "center", borderRadius: '50%' }}
-                                onClick={() => {
-                                    window.open('http://localhost:3000/chat')
-                                    dispatch(openMessenger())
+                            <Tooltip title="Tin nhắn" variant="outlined">
+                                <IconButton
+                                    size="sm"
+                                    variant="soft"
+                                    sx={{ alignSelf: "center", borderRadius: '50%' }}
+                                    onClick={() => {
+                                        window.open('http://localhost:3000/chat')
+                                        dispatch(openMessenger())
+                                    }}
+                                >
+                                    <ForumIcon color="success" />
+                                </IconButton>
+                            </Tooltip>
+
+                            <User />
+                        </Stack>
+                    ) : (
+                        <Stack direction={'row'} gap={2}>
+                            <Button variant="outlined" onClick={() => navigate('/register')}>Đăng ký</Button>
+                            <Button
+                                sx={{
+                                    bgcolor: '#00b14f',
+                                    '&:hover': {
+                                        bgcolor: '#00A14E'
+                                    },
                                 }}
+                                onClick={() => navigate('/login')}
                             >
-                                <ForumIcon color="success" />
-                            </IconButton>
-                        </Tooltip>
-
-                        <User />
-                    </Stack>
+                                Đăng nhập
+                            </Button>
+                        </Stack>
+                    )}
                 </Box>
             </Box>
         </CssVarsProvider>
