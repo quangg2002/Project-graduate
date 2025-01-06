@@ -3,7 +3,7 @@ import { CssVarsProvider } from "@mui/joy/styles";
 import CssBaseline from "@mui/joy/CssBaseline";
 import Header from "../../components/Header";
 import Navigation from "../../components/Navigation";
-import { Typography, Card, CardCover, CardContent, Link, Tooltip, IconButton, Breadcrumbs, Stack, CardOverflow, Input, Snackbar, Divider, Avatar } from "@mui/joy";
+import { Typography, Card, CardCover, CardContent, Link, Tooltip, IconButton, Breadcrumbs, Stack, CardOverflow, Input, Snackbar, Divider, Avatar, Button } from "@mui/joy";
 
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
@@ -21,6 +21,10 @@ import { startLoading, stopLoading } from '../../redux/slice/loadingSlice';
 import { useState, useEffect } from "react";
 import { getCompany, getBoardCompany } from '../../services/companyApi';
 import { denormalizeTextAreaContent } from '../../utils/utils';
+import { getListCompany } from '../../services/companyApi';
+import { updateCompanyEmployer } from '../../services/employerApi';
+import { toast } from 'react-toastify';
+import { useParams, useNavigate } from 'react-router-dom';
 
 interface CompanyBoardResponse {
     jobQuantity: number;
@@ -28,8 +32,15 @@ interface CompanyBoardResponse {
     cvQuantityNew: number;
 }
 
-export default function Overview() {
+interface Company {
+    id: number;
+    companyName: string;
+    logo: string;
+    address: string;
+}
 
+export default function Overview() {
+    const navigate = useNavigate();
     const dispatch = useAppDispatch();
     const [openAlert, setOpenAlert] = useState(false);
     const [companyBoard, setCompanyBoard] = useState<CompanyBoardResponse | null>(null);
@@ -43,6 +54,8 @@ export default function Overview() {
         city: '',
         district: '',
     });
+
+    const [listCompany, setListCompany] = useState<Company[]>([]);
 
     useEffect(() => {
         const fetchCompanyData = async () => {
@@ -96,6 +109,35 @@ export default function Overview() {
             setOpenAlert(true);
             setTimeout(() => setOpenAlert(false), 3000);
         });
+    };
+
+    useEffect(() => {
+        const fetchCompanyData = async () => {
+            try {
+                const action = await dispatch(getListCompany());
+                if (getListCompany.fulfilled.match(action)) {
+                    const response = action.payload.response?.data;
+
+                    if (response) {
+                        setListCompany(response.map((cpn: any) => ({ id: cpn.id, companyName: cpn.companyName, logo: cpn.logo, address: cpn.address })));
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to fetch employer data:', error);
+            }
+        };
+
+        fetchCompanyData();
+    }, [dispatch]);
+
+    const handleUpdateCompany = async (idCompany: number) => {
+        try {
+            const result = await dispatch(updateCompanyEmployer(idCompany));
+            toast.success("Cập nhật thành công");
+            navigate('/setting')
+        } catch (error) {
+            console.error("Lỗi khi cập nhật công ty:", error);
+        }
     };
 
     return (
@@ -180,7 +222,6 @@ export default function Overview() {
                     {company.companyName ? (
                         <Stack gap={4}>
                             <Box
-
                                 sx={{
                                     display: "grid",
                                     gridTemplateColumns: {
@@ -324,8 +365,72 @@ export default function Overview() {
                             </Stack>
                         </Stack>
                     ) : (
-                        <Stack height={'100%'} justifyContent={'center'} alignItems={'center'}>
-                            <Link component="a" href={'/setting'}>Hãy bổ sung thông tin cho công ty của bạn</Link>
+                        <Stack>
+                            <Stack direction={'row'} justifyContent={'space-between'}>
+                                <Typography level="h4">Chọn công ty có sẵn</Typography>
+                                <Button color="success" onClick={() => navigate('/setting')}>Tạo công ty mới</Button>
+                            </Stack>
+                            <Box
+                                sx={{
+                                    display: "grid",
+                                    gridTemplateColumns: {
+                                        xs: "repeat(1fr)",
+                                        sm: "repeat(2, 1fr)",
+                                        md: "repeat(3, 1fr)",
+                                    },
+                                    gap: 3,
+                                    mt: 2,
+                                }}
+                            >
+                                {listCompany.map((company, index) => (
+                                    <Card
+                                        key={index}
+                                        variant="outlined"
+                                        sx={{
+                                            transition: 'border 0.3s, box-shadow 0.3s',
+                                            '&:hover': {
+                                                borderColor: '#00B14F',
+                                                boxShadow: '0 1px 3px #00B14F',
+                                                '& .hover-text': {
+                                                    color: '#00B14F',
+                                                },
+                                            },
+                                        }}
+                                    >
+                                        <Stack direction={'row'} gap={1}>
+                                            <img
+                                                src={`${company?.logo}`}
+                                                alt="Company Logo"
+                                                style={{
+                                                    width: 80,
+                                                    height: 80,
+                                                    borderRadius: '5px',
+                                                }}
+                                            />
+
+                                            <Stack>
+                                                <Tooltip title={company?.companyName} placement="top" arrow>
+                                                    <Link href={`/company-details/${company.id}`} underline="none">
+                                                        <Typography
+                                                            level="title-md"
+                                                            className="hover-text"  
+                                                            sx={{
+                                                                transition: 'color 0.3s',
+                                                            }}
+                                                        >
+                                                            {company?.companyName}
+                                                        </Typography>
+                                                    </Link>
+                                                </Tooltip>
+                                                <Stack direction={'row'} gap={2} >
+                                                    <Stack><p className="line-clamp-1 text-sm">{company?.address}</p></Stack>
+                                                    <Button size="sm" onClick={() => handleUpdateCompany(company?.id)}>Chọn</Button>
+                                                </Stack>
+                                            </Stack>
+                                        </Stack>
+                                    </Card>
+                                ))}
+                            </Box>
                         </Stack>
                     )}
                 </Box>

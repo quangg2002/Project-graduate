@@ -179,7 +179,10 @@ public class CompanyService {
 
     public ResponseEntity<ResponseDto<Object>> getAllCompanies() {
         try {
-            List<Company> companies = companyRepository.findAll();
+            List<Company> companies = companyRepository.findAll()
+                    .stream()
+                    .filter(company -> company.getCompanyName() != null)
+                    .collect(Collectors.toList());
 
             return ResponseBuilder.okResponse(
                     languageService.getMessage("get.company.success"),

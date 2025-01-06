@@ -22,15 +22,8 @@ import useAppDispatch from '../../hooks/useAppDispatch';
 import { changePassword } from '../../services/authApi';
 import { getEmployer } from '../../services/employerApi';
 import { updateEmployer } from '../../services/employerApi';
-import { getListCompany } from '../../services/companyApi';
 import { updateCompany } from '../../services/companyApi';
 import { selectClasses } from '@mui/joy/Select';
-
-interface Company {
-    id: number;
-    companyName: string;
-    logo: string;
-}
 
 const SignUpSchema2 = Yup.object().shape({
     currentPassword: Yup.string()
@@ -55,7 +48,6 @@ export default function Setting() {
     const [filteredDistricts, setFilteredDistricts] = useState([]);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [previewUrlAvata, setPreviewUrlAvata] = useState<string | null>(null);
-    const [listCompany, setListCompany] = useState<Company[]>([]);
 
     const [employer, setEmployer] = useState({
         company: {
@@ -140,8 +132,8 @@ export default function Setting() {
 
     const denormalizeTextAreaContent = (content: string): string => {
         if (!content) return '';
-        return content.replace(/\\n/g, '</br>').replace(/\\t/g, '$nbsp;&nbsp;');
-    }
+        return content.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
+    };
 
     useEffect(() => {
         const fetchEmployeeData = async () => {
@@ -183,27 +175,6 @@ export default function Setting() {
 
         fetchEmployeeData();
     }, [dispatch]);
-
-
-    useEffect(() => {
-        const fetchCompanyData = async () => {
-            try {
-                const action = await dispatch(getListCompany());
-                if (getListCompany.fulfilled.match(action)) {
-                    const response = action.payload.response?.data;
-
-                    if (response) {
-                        setListCompany(response.map((cpn: any) => ({ id: cpn.id, companyName: cpn.companyName, logo: cpn.logo })));
-                    }
-                }
-            } catch (error) {
-                console.error('Failed to fetch employer data:', error);
-            }
-        };
-
-        fetchCompanyData();
-    }, [dispatch]);
-
 
     const handleInfoEmployerChange = async (values, { resetForm }) => {
         try {
@@ -333,278 +304,13 @@ export default function Setting() {
                         orientation="vertical"
                     >
                         <TabList sx={{ gap: 1 }}>
-                            <Tab><LockIcon /> Đổi mật khẩu</Tab>
-                            <Tab><Person2Icon />Thông tin cá nhân</Tab>
                             <Tab><ApartmentIcon />Thông tin công ty</Tab>
+                            <Tab><Person2Icon />Thông tin cá nhân</Tab>
+                            <Tab><LockIcon /> Đổi mật khẩu</Tab>
                         </TabList>
                         <TabPanel value={0}>
-                            <Stack width={'80%'} justifySelf={'center'} mt={1} mb={1}>
-                                <Formik
-                                    initialValues={{
-                                        currentPassword: '',
-                                        newPassword: '',
-                                        confirmPassword: '',
-                                    }}
-                                    validationSchema={SignUpSchema2}
-                                    onSubmit={async (values, { setSubmitting, resetForm }) => {
-                                        try {
-                                            dispatch(startLoading());
-                                            const result = await dispatch(
-                                                changePassword({
-                                                    oldPassword: values.currentPassword,
-                                                    newPassword: values.newPassword,
-                                                    confirmPassword: values.confirmPassword,
-                                                })
-                                            );
-                                            dispatch(stopLoading());
-
-                                            if (result?.payload?.response?.success === true) {
-                                                toast.success('Thay đổi mật khẩu thành công');
-                                                resetForm()
-                                            } else if (result?.payload?.response?.message === "Auth password old incorrect") {
-                                                toast.error('Mật khẩu không chính xác');
-                                            } else if (result?.payload?.response?.message === "Auth password same as old") {
-                                                toast.error('Mật khẩu mới không được trùng với mật khẩu hiện tại');
-                                            } else {
-                                                toast.error('Thay đổi mật khẩu thất bại');
-                                            }
-
-                                        } catch (error) {
-                                            toast.error('Đã có lỗi xảy ra.');
-                                        } finally {
-                                            setSubmitting(false);
-                                        }
-                                    }}
-                                >
-                                    {({ isSubmitting, errors, touched }) => (
-                                        <Form>
-                                            <Stack sx={{ gap: 2 }}>
-                                                <FormControl required>
-                                                    <FormLabel>Mật khẩu hiện tại</FormLabel>
-                                                    <Field
-                                                        name="currentPassword"
-                                                        as={Input}
-                                                        type={passwordVisibility.currentPassword ? 'text' : 'password'}
-                                                        endDecorator={
-                                                            <IconButton onClick={() => togglePasswordVisibility('currentPassword')}>
-                                                                {passwordVisibility.currentPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
-                                                            </IconButton>
-                                                        }
-                                                    />
-                                                    <Typography color="danger" sx={{ fontSize: '12px' }}>
-                                                        {errors.currentPassword}
-                                                    </Typography>
-                                                </FormControl>
-
-                                                <FormControl required>
-                                                    <FormLabel>Mật khẩu</FormLabel>
-                                                    <Field
-                                                        name="newPassword"
-                                                        as={Input}
-                                                        type={passwordVisibility.newPassword ? 'text' : 'password'}
-                                                        endDecorator={
-                                                            <IconButton onClick={() => togglePasswordVisibility('newPassword')}>
-                                                                {passwordVisibility.newPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
-                                                            </IconButton>
-                                                        }
-                                                    />
-                                                    <Typography color="danger" sx={{ fontSize: '12px' }}>
-                                                        {errors.newPassword}
-                                                    </Typography>
-
-                                                </FormControl>
-
-                                                <FormControl required>
-                                                    <FormLabel>Nhập lại mật khẩu</FormLabel>
-                                                    <Field
-                                                        name="confirmPassword"
-                                                        as={Input}
-                                                        type={passwordVisibility.confirmPassword ? 'text' : 'password'}
-                                                        endDecorator={
-                                                            <IconButton onClick={() => togglePasswordVisibility('confirmPassword')}>
-                                                                {passwordVisibility.confirmPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
-                                                            </IconButton>
-                                                        }
-                                                    />
-                                                    <Typography color="danger" sx={{ fontSize: '12px' }}>
-                                                        {errors.confirmPassword}
-                                                    </Typography>
-                                                </FormControl>
-                                                <Stack direction={'row'} justifyContent={'flex-end'}>
-                                                    <Button type="submit" variant="solid" color='success' disabled={isSubmitting}>
-                                                        Cập nhật
-                                                    </Button>
-                                                </Stack>
-                                            </Stack>
-                                        </Form>
-                                    )}
-                                </Formik>
-                            </Stack>
-                        </TabPanel>
-                        <TabPanel value={1}>
-
                             <Formik
-                                initialValues={{
-                                    avt: employer.avatar,
-                                    fullName: employer.fullName,
-                                    address: employer.address,
-                                    email: employer.email,
-                                    phoneNumber: employer.phoneNumber,
-                                    gender: employer.gender,
-                                    companyId: employer.company.id,
-                                }}
-                                onSubmit={handleInfoEmployerChange}
-                            >
-                                {({ isSubmitting, errors, touched, setFieldValue }) => (
-                                    <Form>
-                                        <Stack gap={2} mt={2}>
-                                            <Stack direction={'row'} gap={2}>
-                                                <Stack flex={1}>
-                                                    <Box {...getRootPropsAvata()} style={{ position: 'relative' }}>
-                                                        <Card sx={{ height: '150px', borderRadius: 0 }}>
-                                                            <input
-                                                                {...getInputPropsAvata()}
-                                                                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                                                                    const file = event.currentTarget.files?.[0];
-                                                                    if (file) {
-                                                                        setPreviewUrlAvata(URL.createObjectURL(file))
-                                                                        setFieldValue('avt', file);
-                                                                    }
-                                                                }}
-                                                            />
-                                                            <CardCover>
-                                                                {previewUrlAvata ? (
-                                                                    <img
-                                                                        src={previewUrlAvata}
-                                                                        alt="Preview"
-                                                                        style={{ objectFit: "cover" }}
-                                                                    />
-                                                                ) : (
-                                                                    <Typography level="body-xs" textAlign={'center'}>Kéo thả hình ảnh vào đây hoặc click để chọn file</Typography>
-                                                                )}
-                                                            </CardCover>
-                                                        </Card>
-                                                        {previewUrlAvata &&
-                                                            <Box
-                                                                sx={{
-                                                                    background: 'linear-gradient(to top, rgba(0,0,0,0.6), rgba(0,0,0,0)), linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0))',
-                                                                    padding: 2,
-                                                                }}
-                                                                position={'absolute'}
-                                                                bottom={0}
-                                                            >
-                                                                <Typography level="body-md" textAlign={'center'} sx={{ color: '#FFF' }}>
-                                                                    Thay đổi hình ảnh
-                                                                </Typography>
-                                                            </Box>
-                                                        }
-                                                    </Box>
-                                                </Stack>
-                                                <Stack flex={4} gap={2}>
-                                                    <FormControl required>
-                                                        <FormLabel>Họ và tên</FormLabel>
-                                                        <Field
-                                                            name="fullName"
-                                                            as={Input}
-                                                            placeholder='Nhập họ và tên'
-                                                        />
-                                                    </FormControl>
-
-                                                    <FormControl required>
-                                                        <FormLabel>Email</FormLabel>
-                                                        <Field
-                                                            name="email"
-                                                            as={Input}
-                                                            value={employer.email}
-                                                            disabled
-                                                        />
-                                                    </FormControl>
-                                                </Stack>
-                                            </Stack>
-
-                                            <FormControl>
-                                                <FormLabel>Giới tính</FormLabel>
-                                                <Field name="gender">
-                                                    {({ field, form }: any) => (
-                                                        <Select
-                                                            {...field}
-                                                            value={form.values.gender || employer.gender}
-                                                            onChange={(event, newValue) => form.setFieldValue("gender", newValue)}
-                                                            sx={{
-                                                                [`& .${selectClasses.indicator}`]: {
-                                                                    transition: '0.2s',
-                                                                    [`&.${selectClasses.expanded}`]: {
-                                                                        transform: 'rotate(-180deg)',
-                                                                    },
-                                                                },
-                                                            }}
-                                                        >
-                                                            <Option value="male">Nam</Option>
-                                                            <Option value="female">Nữ</Option>
-                                                        </Select>
-                                                    )}
-                                                </Field>
-                                            </FormControl>
-
-                                            <FormControl sx={{ flex: 1 }}>
-                                                <FormLabel>Công ty</FormLabel>
-                                                <Field name="companyId">
-                                                    {({ field, form }: any) => (
-                                                        <Select
-                                                            {...field}
-                                                            value={form.values.companyId || employer.company.id}
-                                                            onChange={(event, newValue) => form.setFieldValue("companyId", newValue)}
-                                                            sx={{
-                                                                [`& .${selectClasses.indicator}`]: {
-                                                                    transition: '0.2s',
-                                                                    [`&.${selectClasses.expanded}`]: {
-                                                                        transform: 'rotate(-180deg)',
-                                                                    },
-                                                                },
-                                                            }}
-                                                        >
-                                                            {listCompany.map((cpn) => (
-                                                                <Option key={cpn.id} value={cpn.id}>
-                                                                    <Avatar size="sm" src={cpn.logo} />
-                                                                    {cpn.companyName}
-                                                                </Option>
-                                                            ))}
-                                                        </Select>
-                                                    )}
-                                                </Field>
-                                            </FormControl>
-
-                                            <FormControl sx={{ flex: 1 }}>
-                                                <FormLabel>Địa chỉ cư trú</FormLabel>
-                                                <Field
-                                                    name="address"
-                                                    as={Input}
-                                                    placeholder='Nhập địa chỉ cư trú'
-                                                />
-                                            </FormControl>
-
-                                            <FormControl sx={{ flex: 1 }}>
-                                                <FormLabel>Số điện thoại</FormLabel>
-                                                <Field
-                                                    name="phoneNumber"
-                                                    as={Input}
-                                                    placeholder='Nhập số điện thoại'
-                                                />
-                                            </FormControl>
-
-                                            <Box display="flex" alignItems={"flex-end"} justifyContent={"right"} mt={2} >
-                                                <Button type="submit" size="md" variant="solid" color='success' disabled={isSubmitting}>
-                                                    Cập nhật
-                                                </Button>
-                                            </Box>
-                                        </Stack>
-                                    </Form>
-                                )}
-                            </Formik>
-
-                        </TabPanel>
-                        <TabPanel value={2}>
-                            <Formik
+                                enableReinitialize
                                 initialValues={{
                                     companyName: employer.company.companyName,
                                     address: employer.company.address,
@@ -776,6 +482,275 @@ export default function Setting() {
                                     </Form>
                                 )}
                             </Formik>
+                        </TabPanel>
+                       
+                        <TabPanel value={1}>
+
+                            <Formik
+                                initialValues={{
+                                    avt: employer.avatar,
+                                    fullName: employer.fullName,
+                                    address: employer.address,
+                                    email: employer.email,
+                                    phoneNumber: employer.phoneNumber,
+                                    gender: employer.gender,
+                                    companyId: employer.company.id,
+                                }}
+                                onSubmit={handleInfoEmployerChange}
+                            >
+                                {({ isSubmitting, errors, touched, setFieldValue }) => (
+                                    <Form>
+                                        <Stack gap={2} mt={2}>
+                                            <Stack direction={'row'} gap={2}>
+                                                <Stack flex={1}>
+                                                    <Box {...getRootPropsAvata()} style={{ position: 'relative' }}>
+                                                        <Card sx={{ height: '150px', borderRadius: 0 }}>
+                                                            <input
+                                                                {...getInputPropsAvata()}
+                                                                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                                                                    const file = event.currentTarget.files?.[0];
+                                                                    if (file) {
+                                                                        setPreviewUrlAvata(URL.createObjectURL(file))
+                                                                        setFieldValue('avt', file);
+                                                                    }
+                                                                }}
+                                                            />
+                                                            <CardCover>
+                                                                {previewUrlAvata ? (
+                                                                    <img
+                                                                        src={previewUrlAvata}
+                                                                        alt="Preview"
+                                                                        style={{ objectFit: "cover" }}
+                                                                    />
+                                                                ) : (
+                                                                    <Typography level="body-xs" textAlign={'center'}>Kéo thả hình ảnh vào đây hoặc click để chọn file</Typography>
+                                                                )}
+                                                            </CardCover>
+                                                        </Card>
+                                                        {previewUrlAvata &&
+                                                            <Box
+                                                                sx={{
+                                                                    background: 'linear-gradient(to top, rgba(0,0,0,0.6), rgba(0,0,0,0)), linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0))',
+                                                                    padding: 2,
+                                                                }}
+                                                                position={'absolute'}
+                                                                bottom={0}
+                                                            >
+                                                                <Typography level="body-md" textAlign={'center'} sx={{ color: '#FFF' }}>
+                                                                    Thay đổi hình ảnh
+                                                                </Typography>
+                                                            </Box>
+                                                        }
+                                                    </Box>
+                                                </Stack>
+                                                <Stack flex={4} gap={2}>
+                                                    <FormControl required>
+                                                        <FormLabel>Họ và tên</FormLabel>
+                                                        <Field
+                                                            name="fullName"
+                                                            as={Input}
+                                                            placeholder='Nhập họ và tên'
+                                                        />
+                                                    </FormControl>
+
+                                                    <FormControl required>
+                                                        <FormLabel>Email</FormLabel>
+                                                        <Field
+                                                            name="email"
+                                                            as={Input}
+                                                            value={employer.email}
+                                                            disabled
+                                                        />
+                                                    </FormControl>
+                                                </Stack>
+                                            </Stack>
+
+                                            <FormControl>
+                                                <FormLabel>Giới tính</FormLabel>
+                                                <Field name="gender">
+                                                    {({ field, form }: any) => (
+                                                        <Select
+                                                            {...field}
+                                                            value={form.values.gender || employer.gender}
+                                                            onChange={(event, newValue) => form.setFieldValue("gender", newValue)}
+                                                            sx={{
+                                                                [`& .${selectClasses.indicator}`]: {
+                                                                    transition: '0.2s',
+                                                                    [`&.${selectClasses.expanded}`]: {
+                                                                        transform: 'rotate(-180deg)',
+                                                                    },
+                                                                },
+                                                            }}
+                                                        >
+                                                            <Option value="male">Nam</Option>
+                                                            <Option value="female">Nữ</Option>
+                                                        </Select>
+                                                    )}
+                                                </Field>
+                                            </FormControl>
+
+                                            {/* <FormControl sx={{ flex: 1 }}>
+                                                <FormLabel>Công ty</FormLabel>
+                                                <Field name="companyId">
+                                                    {({ field, form }: any) => (
+                                                        <Select
+                                                            {...field}
+                                                            value={form.values.companyId || employer.company.id}
+                                                            onChange={(event, newValue) => form.setFieldValue("companyId", newValue)}
+                                                            // disabled={!!employer.company.id}
+                                                            sx={{
+                                                                [`& .${selectClasses.indicator}`]: {
+                                                                    transition: '0.2s',
+                                                                    [`&.${selectClasses.expanded}`]: {
+                                                                        transform: 'rotate(-180deg)',
+                                                                    },
+                                                                },
+                                                            }}
+                                                        >
+                                                            {listCompany.map((cpn) => (
+                                                                <Option key={cpn.id} value={cpn.id}>
+                                                                    <Avatar size="sm" src={cpn.logo} />
+                                                                    {cpn.companyName}
+                                                                </Option>
+                                                            ))}
+                                                        </Select>
+                                                    )}
+                                                </Field>
+                                            </FormControl> */}
+
+                                            <FormControl sx={{ flex: 1 }}>
+                                                <FormLabel>Địa chỉ cư trú</FormLabel>
+                                                <Field
+                                                    name="address"
+                                                    as={Input}
+                                                    placeholder='Nhập địa chỉ cư trú'
+                                                />
+                                            </FormControl>
+
+                                            <FormControl sx={{ flex: 1 }}>
+                                                <FormLabel>Số điện thoại</FormLabel>
+                                                <Field
+                                                    name="phoneNumber"
+                                                    as={Input}
+                                                    placeholder='Nhập số điện thoại'
+                                                />
+                                            </FormControl>
+
+                                            <Box display="flex" alignItems={"flex-end"} justifyContent={"right"} mt={2} >
+                                                <Button type="submit" size="md" variant="solid" color='success' disabled={isSubmitting}>
+                                                    Cập nhật
+                                                </Button>
+                                            </Box>
+                                        </Stack>
+                                    </Form>
+                                )}
+                            </Formik>
+
+                        </TabPanel>
+                        
+                        <TabPanel value={2}>
+                            <Stack width={'80%'} justifySelf={'center'} mt={1} mb={1}>
+                                <Formik
+                                    initialValues={{
+                                        currentPassword: '',
+                                        newPassword: '',
+                                        confirmPassword: '',
+                                    }}
+                                    validationSchema={SignUpSchema2}
+                                    onSubmit={async (values, { setSubmitting, resetForm }) => {
+                                        try {
+                                            dispatch(startLoading());
+                                            const result = await dispatch(
+                                                changePassword({
+                                                    oldPassword: values.currentPassword,
+                                                    newPassword: values.newPassword,
+                                                    confirmPassword: values.confirmPassword,
+                                                })
+                                            );
+                                            dispatch(stopLoading());
+
+                                            if (result?.payload?.response?.success === true) {
+                                                toast.success('Thay đổi mật khẩu thành công');
+                                                resetForm()
+                                            } else if (result?.payload?.response?.message === "Auth password old incorrect") {
+                                                toast.error('Mật khẩu không chính xác');
+                                            } else if (result?.payload?.response?.message === "Auth password same as old") {
+                                                toast.error('Mật khẩu mới không được trùng với mật khẩu hiện tại');
+                                            } else {
+                                                toast.error('Thay đổi mật khẩu thất bại');
+                                            }
+
+                                        } catch (error) {
+                                            toast.error('Đã có lỗi xảy ra.');
+                                        } finally {
+                                            setSubmitting(false);
+                                        }
+                                    }}
+                                >
+                                    {({ isSubmitting, errors, touched }) => (
+                                        <Form>
+                                            <Stack sx={{ gap: 2 }}>
+                                                <FormControl required>
+                                                    <FormLabel>Mật khẩu hiện tại</FormLabel>
+                                                    <Field
+                                                        name="currentPassword"
+                                                        as={Input}
+                                                        type={passwordVisibility.currentPassword ? 'text' : 'password'}
+                                                        endDecorator={
+                                                            <IconButton onClick={() => togglePasswordVisibility('currentPassword')}>
+                                                                {passwordVisibility.currentPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+                                                            </IconButton>
+                                                        }
+                                                    />
+                                                    <Typography color="danger" sx={{ fontSize: '12px' }}>
+                                                        {errors.currentPassword}
+                                                    </Typography>
+                                                </FormControl>
+
+                                                <FormControl required>
+                                                    <FormLabel>Mật khẩu</FormLabel>
+                                                    <Field
+                                                        name="newPassword"
+                                                        as={Input}
+                                                        type={passwordVisibility.newPassword ? 'text' : 'password'}
+                                                        endDecorator={
+                                                            <IconButton onClick={() => togglePasswordVisibility('newPassword')}>
+                                                                {passwordVisibility.newPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+                                                            </IconButton>
+                                                        }
+                                                    />
+                                                    <Typography color="danger" sx={{ fontSize: '12px' }}>
+                                                        {errors.newPassword}
+                                                    </Typography>
+
+                                                </FormControl>
+
+                                                <FormControl required>
+                                                    <FormLabel>Nhập lại mật khẩu</FormLabel>
+                                                    <Field
+                                                        name="confirmPassword"
+                                                        as={Input}
+                                                        type={passwordVisibility.confirmPassword ? 'text' : 'password'}
+                                                        endDecorator={
+                                                            <IconButton onClick={() => togglePasswordVisibility('confirmPassword')}>
+                                                                {passwordVisibility.confirmPassword ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+                                                            </IconButton>
+                                                        }
+                                                    />
+                                                    <Typography color="danger" sx={{ fontSize: '12px' }}>
+                                                        {errors.confirmPassword}
+                                                    </Typography>
+                                                </FormControl>
+                                                <Stack direction={'row'} justifyContent={'flex-end'}>
+                                                    <Button type="submit" variant="solid" color='success' disabled={isSubmitting}>
+                                                        Cập nhật
+                                                    </Button>
+                                                </Stack>
+                                            </Stack>
+                                        </Form>
+                                    )}
+                                </Formik>
+                            </Stack>
                         </TabPanel>
                     </Tabs>
 

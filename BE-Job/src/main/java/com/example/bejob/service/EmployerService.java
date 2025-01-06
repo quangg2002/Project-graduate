@@ -73,40 +73,20 @@ public class EmployerService {
 
             Long companyId;
 
-            if (employerRequest.getCompanyId() == null) {
-                if (!companyRepository.existsByCompanyName(employerRequest.getNameCompany())) {
-                    Company company = new Company();
-                    company.setCompanyName(employerRequest.getNameCompany());
-                    company.setCity(employerRequest.getCity());
-                    company.setDistrict(employerRequest.getDistrict());
-                    companyRepository.save(company);
-                    companyId = company.getId();
-                } else {
-                    companyId = companyRepository.findByCompanyName(employerRequest.getNameCompany()).getId();
-                }
-            } else {
-                companyId = employerRequest.getCompanyId();
-            }
+            Company company = new Company();
+            companyRepository.save(company);
+            companyId = company.getId();
 
             Employer employer = new Employer();
             employer.setUserId(userSave.getId());
             employer.setCompany(companyId);
             employer.setEmail(employerRequest.getEmail());
-            employer.setGender(employerRequest.getGender());
 
             employerRepository.save(employer);
 
-            Company company = companyRepository.findById(companyId).get();
-
-            EmployerResponse employerResponse = modelMapper.map(employer, EmployerResponse.class);
-            employerResponse.setCompany(company);
-            employerResponse.setAvatar(userSave.getAvatar());
-            employerResponse.setFullName(userSave.getFullName());
-            employerResponse.setPhoneNumber(userSave.getPhoneNumber());
-
             return ResponseBuilder.okResponse(
                     languageService.getMessage("create.employer.success"),
-                    employerResponse,
+                    employer,
                     StatusCodeEnum.EMPLOYER1000
             );
         } catch (Exception e) {
@@ -222,6 +202,46 @@ public class EmployerService {
                     StatusCodeEnum.EMPLOYER1002
             );
 
+        } catch (Exception e) {
+            return ResponseBuilder.badRequestResponse(
+                    languageService.getMessage("update.employer.failed"),
+                    StatusCodeEnum.EMPLOYER0002
+            );
+        }
+    }
+
+    public ResponseEntity<ResponseDto<Object>> updateCompanyEmployer(Long idCompany) {
+        String userName = authenticationService.getUserFromContext();
+
+        Optional<User> userOptional = userRepository.findByUsername(userName);
+
+        if (userOptional.isEmpty()) {
+            return ResponseBuilder.badRequestResponse(
+                    languageService.getMessage("auth.signup.user.not.found"),
+                    StatusCodeEnum.AUTH0016
+            );
+        }
+
+        User user = userOptional.get();
+
+        Employer employer = employerRepository.findByUserId(user.getId());
+
+        if (employer == null) {
+            return ResponseBuilder.badRequestResponse(
+                    languageService.getMessage("employer.not.found"),
+                    StatusCodeEnum.EMPLOYER4000
+            );
+        }
+
+        try {
+            employer.setCompany(idCompany);
+            employerRepository.save(employer);
+
+            return ResponseBuilder.okResponse(
+                    languageService.getMessage("update.employer.success"),
+                    employer,
+                    StatusCodeEnum.EMPLOYER1002
+            );
         } catch (Exception e) {
             return ResponseBuilder.badRequestResponse(
                     languageService.getMessage("update.employer.failed"),

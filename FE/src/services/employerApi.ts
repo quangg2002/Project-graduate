@@ -24,3 +24,13 @@ export const updateEmployer = createAsyncThunk<any, FormData>(
             .catch(error => { })
     }
 );
+
+export const updateCompanyEmployer = createAsyncThunk<any, any>(
+  'employer/updateCompany',
+  async (idCompany) => {
+      return axiosIns.patch(`/employer/${idCompany}`, null, {
+          includeToken: true,
+      }).then(response => { return { response: response.data } })
+          .catch(error => { })
+  }
+);
