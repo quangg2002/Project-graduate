@@ -23,6 +23,8 @@ import Findjob from "./pages/employee/Findjob";
 import CompanyDetails from "./pages/company/CompanyDetails";
 import Chat from "./pages/chat/Chat";
 import Home from "./pages/employee/Home";
+import Layout2 from "./pages/cv/Layout2";
+import Cv from "./pages/cv/Cv";
 
 const customTheme = extendTheme({
   fontFamily: {
@@ -46,6 +48,8 @@ function App() {
         <Route path="/candidate" element={<Candidate />} />
         <Route path="/listjob" element={<Listjob />} />
         <Route path="/layout1" element={<Layout1 />} />
+        <Route path="/layout2" element={<Layout2/>} />
+        <Route path="/cv" element={<Cv/>} />
         <Route path="/upcv" element={<Uploadcv />} />
         <Route path="/info" element={<Info />} />
         <Route path="/job-details/:jobId" element={<JobPosting />} />

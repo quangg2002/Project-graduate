@@ -8,7 +8,6 @@ import com.example.bejob.entity.Project;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -16,6 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CvRequest {
+    private long layout;
     private String nameCv;
     private String name;
     private String position;

@@ -23,6 +23,16 @@ export const getCv = createAsyncThunk<any, string>(
     }
 );
 
+export const getListCv = createAsyncThunk<any>(
+    'cv/getListCv',
+    async () => {
+        return axiosIns.get('/public/cv/list-cv', {
+            includeToken: true,
+        }).then(response => { return { response: response.data } })
+            .catch(error => { })
+    }
+);
+
 export const updateCv = createAsyncThunk<any, any>(
     'cv/update',
     async (info) => {

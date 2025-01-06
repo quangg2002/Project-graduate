@@ -103,6 +103,7 @@ export default function Layout1() {
 	const [previewUrlAvata, setPreviewUrlAvata] = useState<string | null>(null);
 	const dispatch = useAppDispatch();
 	const [infoCv, setInfoCv] = useState({
+		layout: 1,
 		name: '',
 		nameCv: '',
 		position: '',
@@ -198,6 +199,7 @@ export default function Layout1() {
 					const response = result.payload.response;
 					if (response) {
 						setInfoCv({
+							layout: 1,
 							name: response.name,
 							nameCv: response.nameCv,
 							position: response.position,
@@ -236,11 +238,12 @@ export default function Layout1() {
 		<CssVarsProvider disableTransitionOnChange>
 			<Header />
 
-			<Stack display={'flex'} flexDirection={'row'}>
+			<Stack display={'flex'} flexDirection={'row'} >
 				<Box width={'100%'}>
 					<Formik
 						enableReinitialize
 						initialValues={{
+							layout: 1,
 							name: infoCv.name,
 							nameCv: infoCv.nameCv,
 							position: infoCv.position || "",
@@ -297,6 +300,7 @@ export default function Layout1() {
 								if (values.avatar instanceof File) {
 									formData.append("avatar", values.avatar)
 								}
+								formData.append("layout", "1")
 								const resultAvatar = await dispatch(updateAvatarCv(formData))
 								dispatch(stopLoading)
 
@@ -520,7 +524,7 @@ export default function Layout1() {
 												/>
 											</Stack>
 										</Stack>
-										{values.certificates.length !== 0 && (
+										{/* {values.certificates.length !== 0 && ( */}
 											<Stack gap={1}>
 												<Box sx={boxSX}>
 													<Stack direction={'row'} mt={1}>
@@ -568,9 +572,9 @@ export default function Layout1() {
 													</Stack>
 												))}
 											</Stack>
-										)}
+										{/* )} */}
 
-										{values.hobbies.length !== 0 && (
+										{/* {values.hobbies.length !== 0 && ( */}
 											<Stack gap={1}>
 												<Box sx={boxSX}>
 													<Stack direction={'row'} mt={1}>
@@ -616,7 +620,7 @@ export default function Layout1() {
 													</Stack>
 												))}
 											</Stack>
-										)}
+										{/* )} */}
 									</Box>
 									<Box bgcolor={"common.white"} flexDirection={'column'} m={2}>
 										<Typography
@@ -717,7 +721,7 @@ export default function Layout1() {
 															sx={sharedSx}
 															size='xs'
 															fullWidth
-															placeholder="Ngành học/môn học"
+															placeholder="Tên trường học"
 														/>
 													</Box>
 
@@ -896,7 +900,10 @@ export default function Layout1() {
 														<Field
 															name={`projects.${index}.github`}
 															as={Input}
-															sx={sharedSx}
+															sx={{
+																...sharedSx,
+																width: '68%'
+															}}
 															size='xs'
 															fullWidth
 															placeholder="https://github.com/example"
@@ -906,8 +913,11 @@ export default function Layout1() {
 													<Field
 														name={`projects.${index}.description`}
 														as={Textarea}
-														sx={sharedSx}
-														placeholder="mô tả dự án cụa bạn"
+														sx={{
+															...sharedSx,
+															width: '76%'
+														}}
+														placeholder="Mô tả dự án của bạn"
 													/>
 												</Box>
 											</Stack>

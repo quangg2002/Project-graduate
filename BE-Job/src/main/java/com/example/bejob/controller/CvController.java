@@ -37,12 +37,17 @@ public class CvController {
     }
 
     @PatchMapping(value = "/update-avatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ResponseDto<Object>> updateAvataCv(@RequestParam(value = "avatar", required = false) MultipartFile avatar) {
-        return cvService.updateAvtCv(avatar);
+    public ResponseEntity<ResponseDto<Object>> updateAvataCv(@RequestParam(value = "avatar", required = false) MultipartFile avatar, @RequestParam(value = "layout") Long idCv) {
+        return cvService.updateAvtCv(avatar, idCv);
     }
 
     @GetMapping
     public CvEmployeeResponse getCv(@RequestParam String layout){
         return cvService.getCv(Long.valueOf(layout));
+    }
+
+    @GetMapping("/list-cv")
+    public ResponseEntity<ResponseDto<Object>> getListCv(){
+        return cvService.getListCv();
     }
 }

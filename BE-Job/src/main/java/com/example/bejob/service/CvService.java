@@ -2,6 +2,7 @@ package com.example.bejob.service;
 
 import com.example.bejob.dto.request.CvRequest;
 import com.example.bejob.dto.response.CvEmployeeResponse;
+import com.example.bejob.dto.response.CvListResponse;
 import com.example.bejob.entity.*;
 import com.example.bejob.enums.StatusCodeEnum;
 import com.example.bejob.model.ResponseBuilder;
@@ -32,6 +33,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -119,7 +121,13 @@ public class CvService {
             }
 
             CvEmployee cvEmployee = cvEmployeeRepository.findByCvIdAndEmployeeId(cvId, employee.getId())
-                    .orElseThrow(() -> new EntityNotFoundException("CvEmployee not found"));
+                    .orElseGet(() -> {
+                        CvEmployee newCvEmployee = new CvEmployee();
+                        newCvEmployee.setCvId(cvId);
+                        newCvEmployee.setEmployeeId(employee.getId());
+                        return cvEmployeeRepository.save(newCvEmployee);
+                    });
+
 
             List<Hobby> hobbyList = hobbyRepository.findByCvIdAndEmployeeId(cvEmployee.getCvId(), employee.getId());
 
@@ -165,34 +173,34 @@ public class CvService {
                 );
             }
 
-            Optional<CvEmployee> cv = cvEmployeeRepository.findByCvIdAndEmployeeId(1L, employee.getId());
+            Optional<CvEmployee> cv = cvEmployeeRepository.findByCvIdAndEmployeeId(cvRequest.getLayout(), employee.getId());
             String img = null;
             if (cv.isPresent()) {
                 img = cv.get().getAvatar();
                 cvEmployeeRepository.deleteById(cv.get().getId());
 
-                List<Hobby> hobbyList = hobbyRepository.findByCvIdAndEmployeeId(1L, employee.getId());
+                List<Hobby> hobbyList = hobbyRepository.findByCvIdAndEmployeeId(cvRequest.getLayout(), employee.getId());
                 if (!hobbyList.isEmpty()) {
                     for (Hobby hobby : hobbyList) {
                         hobbyRepository.deleteById(hobby.getId());
                     }
                 }
 
-                List<Certificate> certificateList = certificateRepository.findByCvIdAndEmployeeId(1L, employee.getId());
+                List<Certificate> certificateList = certificateRepository.findByCvIdAndEmployeeId(cvRequest.getLayout(), employee.getId());
                 if (!certificateList.isEmpty()) {
                     for (Certificate certificate : certificateList) {
                         certificateRepository.deleteById(certificate.getId());
                     }
                 }
 
-                List<Education> educationList = educationRepository.findByCvIdAndEmployeeId(1L, employee.getId());
+                List<Education> educationList = educationRepository.findByCvIdAndEmployeeId(cvRequest.getLayout(), employee.getId());
                 if (!educationList.isEmpty()) {
                     for (Education education : educationList) {
                         educationRepository.deleteById(education.getId());
                     }
                 }
 
-                List<Project> projectList = projectRepository.findByCvIdAndEmployeeId(1L, employee.getId());
+                List<Project> projectList = projectRepository.findByCvIdAndEmployeeId(cvRequest.getLayout(), employee.getId());
                 if (!projectList.isEmpty()) {
                     for (Project project : projectList) {
                         projectRepository.deleteById(project.getId());
@@ -210,11 +218,11 @@ public class CvService {
                     .position(cvRequest.getPosition())
                     .phone(cvRequest.getPhone())
                     .target(cvRequest.getTarget())
-                    .cvId(1L)
-                    .certificate(1L)
-                    .education(1L)
-                    .project(1L)
-                    .hobby(1L)
+                    .cvId(cvRequest.getLayout())
+                    .certificate(cvRequest.getLayout())
+                    .education(cvRequest.getLayout())
+                    .project(cvRequest.getLayout())
+                    .hobby(cvRequest.getLayout())
                     .build();
             cvEmployee.setAvatar(img);
             cvEmployeeRepository.save(cvEmployee);
@@ -222,7 +230,7 @@ public class CvService {
             for (Certificate cert : cvRequest.getCertificates()) {
                 Certificate certificate = Certificate.builder()
                         .name(cert.getName())
-                        .cvId(1L)
+                        .cvId(cvRequest.getLayout())
                         .employeeId(employee.getId())
                         .build();
                 certificateRepository.save(certificate);
@@ -231,7 +239,7 @@ public class CvService {
             for (Hobby hobby : cvRequest.getHobbies()) {
                 Hobby hob = Hobby.builder()
                         .name(hobby.getName())
-                        .cvId(1L)
+                        .cvId(cvRequest.getLayout())
                         .employeeId(employee.getId())
                         .build();
                 hobbyRepository.save(hob);
@@ -244,7 +252,7 @@ public class CvService {
                         .endDate(edu.getEndDate())
                         .startDate(edu.getStartDate())
                         .description(edu.getDescription())
-                        .cvId(1L)
+                        .cvId(cvRequest.getLayout())
                         .employeeId(employee.getId())
                         .build();
                 educationRepository.save(education);
@@ -258,7 +266,7 @@ public class CvService {
                         .endDate(pro.getEndDate())
                         .description(pro.getDescription())
                         .quantity(pro.getQuantity())
-                        .cvId(1L)
+                        .cvId(cvRequest.getLayout())
                         .employeeId(employee.getId())
                         .build();
                 projectRepository.save(project);
@@ -278,7 +286,7 @@ public class CvService {
         }
     }
 
-    public ResponseEntity<ResponseDto<Object>> updateAvtCv(MultipartFile avatar){
+    public ResponseEntity<ResponseDto<Object>> updateAvtCv(MultipartFile avatar, Long idCv){
         try {
             String userName = authenticationService.getUserFromContext();
 
@@ -301,7 +309,7 @@ public class CvService {
                 );
             }
 
-            Optional<CvEmployee> cv = cvEmployeeRepository.findByCvIdAndEmployeeId(1L, employee.getId());
+            Optional<CvEmployee> cv = cvEmployeeRepository.findByCvIdAndEmployeeId(idCv, employee.getId());
 
             if (avatar != null && !avatar.isEmpty()) {
                 String avt = fileService.uploadImageFile(avatar, cv.get().getAvatar(), "AVATAR");
@@ -321,6 +329,53 @@ public class CvService {
             return ResponseBuilder.okResponse(
                     "success",
                     cv,
+                    StatusCodeEnum.SUCCESS
+            );
+        }
+        catch (Exception e) {
+            return ResponseBuilder.badRequestResponse(
+                    "Fails",
+                    StatusCodeEnum.FAIlS
+            );
+        }
+    }
+
+    public ResponseEntity<ResponseDto<Object>> getListCv(){
+        try {
+            String userName = authenticationService.getUserFromContext();
+
+            Optional<User> optionalUser = userRepository.findByUsername(userName);
+
+            if (optionalUser.isEmpty()) {
+                return ResponseBuilder.badRequestResponse(
+                        languageService.getMessage("auth.signup.user.not.found"),
+                        StatusCodeEnum.AUTH0016
+                );
+            }
+
+            User user = optionalUser.get();
+
+            Employee employee = employeeRepository.findByUserId(user.getId());
+            if (employee == null) {
+                return ResponseBuilder.badRequestResponse(
+                        languageService.getMessage("not.found.employee"),
+                        StatusCodeEnum.EMPLOYER4000
+                );
+            }
+
+            List <CvEmployee> cvEmployeeList = cvEmployeeRepository.findByEmployeeId(employee.getId());
+
+            List<CvListResponse> cvListResponses = cvEmployeeList.stream()
+                    .map(cvEmployee -> new CvListResponse(
+                            cvEmployee.getCvId(),
+                            cvEmployee.getNameCv(),
+                            cvEmployee.getUpdatedAt()
+                    ))
+                    .collect(Collectors.toList());
+
+            return ResponseBuilder.okResponse(
+                    "success",
+                    cvListResponses,
                     StatusCodeEnum.SUCCESS
             );
         }
