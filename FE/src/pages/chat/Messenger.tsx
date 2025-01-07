@@ -73,6 +73,8 @@ const Messenger: React.FC = () => {
     const [msgInput, setMsgInput] = useState<string>("");
     const [searchTerm, setSearchTerm] = useState('');
     const [search, setSearch] = useState([])
+    const rawRole = sessionStorage.getItem('role');
+    const role = rawRole ? rawRole.replace(/"/g, '') : null;
 
     const fileInputRef = useRef(null);
     const { lstConvers } = useSelector((state: RootState) => state.messageReducer);
@@ -179,10 +181,10 @@ const Messenger: React.FC = () => {
                             />
                         </Stack>
                         <Divider />
-                        
-                        {searchTerm && 
-                        <Stack mx={2} my={2}>
-                            <Typography startDecorator={<SearchIcon />} level='body-sm'>Tìm kiếm người dùng: {searchTerm}</Typography>
+
+                        {searchTerm &&
+                            <Stack mx={2} my={2}>
+                                <Typography startDecorator={<SearchIcon />} level='body-sm'>Tìm kiếm người dùng: {searchTerm}</Typography>
                             </Stack>
                         }
                         {search.map(conversation => (
@@ -259,12 +261,22 @@ const Messenger: React.FC = () => {
                                             </div>
                                         </Message.CustomContent>
                                     )}
-                                    {msg.type == 'html' && msg.message &&
+                                    {msg.type === 'html' && msg.message && (
                                         <Message.CustomContent>
-                                            <p>Cảm ơn {msg.senderName ? msg.senderName : 'bạn'} đã liên hệ với chúng tôi.</p>
-                                            <p>Hãy đặt câu hỏi để được giúp đỡ</p>
+                                            {role === 'EMPLOYEE' ? (
+                                                <>
+                                                    <p>Xin chào {msg.senderName ? msg.senderName : 'bạn'}, tôi có thể giúp gì cho bạn?</p>
+                                                    <p>Hãy đặt câu hỏi để được hỗ trợ.</p>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <p>Cảm ơn {msg.senderName ? msg.senderName : 'bạn'} đã quan tâm việc làm của chúng tôi.</p>
+                                                    <p>Chúng ta bắt đầu cuộc trò chuyện nhé!</p>
+                                                </>
+                                            )}
                                         </Message.CustomContent>
-                                    }
+                                    )}
+
                                 </Message>
                             ))}
 

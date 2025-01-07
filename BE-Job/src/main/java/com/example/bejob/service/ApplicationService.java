@@ -175,6 +175,9 @@ public class ApplicationService {
                         Employee employee = employeeRepository.findById(application.getEmployeeId())
                                 .orElseThrow(() -> new RuntimeException("Employee not found"));
 
+                        User userEmployee = userRepository.findById(employee.getUserId())
+                                .orElseThrow(() -> new RuntimeException("User not found"));
+
                         return ApplicationResponse.builder()
                                 .id(application.getId())
                                 .jobId(job.getId())
@@ -183,6 +186,9 @@ public class ApplicationService {
                                         .map(Position::getName)
                                         .orElse(null)
                                 )
+                                .userEmployeeId(userEmployee.getId())
+                                .userEmployerId(employer.getUserId())
+                                .avatarEmployee(userEmployee.getAvatar())
                                 .salary(job.getSalary())
                                 .address(job.getLocation())
                                 .cvPdf(application.getCvPdf())

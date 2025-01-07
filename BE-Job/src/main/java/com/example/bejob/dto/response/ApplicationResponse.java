@@ -23,6 +23,9 @@ public class ApplicationResponse {
     private String salary;
     private String address;
     private Long employeeId;
+    private Long userEmployeeId;
+    private String fullNameEmployee;
+    private String avatarEmployee;
     private Long userEmployerId;
     private String fullNameEmployer;
     private String avatarEmployer;
