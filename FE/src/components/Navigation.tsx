@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react';
+import { Fragment, useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import Chip from '@mui/joy/Chip';
 import List from '@mui/joy/List';
@@ -13,6 +13,10 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import { Box, Typography } from '@mui/joy';
 import SettingsIcon from '@mui/icons-material/Settings';
+
+import useAppDispatch from '../hooks/useAppDispatch';
+import { startLoading, stopLoading } from '../redux/slice/loadingSlice';
+import { getCompany, getBoardCompany } from '../services/companyApi';
 
 function Toggler({
     defaultExpanded = false,
@@ -48,8 +52,36 @@ function Toggler({
     );
 }
 
+interface CompanyBoardResponse {
+    jobQuantity: number;
+    cvQuantity: number;
+    cvQuantityNew: number;
+}
+
 export default function Navigation() {
     const location = useLocation();
+    const dispatch = useAppDispatch();
+
+    const [companyBoard, setCompanyBoard] = useState<CompanyBoardResponse | null>(null);
+
+    useEffect(() => {
+        const fetchCompanyData = async () => {
+            try {
+                dispatch(startLoading)
+                const action = await dispatch(getBoardCompany());
+                dispatch(stopLoading)
+                if (getBoardCompany.fulfilled.match(action)) {
+                    const response = action.payload.response?.data;
+                    if (response)
+                        setCompanyBoard(response)
+                }
+            } catch (error) {
+                console.error('Failed to fetch company data:', error);
+            }
+        };
+
+        fetchCompanyData();
+    }, [dispatch]);
 
     const underlineStyle = {
         position: 'relative',
@@ -91,7 +123,7 @@ export default function Navigation() {
                             href="/overview"
                             sx={underlineStyle}
                         >
-                                <HomeRoundedIcon />
+                            <HomeRoundedIcon />
                             <ListItemContent>
                                 <Typography level="title-md">
                                     Tổng quan
@@ -152,22 +184,22 @@ export default function Navigation() {
                             href="/candidate"
                             sx={underlineStyle}
                         >
-                                <PeopleRoundedIcon/>
+                            <PeopleRoundedIcon />
                             <ListItemContent>
                                 <Typography level="title-md">Ứng viên</Typography>
                             </ListItemContent>
                             <Chip variant="soft" color="primary" size="sm">
-                                2
+                                {companyBoard?.cvQuantityNew}
                             </Chip>
                         </ListItemButton>
                     </ListItem>
 
                     <ListItem nested>
-                        <ListItemButton 
+                        <ListItemButton
                             component="a"
-                            sx={underlineStyle} 
+                            sx={underlineStyle}
                             href="/setting"
-                            selected={['/setting'].includes(location.pathname)} 
+                            selected={['/setting'].includes(location.pathname)}
                         >
                             <SettingsIcon />
                             <ListItemContent>
