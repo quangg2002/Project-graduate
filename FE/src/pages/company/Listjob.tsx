@@ -16,6 +16,7 @@ import {
     Option,
     Stack,
 } from "@mui/joy";
+import citis from "../../utils/citis.json";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import VisibilityIcon from "@mui/icons-material/Visibility";
@@ -46,6 +47,8 @@ export default function Listjob() {
     const [jobTitle, setJobTitle] = useState('');
     const [location, setLocation] = useState('');
     const [listJob, setListJob] = useState([])
+    const [filteredJobs, setFilteredJobs] = useState(listJob);
+
 
     const [expandedJobIndex, setExpandedJobIndex] = useState(null);
 
@@ -55,11 +58,13 @@ export default function Listjob() {
 
 
     const handleSearch = () => {
-        const searchInfo = {
-            jobTitle: jobTitle,
-            location: location,
-        };
-        console.log(searchInfo);
+        const filtered = listJob.filter((job) => {
+            const matchTitle = jobTitle ? job.title.toLowerCase().includes(jobTitle.toLowerCase()) : true;
+            const matchLocation = location ? job.city === location : true;
+            return matchTitle && matchLocation;
+        });
+
+        setFilteredJobs(filtered);
     }
 
     const handleDeleteJob = async (jobId) => {
@@ -81,6 +86,7 @@ export default function Listjob() {
                     const response = action.payload.response?.data;
                     if (response) {
                         setListJob(response);
+                        setFilteredJobs(response)
                     }
                 }
                 dispatch(stopLoading)
@@ -188,7 +194,6 @@ export default function Listjob() {
                             onChange={(e) => setJobTitle(e.target.value)}
                         />
 
-                        {/* Location Selector */}
                         <Select
                             startDecorator={<LocationOnIcon />}
                             value={location}
@@ -200,9 +205,14 @@ export default function Listjob() {
                             sx={{ width: 150 }}
                             placeholder="Địa điểm"
                         >
-                            <Option value="Ha Noi">Hà Nội</Option>
-                            <Option value="Ho Chi Minh">Hồ Chí Minh</Option>
-                            <Option value="Da Nang">Đà Nẵng</Option>
+                            <Option key="all" value="">
+                                Tất cả
+                            </Option>
+                            {citis.map((city) => (
+                                <Option key={city.id} value={city.name}>
+                                    {city.name}
+                                </Option>
+                            ))}
                         </Select>
 
                         <Button
@@ -238,8 +248,8 @@ export default function Listjob() {
                             <Typography color="primary">Số ứng viên</Typography>
                             <Typography color="primary" textAlign={'center'}>Thao tác</Typography>
                         </Box>
-                        {listJob.length !== 0 ? (
-                            listJob.map((job, index) => (
+                        {filteredJobs.length !== 0 ? (
+                            filteredJobs.map((job, index) => (
                                 <Stack my={1} flexWrap={'wrap'}>
                                     <Box
                                         display={'grid'}
@@ -360,7 +370,7 @@ export default function Listjob() {
                                 </Stack>
                             ))
                         ) : (
-                            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Không có công việc đăng tuyển"/>
+                            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Không có công việc đăng tuyển" />
                         )}
                     </Sheet>
                 </Box>
