@@ -85,6 +85,14 @@ public class ApplicationService {
                 );
             }
             System.out.println("company: " + company.get());
+//
+            boolean hasApplied = applicationRepository.existsByEmployeeIdAndJobId(employee.getId(), applicationRequest.getJobId());
+            if (hasApplied) {
+                return ResponseBuilder.badRequestResponse(
+                        languageService.getMessage("application.already.submitted"),
+                        StatusCodeEnum.APPLICATION0001
+                );
+            }
 
             Application application = Application.builder()
                     .jobId(applicationRequest.getJobId())

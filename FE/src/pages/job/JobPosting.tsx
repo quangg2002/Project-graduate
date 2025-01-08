@@ -115,7 +115,7 @@ function JobPosting() {
         try {
             const formData = new FormData();
             formData.append('coverLetter', values.coverLetter);
-            formData.append('jobId', 4?.toString() || '');
+            formData.append('jobId', jobId?.toString() || '');
             if (values.selectedFile) {
                 formData.append('cvPdf', values.selectedFile);
             }
